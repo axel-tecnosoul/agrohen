@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	    <!-- Plugins css start-->
+    <link rel="stylesheet" type="text/css" href="assets/css/dropzone.css">
+</head>
+<body>
+
+<div class="card-body">
+                <form class="digits" id="single">
+                  <div class="needsclick dz-clickable dropzone zonaDrop" id="dropzone">
+                    <div class="dz-message needsclick">
+                      <i class="icon-cloud-up"></i>
+                      <h6>Arrastre el archivo aqui o haga clic para subir</h6>
+                      </div>
+                    </div>
+                </form>
+              </div>
+              <div class="pb-4 text-center">
+                    <button class="btn btn-secondary" id="procesarArchivo">Procesar archivo</button>
+                  </div>
+            </div>
+
+<script src="assets/js/dropzone/dropzone.js"></script>
+<script type="text/javascript">
+	var arrayFiles = [];
+          Dropzone.autoDiscover = false;
+          $(".dropzone").dropzone({
+            url: "./models/administrar_listas.php",
+            addRemoveLinks: false,
+            acceptedFiles: ".xls, .xlsx, .csv",
+            maxFilesize: 3,
+            maxFiles: 1,
+            dictRemoveFile: "Eliminar",
+          init: function(){
+            this.on("addedfile", function(file){
+              arrayFiles.push(file);
+              //console.log("arrayFiles", arrayFiles);
+            });
+            this.on("removedfile", function(file){
+              var index = arrayFiles.indexOf(file);
+              arrayFiles.splice(index, 1);
+              //console.log("arrayFiles", arrayFiles);
+            });
+
+            }
+        });
+</script>
+</body>
+</html>

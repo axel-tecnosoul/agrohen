@@ -1,0 +1,73 @@
+ALTER TABLE `vehiculos` ADD `id_marca` INT NOT NULL AFTER `patente`, ADD `modelo` VARCHAR(99) NOT NULL AFTER `id_marca`, ADD `anio` VARCHAR(99) NOT NULL AFTER `modelo`, ADD `codigo_motor` VARCHAR(99) NOT NULL AFTER `anio`, ADD `codigo_chasis` VARCHAR(99) NOT NULL AFTER `codigo_motor`, ADD `nro_cedula_verde` VARCHAR(99) NOT NULL AFTER `codigo_chasis`, ADD INDEX (`id_marca`);
+
+CREATE TABLE `marcas_vehiculos` (
+  `id` int(11) NOT NULL,
+  `marca` varchar(99) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `marcas_vehiculos` ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `marcas_vehiculos` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT; (importar archivo marcas_vehiculos.csv)
+
+ALTER TABLE `activos_cliente` CHANGE `fecha_alta` `fecha_alta` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP, CHANGE `id_tecnico_ultima_revision` `id_tecnico_ultima_revision` INT(11) NULL DEFAULT NULL, CHANGE `fecha_hora_ultima_revision` `fecha_hora_ultima_revision` DATETIME NULL DEFAULT NULL;
+
+ALTER TABLE `activos_cliente` CHANGE `ubicación` `ubicacion` VARCHAR(99) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL;
+
+ALTER TABLE `calendario_mantenimiento` DROP INDEX `id_vehiculo_asignado`;
+ALTER TABLE `calendario_mantenimiento` DROP INDEX `id_orden_trabajo`;
+ALTER TABLE `calendario_mantenimiento` DROP FOREIGN KEY calendario_mantenimiento_ibfk_6;
+ALTER TABLE `calendario_mantenimiento` DROP FOREIGN KEY calendario_mantenimiento_ibfk_5;
+
+ALTER TABLE `calendario_mantenimiento`
+  DROP `id_vehiculo_asignado`,
+  DROP `costo_movilidad_estimado`,
+  DROP `id_orden_trabajo`;
+
+ALTER TABLE `ordenes_trabajo` CHANGE `id_pedido` `id_pedido` INT(11) NULL;
+ALTER TABLE `ordenes_trabajo` ADD `id_calendario_mantenimiento` INT NULL DEFAULT NULL AFTER `id_pedido`, ADD INDEX (`id_calendario_mantenimiento`);
+ALTER TABLE `ordenes_trabajo` ADD `declaracion_jurada_cliente` TINYINT NULL DEFAULT NULL AFTER `id_obra`, ADD `aprobado_cliente` TINYINT NULL DEFAULT NULL AFTER `declaracion_jurada_cliente`;
+
+ALTER TABLE `tecnicos_tareas_mantenimiento`
+  DROP `declaracion_jurada_cliente`,
+  DROP `aprobado_cliente`;
+ALTER TABLE `tecnicos_tareas_mantenimiento` CHANGE `id_calendario_mantenimiento` `id_orden_trabajo` INT(11) NOT NULL;
+
+ALTER TABLE `tecnicos_tareas_mantenimiento` DROP FOREIGN KEY `tecnicos_tareas_mantenimiento_ibfk_1`; ALTER TABLE `tecnicos_tareas_mantenimiento` ADD CONSTRAINT `tecnicos_tareas_mantenimiento_ibfk_1` FOREIGN KEY (`id_orden_trabajo`) REFERENCES `ordenes_trabajo`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `tecnicos_tareas_mantenimiento` ADD `id_vehiculo` INT NULL DEFAULT NULL AFTER `id_tecnico`;
+
+CREATE TABLE `materiales_orden_trabajo` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `id_orden_trabajo` int(11) NOT NULL,
+ `id_item` int(11) NOT NULL,
+ `cantidad_reservada` int(11) NOT NULL,
+ `cargado_vehiculo` tinyint(1) NOT NULL,
+ `cantidad_utilizada` int(11) NOT NULL,
+ `aprobado_cliente` tinyint(1) NOT NULL,
+ PRIMARY KEY (`id`),
+ KEY `id_orden_trabajo` (`id_orden_trabajo`),
+ KEY `id_item` (`id_item`),
+ CONSTRAINT `materiales_orden_trabajo_ibfk_1` FOREIGN KEY (`id_item`) REFERENCES `item` (`id`),
+ CONSTRAINT `materiales_orden_trabajo_ibfk_2` FOREIGN KEY (`id_orden_trabajo`) REFERENCES `ordenes_trabajo` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+ALTER TABLE `materiales_orden_trabajo` ADD FOREIGN KEY (`id_item`) REFERENCES `item`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; ALTER TABLE `materiales_orden_trabajo` ADD FOREIGN KEY (`id_orden_trabajo`) REFERENCES `ordenes_trabajo`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `ordenes_trabajo` ADD `fecha` DATE NOT NULL AFTER `fecha_hora_alta`;
+ALTER TABLE `ordenes_trabajo` CHANGE `fecha_hora_desde` `hora_desde` TIME NOT NULL, CHANGE `fecha_hora_hasta` `hora_hasta` TIME NOT NULL;
+
+ALTER TABLE `materiales_mantenimiento` ADD `id_almacen` INT NOT NULL AFTER `id_proveedor`, ADD INDEX (`id_almacen`);
+UPDATE materiales_mantenimiento SET id_almacen=1
+ALTER TABLE `materiales_mantenimiento` ADD  FOREIGN KEY (`id_almacen`) REFERENCES `almacenes`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+CREATE TABLE `tareas_ordenes_trabajo` ( `id` INT NOT NULL AUTO_INCREMENT , `id_orden_trabajo` INT NOT NULL , `id_calendario_mantenimiento` INT NOT NULL , PRIMARY KEY (`id`), INDEX (`id_orden_trabajo`), INDEX (`id_calendario_mantenimiento`)) ENGINE = InnoDB;
+ALTER TABLE `tareas_ordenes_trabajo` ADD FOREIGN KEY (`id_calendario_mantenimiento`) REFERENCES `calendario_mantenimiento`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; ALTER TABLE `tareas_ordenes_trabajo` ADD FOREIGN KEY (`id_orden_trabajo`) REFERENCES `ordenes_trabajo`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `materiales_orden_trabajo` ADD `id_proveedor` INT NOT NULL AFTER `id_item`, ADD `id_almacen` INT NOT NULL AFTER `id_proveedor`, ADD INDEX (`id_proveedor`), ADD INDEX (`id_almacen`);
+UPDATE materiales_orden_trabajo SET id_proveedor=1, id_almacen=1;
+ALTER TABLE `materiales_orden_trabajo` ADD FOREIGN KEY (`id_almacen`) REFERENCES `almacenes`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; ALTER TABLE `materiales_orden_trabajo` ADD FOREIGN KEY (`id_proveedor`) REFERENCES `proveedores`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `ordenes_trabajo` DROP INDEX `id_calendario_mantenimiento`;
+ALTER TABLE `ordenes_trabajo` DROP `id_calendario_mantenimiento`;
+
+INSERT INTO `estados_ordenes_trabajo` (`id`, `estado`) VALUES (NULL, 'Pendiente'), (NULL, 'En proceso'), (NULL, 'Finalizada'), (NULL, 'Cancelada');

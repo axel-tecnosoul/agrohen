@@ -1,0 +1,480 @@
+<?php 
+  session_start();
+  include_once('./../conexion.php');
+  date_default_timezone_set("America/Buenos_Aires");
+  $hora = date('Hi');
+  if (!isset($_SESSION['rowUsers']['id_usuario'])) {
+      header("location:./redireccionar.php");
+  }
+?>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="endless admin is super flexible, powerful, clean &amp; modern responsive bootstrap 4 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, endless admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    <!--<link rel="icon" href="assets/images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon">-->
+    <title>MYLA - Altas Cajas</title>
+    <!-- Google font-->
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <!-- Font Awesome-->
+    <link rel="stylesheet" type="text/css" href="assets/css/fontawesome.css">
+    <!-- ico-font-->
+    <link rel="stylesheet" type="text/css" href="assets/css/icofont.css">
+    <!-- Themify icon-->
+    <link rel="stylesheet" type="text/css" href="assets/css/themify.css">
+    <!-- Flag icon-->
+    <link rel="stylesheet" type="text/css" href="assets/css/flag-icon.css">
+     <!-- Plugins css start-->
+    <link rel="stylesheet" type="text/css" href="assets/css/datatables.css">
+    <!-- Feather icon-->
+    <link rel="stylesheet" type="text/css" href="assets/css/feather-icon.css">
+    <!-- Plugins css start-->
+    <link rel="stylesheet" type="text/css" href="assets/css/sweetalert2.css">
+    <!-- Plugins css Ends-->
+    <!-- Bootstrap css-->
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.css">
+    <!-- App css-->
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <link id="color" rel="stylesheet" href="assets/css/light-1.css" media="screen">
+    <!-- Responsive css-->
+    <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+  </head>
+  <body>
+    <!-- Loader starts-->
+    <div class="loader-wrapper">
+      <div class="loader bg-white">
+        <div class="whirly-loader"> </div>
+      </div>
+    </div>
+    <!-- Loader ends-->
+    <?php
+        include_once('./views/main_header.php');
+      ?>
+      <!-- Page Header Ends                              -->
+      <!-- Page Body Start-->
+      <div class="page-body-wrapper">
+        <!-- Page Sidebar Start-->
+        <div class="page-sidebar">
+           <?php
+            include_once('./views/slideBar.php');
+          ?>
+        </div>
+        <!-- Page Sidebar Ends-->
+        <div class="page-body">
+          <div class="container-fluid">
+            <div class="page-header">
+              <div class="row">
+                <div class="col">
+                  <div class="page-header-left">
+                    <h3>Altas Cajas</h3>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
+                      <li class="breadcrumb-item active">Altas Cajas</li>
+                    </ol>
+                    <span class="d-none" id="id_empresa"><?php echo $_SESSION['rowUsers']['id_empresa']?></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Container-fluid starts-->
+          <div class="container-fluid">
+            <div class="row">
+              <!-- Ajax Generated content for a column start-->
+              <div class="col-sm-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h5>Administrar Cajas</h5>
+                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button> 
+
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-hover" id="tablaTiposCaja">
+                        <thead class="text-center">
+                          <tr>
+                            <th class="text-center">#ID</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Ajax Generated content for a column end-->
+        </div>
+          </div>
+          <!-- Container-fluid Ends-->
+        </div>
+        <!-- footer start-->
+        <footer class="footer">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-6 footer-copyright">
+                <p class="mb-0"></p>
+              </div>
+              <div class="col-md-6">
+                <p class="pull-right mb-0"></p>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+     <!--Modal para CRUD-->
+      <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel"></h5>
+                      <span id="id_tipo_caja" class="d-none"></span>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+              <form id="formTiposCaja">    
+                  <div class="modal-body">
+                      <div class="row">
+                          <div class="col-lg-12">
+                            <div class="form-group">
+                              <label for="" class="col-form-label">Tipo de caja:</label>
+                              <input type="text" class="form-control" id="tipo_caja" required>
+                            </div>
+                          </div>   
+                      </div>
+                      <div class="row">
+                          <div class="col-lg-12">
+                            <div class="form-group">
+                              <input type="checkbox" class="" id="vincularTecnico"><label for="" class="col-form-label">&nbsp;Vincular a técnico</label>
+                            </div>
+                          </div>   
+                      </div> 
+                      <div class="row d-none" id="selectTecnicos">
+                          <div class="col-lg-12">
+                            <div class="form-group">
+                              <label for="" class="col-form-label">Técnico:</label>
+                             <select id="id_tecnico" class="form-control">
+                               <option value="">Seleccione...</option>
+                             </select>
+                            </div>
+                          </div>   
+                      </div>              
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                      <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+                  </div>
+              </form>    
+              </div>
+          </div>
+      </div>
+ 
+    <!-- latest jquery-->
+    <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!-- Bootstrap js-->
+    <script src="assets/js/bootstrap/popper.min.js"></script>
+    <script src="assets/js/bootstrap/bootstrap.js"></script>
+    <!-- feather icon js-->
+    <script src="assets/js/icons/feather-icon/feather.min.js"></script>
+    <script src="assets/js/icons/feather-icon/feather-icon.js"></script>
+    <!-- Sidebar jquery-->
+    <script src="assets/js/sidebar-menu.js"></script>
+    <script src="assets/js/config.js"></script>
+    <!-- Plugins JS start-->
+    <script src="assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
+    <!--<script src="assets/js/datatable/datatables/datatable.custom.js"></script>-->
+    <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
+    <script src="assets/js/typeahead/handlebars.js"></script>
+    <script src="assets/js/typeahead/typeahead.bundle.js"></script>
+    <script src="assets/js/typeahead/typeahead.custom.js"></script>
+    <script src="assets/js/chat-menu.js"></script>
+    <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/typeahead-search/handlebars.js"></script>
+    <script src="assets/js/typeahead-search/typeahead-custom.js"></script>
+    <!-- Plugins JS Ends-->
+    <!-- Theme js-->
+    <script src="assets/js/script.js"></script>
+    <!--<script src="assets/js/theme-customizer/customizer.js"></script>-->
+    <!-- Plugin used-->
+    <script type="text/javascript">
+      $(document).ready(function(){
+        let id_empresa = parseInt(document.getElementById("id_empresa").textContent);
+        console.log(id_empresa);
+       tablaTiposCaja= $('#tablaTiposCaja').DataTable({
+            "ajax": {
+                "url" : "./models/administrar_tipos_caja.php?accion=traerTiposCaja&id_empresa="+id_empresa,
+                "dataSrc": "",
+              },
+            "columns":[
+              {"data": "id_tipo_caja"},
+              {"data": "tipo"},
+              {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
+            ],
+            "language":  idiomaEsp
+        });
+       cargarDatosComponentes()
+       $('#modalCRUD').on('hidden.bs.modal', function (e) {
+
+          document.getElementById("id_tecnico").value="";
+          document.getElementById("vincularTecnico").checked = false;
+          document.getElementById("selectTecnicos").classList.add("d-none");
+
+        });
+      });
+      idiomaEsp = {
+                        "autoFill": {
+                            "cancel": "Cancelar",
+                            "fill": "Llenar las celdas con <i>%d<i><\/i><\/i>",
+                            "fillHorizontal": "Llenar las celdas horizontalmente",
+                            "fillVertical": "Llenar las celdas verticalmente"
+                        },
+                        "decimal": ",",
+                        "emptyTable": "No hay datos disponibles en la Tabla",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                        "infoEmpty": "Mostrando 0 a 0 de 0 Entradas",
+                        "infoFiltered": "Filtrado de _MAX_ entradas totales",
+                        "infoThousands": ".",
+                        "lengthMenu": "Mostrar _MENU_ entradas",
+                        "loadingRecords": "Cargando...",
+                        "paginate": {
+                            "first": "Primera",
+                            "last": "Ultima",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        },
+                        "processing": "Procesando...",
+                        "search": "Busqueda:",
+                        "searchBuilder": {
+                            "add": "Agregar condición",
+                            "button": {
+                                "0": "Constructor de búsqueda",
+                                "_": "Constructor de búsqueda (%d)"
+                            },
+                            "clearAll": "Quitar todo",
+                            "condition": "Condición",
+                            "conditions": {
+                                "date": {
+                                    "after": "Luego",
+                                    "before": "Luego",
+                                    "between": "Entre",
+                                    "empty": "Vacio",
+                                    "equals": "Igual"
+                                }
+                            },
+                            "data": "Datos",
+                            "deleteTitle": "Borrar regla de filtrado",
+                            "leftTitle": "Criterio de alargado",
+                            "logicAnd": "Y",
+                            "logicOr": "O",
+                            "rightTitle": "Criterio de endentado",
+                            "title": {
+                                "0": "Constructor de búsqueda",
+                                "_": "Constructor de búsqueda (%d)"
+                            },
+                            "value": "Valor"
+                        },
+                        "searchPlaceholder": "Ingrese caracteres de busqueda",
+                        "thousands": ".",
+                        "zeroRecords": "No se encontraron registros que coincidan con la búsqueda",
+                        "datetime": {
+                            "previous": "Anterior",
+                            "next": "Siguiente",
+                            "hours": "Hora",
+                            "minutes": "Minuto",
+                            "seconds": "Segundo"
+                        },
+                        "editor": {
+                            "close": "Cerrar",
+                            "create": {
+                                "button": "Nuevo",
+                                "title": "Crear nueva entrada",
+                                "submit": "Crear"
+                            },
+                            "edit": {
+                                "button": "Editar",
+                                "title": "Editar entrada",
+                                "submit": "Actualizar"
+                            },
+                            "remove": {
+                                "button": "Borrar",
+                                "title": "Borrar",
+                                "submit": "Borrar",
+                                "confirm": {
+                                    "_": "Está seguro que desea borrar %d filas?",
+                                    "1": "Está seguro que desea borrar 1 fila?"
+                                }
+                            },
+                            "multi": {
+                                "title": "Múltiples valores",
+                                "info": "La selección contiene diferentes valores para esta entrada. Para editarla y establecer todos los items al mismo valor, clickear o tocar aquí, de otra manera conservarán sus valores individuales.",
+                                "restore": "Deshacer cambios",
+                                "noMulti": "Esta entrada se puede editar individualmente, pero no como parte de un grupo."
+                            }
+                        }
+                    }
+    function cargarDatosComponentes(){
+                let datosIniciales = new FormData();
+                let id_empresa = parseInt(document.getElementById("id_empresa").textContent);
+                datosIniciales.append('accion', 'traerDatosIniciales');
+                datosIniciales.append('id_empresa', id_empresa);
+                $.ajax({
+                    data: datosIniciales,
+                    url: "./models/administrar_tipos_caja.php",
+                    method: "post",
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    beforeSed: function(){
+                        //$('#addProdLocal').modal('hide');
+                    },
+                    success: function(respuesta){
+                       
+                        /*Identifico el select de tecnicos*/
+                        $selecTecnicos= document.getElementById("id_tecnico");
+
+                        
+                        /*Convierto en json la respuesta del servidor*/
+                        respuestaJson = JSON.parse(respuesta);
+
+                        /*Genero los options del select tecnicos*/
+                        respuestaJson.tecnicos.forEach((tecnicos)=>{
+                            $option = document.createElement("option");
+                            let optionText = document.createTextNode(tecnicos.tecnico);
+                            $option.appendChild(optionText);
+                            $option.setAttribute("value", tecnicos.id_tecnico);
+                            $selecTecnicos.appendChild($option);
+                        })
+
+                    }
+                });
+            }
+    $(document).on("click", ".btnEditar", function(){
+      $(".modal-header").css( "background-color", "#22af47");
+      $(".modal-header").css( "color", "white" );
+      $(".modal-title").text("Editar tipo de caja");
+      $('#modalCRUD').modal('show');      
+      let fila = $(this).closest("tr");
+      let id_tipo_caja = fila.find('td:eq(0)').text();    
+      let id_empresa = parseInt(document.getElementById("id_empresa").textContent);
+      accion = "traerCajaUpdate";
+      $tipo_caja = document.getElementById("tipo_caja");
+      //$tipo_caja.value=fila.find('td:eq(1)').text();
+
+      $('#id_tipo_caja').html(id_tipo_caja);
+
+
+      $.ajax({
+          url: "models/administrar_tipos_caja.php",
+          type: "POST",
+          datatype:"json",    
+          data:  {accion: accion,id_tipo_caja:id_tipo_caja},    
+          success: function(respuesta) {
+              let datosInput = JSON.parse(respuesta);
+              $("#tipo_caja").val(datosInput[0].tipo);
+              //$('#id_uMedida').html(datosInput[0].id_unidad);
+
+              if(datosInput[0].id_tecnico != ""){
+                document.getElementById("vincularTecnico").checked = true;
+                document.getElementById("id_tecnico").value = datosInput[0].id_tecnico;
+                document.getElementById("selectTecnicos").classList.remove("d-none");
+              }
+           }
+      })
+
+
+       /*$("#rubro").val(datosInput[0].rubro);
+              $("#comentarios").val(datosInput[0].comentarios);
+              $('#id_rubro').html(datosInput[0].id_rubro);
+              ;*/
+
+      accion = "updateTipoCaja";
+      $('#modalCRUD').modal('show');
+    });
+
+    $('#formTiposCaja').submit(function(e){                         
+    e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página   
+    let tipo_caja = $.trim($('#tipo_caja').val());    
+    let id_tipo_caja = $.trim($('#id_tipo_caja').html());
+    let id_empresa = parseInt(document.getElementById("id_empresa").textContent);
+    let vincularTecnico = document.getElementById("vincularTecnico");
+    let id_tecnico = document.getElementById("id_tecnico").value;
+
+    if (vincularTecnico.checked && id_tecnico == "") {
+            swal({
+                  icon: 'error',
+                  title: 'Debe seleccionar tecnico'
+                });
+    }else{
+      $.ajax({
+          url: "models/administrar_tipos_caja.php",
+          type: "POST",
+          datatype:"json",    
+          data:  {accion: accion,id_tipo_caja:id_tipo_caja, tipo_caja:tipo_caja, id_empresa, id_empresa, id_tecnico: id_tecnico},    
+          success: function(data) {
+            tablaTiposCaja.ajax.reload(null, false);
+            $('#modalCRUD').modal('hide'); 
+            swal({
+                  icon: 'success',
+                  title: 'Accion realizada correctamente'
+                });
+           }
+        });
+    }                        
+});
+
+
+    $("#btnNuevo").click(function(){
+      accion = "addTipoCaja";
+    $("#formTiposCaja").trigger("reset");
+    $(".modal-header").css( "background-color", "#17a2b8");
+    $(".modal-header").css( "color", "white" );
+    $(".modal-title").text("Alta tipo de caja");
+    $('#modalCRUD').modal('show');      
+});
+
+//Borrar
+$(document).on("click", ".btnBorrar", function(){
+    let fila = $(this);           
+    let id_tipo_caja = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+
+    swal({
+                    title: "Estas seguro?",
+                    text: "Una vez eliminado este registro, no volveras a verlo",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        accion = "eliminarTipoCaja";
+                        $.ajax({
+                                url: "models/administrar_tipos_caja.php",
+                                type: "POST",
+                                datatype:"json",    
+                                data:  {accion:accion, id_tipo_caja:id_tipo_caja},    
+                                success: function() {
+                                    tablaTiposCaja.row(fila.parents('tr')).remove().draw();                  
+                                }
+                            }); 
+                    } else {
+                        swal("El registro no se eliminó!");
+                    }
+                })
+ }); 
+
+  $(document).on("change", "#vincularTecnico", function(){
+      document.getElementById("selectTecnicos").classList.toggle("d-none");
+  })
+    </script>
+  </body>
+</html>

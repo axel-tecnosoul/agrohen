@@ -1,0 +1,9 @@
+1) Permitir iniciar recien cuando todos los materiales esten cargados al vehiculo?
+
+2) La geo se graba cuando le da a iniciar trabajo o con otro boton cuando llega al cliente?
+
+3) Primero finalizar la orden y luego cargar materiales utilizados?
+
+4) La OT cambia de estado cuando todos los tecnicos le dieron a iniciar trabajo o con el 1ro ya cambio el estado?
+
+5) Estados: Pendiente, En proceso, Finalizada?
