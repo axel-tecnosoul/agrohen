@@ -6,7 +6,7 @@
 </style>
 
 <div class="main-header-left d-none d-lg-block">
-  <div class="logo-wrapper"><a href="home_users.php"><img src="assets/images/unibrica.png" alt=""></a></div>
+  <div class="logo-wrapper"><a href="home_users.php"><img src="assets/images/logo horizontal.png" alt="" width="200px"></a></div>
 </div>
 
 <div class="sidebar custom-scrollbar">

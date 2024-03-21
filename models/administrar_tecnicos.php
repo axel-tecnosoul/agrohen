@@ -1,6 +1,6 @@
 <?php
 	//session_start();
-	require_once('../../conexion.php');
+	require_once('./conexion.php');
   if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_NONE) {
     // session isn't started
     session_start();

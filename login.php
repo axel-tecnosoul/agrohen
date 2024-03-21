@@ -12,8 +12,8 @@
     <!-- page-wrapper Start-->
     <div class="page-wrapper">
       <div class="auth-bg">
+        <div class="text-center"><img src="assets/images/favicon.png" alt="Agrohen - Gestion de Cargas" class="img-responsive" style="max-width:200px"></div>
         <div class="authentication-box">
-          <!--<div class="text-center"><img src="assets/images/favicon.png" alt=""></div>-->
           <div class="card mt-4">
             <div class="card-body">
               <div class="text-center">

@@ -3,7 +3,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
   // session isn't started
   session_start();
 }
-require_once('../../conexion.php');
+require_once('./conexion.php');
 class Categoria{
   private $id_categoria;
   

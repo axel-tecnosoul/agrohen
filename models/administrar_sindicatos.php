@@ -1,6 +1,6 @@
 <?php
 	session_start();
-	require_once('../../conexion.php');
+	require_once('./conexion.php');
 	class Sindicatos{
 		private $id_sindicato;
 		

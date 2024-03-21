@@ -1,5 +1,5 @@
 <?php
-require_once('../../conexion.php');
+require_once('./conexion.php');
 require_once('administrar_clientes.php');
 require_once('administrar_rubros.php');
 require_once('administrar_subrubros.php');

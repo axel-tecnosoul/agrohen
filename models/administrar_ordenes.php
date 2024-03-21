@@ -3,7 +3,7 @@
     // session isn't started
     session_start();
   }
-	require_once('../../conexion.php');
+	require_once('./conexion.php');
   require_once('administrar_stock.php');
 	class Ordenes{
 

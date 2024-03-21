@@ -1,6 +1,6 @@
 <?php
 	session_start();
-	require_once('../../conexion.php');
+	require_once('./conexion.php');
 	class Items{
 		private $id_item;
 		private $id_stock;

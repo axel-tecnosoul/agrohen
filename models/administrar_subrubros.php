@@ -4,7 +4,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
   // session isn't started
   session_start();
 }
-require_once('../../conexion.php');
+require_once('./conexion.php');
 require_once('administrar_rubros.php');
 class Subrubros{
 		private $id_subrubro;
