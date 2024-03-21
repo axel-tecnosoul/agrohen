@@ -493,7 +493,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
         fila = $(this);
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());
         swal({
           title: "Estas seguro?",
           text: "Una vez eliminado este usuario, no volveras a verlo",
@@ -529,7 +529,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           url: "models/administrar_usuarios.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},    
+          data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},
           success: function(data) {
             $('#modalCRUD').modal('hide');
             tablaUsuarios.ajax.reload(null, false);
