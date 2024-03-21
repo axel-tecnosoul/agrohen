@@ -19,7 +19,7 @@
       <li><a class="sidebar-header" href="cargas.php"><i data-feather="user"></i><span>Cargas</span><i class="fa fa-angle-right pull-right"></i></a></li>
       <li><a class="sidebar-header" href="cuenta_corriente.php"><i data-feather="user"></i><span>Cta Cte</span><i class="fa fa-angle-right pull-right"></i></a></li>
 
-      <li><a class="sidebar-header" href="#"><i data-feather="plus"></i><span>Maestro</span><i class="fa fa-angle-right pull-right"></i></a>
+      <li><a class="sidebar-header" href="#"><i data-feather="plus"></i><span>Maestros</span><i class="fa fa-angle-right pull-right"></i></a>
         <ul class="sidebar-submenu">
           <li><a href="productos.php"><i class="fa fa-circle"></i> Productos</a></li>
           <li><a href="depositos.php"><i class="fa fa-circle"></i> Depositos</a></li>

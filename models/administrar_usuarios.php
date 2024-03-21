@@ -34,7 +34,7 @@
 		}
 
 		public function traerUsuarios(){
-			$sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id";
+			$sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id WHERE u.id!=1";
 			$traerUsuarios = $this->conexion->consultaRetorno($sqlTraerClientes);
 			$usuarios = array(); //creamos un array
 			while ($row = $traerUsuarios->fetch_array()) {
