@@ -9,7 +9,7 @@
     //PRODUCCION
     /*private $host = "localhost";
 		private $user = "root";
-		private $pass = "";
+		private $pass = "TqCStQMYhPj2qgm";
 		private $db = "agrohen";*/
 		public $conectar;
 
