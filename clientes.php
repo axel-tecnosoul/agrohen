@@ -1,6 +1,6 @@
 <?php 
   session_start();
-  include_once('./../conexion.php');
+  include_once('models/conexion.php');
   date_default_timezone_set("America/Buenos_Aires");
   $hora = date('Hi');
   if (!isset($_SESSION['rowUsers']['id_usuario'])) {

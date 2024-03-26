@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include_once('./conexion.php');
+include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 $hora = date('Hi');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
@@ -56,15 +56,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
-                    <table class="table table-hover" id="tablaUsuarios">
+                    <table class="table table-hover" id="tablaChoferes">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
-                          <th>Usuario</th>
-                          <th>Perfil</th>
+                          <th>Nombre</th>
+                          <th>Telefono</th>
                           <th>Email</th>
-                          <th>Estado</th>
-                          <th>Fecha alta</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -100,7 +98,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
+            <span id="id_chofer" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAlmacen">
@@ -140,8 +138,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="perfil2" disabled="true">
+                    <label for="" class="col-form-label">usuario</label>
+                    <select class="form-control" id="usuario2" disabled="true">
                       <option value="">Seleccione</option>
                     </select>
                   </div>
@@ -171,7 +169,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
+            <span id="id_chofer" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAdmin">
@@ -179,30 +177,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Usuario:</label>
-                    <input type="text" class="form-control" id="usuario" required>
+                    <label for="" class="col-form-label">Nombre:</label>
+                    <input type="text" class="form-control" id="nombre" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="id_perfil" required>
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
+                    <label for="" class="col-form-label">Telefono:</label>
+                    <input type="text" class="form-control" id="telefono" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="email" class="form-control" id="email">
+                    <label for="" class="col-form-label">E-mail:</label>
+                    <input type="text" class="form-control" id="email" required>
                   </div>
                 </div>
               </div>
@@ -241,40 +229,39 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaUsuarios= $('#tablaUsuarios').DataTable({
+        tablaChoferes= $('#tablaChoferes').DataTable({
           "ajax": {
-            "url" : "./models/administrar_usuarios.php?accion=traerUsuarios",
+            "url" : "./models/administrar_choferes.php?accion=traerChoferes",
             "dataSrc": "",
           },
           "columns":[
-            {"data": "id_usuario"},
-            {"data": "usuario"},
-            {"data": "perfil"},
+            {"data": "id_chofer"},
+            {"data": "nombre"},
+            {"data": "telefono"},
             {"data": "email"},
-            {
-              render: function(data, type, full, meta) {
-                return ()=>{
-                  const estados = {
-                    0: "Inactivo",
-                    1: "Activo",
-                  }
-                  $options="";
-                  for(key in estados){
-                    if(full.activo == key){
-                      $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
-                    }else{
-                      $options+=`<option value="${key}">${estados[key]}</option>`;
-                    }
-                  }
-                  $selectInit = `<select class="estado">`;
-                  $selectEnd = "</select>";
-                  $selectComplete = $selectInit + $options+$selectEnd
+            // {
+            //   render: function(data, type, full, meta) {
+            //     const estados = {
+            //         0: "Inactivo",
+            //         1: "Activo",
+            //       }
+            //     return ()=>{
+            //       $options="";
+            //       for(key in estados){
+            //         if(full.activo == key){
+            //           $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
+            //         }else{
+            //           $options+=`<option value="${key}">${estados[key]}</option>`;
+            //         }
+            //       }
+            //       $selectInit = `<select class="estado">`;
+            //       $selectEnd = "</select>";
+            //       $selectComplete = $selectInit + $options+$selectEnd
 
-                  return $selectComplete;
-                };
-              }
-            },
-            {"data": "fecha_alta"},
+            //       return $selectComplete;
+            //     };
+            //   }
+            // },
             {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
           "language":  idiomaEsp
@@ -381,7 +368,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosIniciales.append('accion', 'traerDatosIniciales');
         $.ajax({
           data: datosIniciales,
-          url: "./models/administrar_usuarios.php",
+          url: "./models/administrar_choferes.php",
           method: "post",
           cache: false,
           contentType: false,
@@ -393,16 +380,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
-            /*Identifico el select de perfiles*/
-            $selecPerfil = document.getElementById("id_perfil");
-
-            /*Genero los options del select perfiles*/
-            respuestaJson.perfiles.forEach((perfil)=>{
+            /*Genero los options del select usuarios*/
+            respuestaJson.usuarios.forEach((usuario)=>{
               $option = document.createElement("option");
-              let optionText = document.createTextNode(perfil.perfil);
+              let optionText = document.createTextNode(usuario.usuario);
               $option.appendChild(optionText);
-              $option.setAttribute("value", perfil.id_perfil);
-              $selecPerfil.appendChild($option);
+              $option.setAttribute("value", usuario.id_usuario);
             })
 
           }
@@ -413,31 +396,31 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta usuarios del sistema");
+        $(".modal-title").text("Alta choferes del sistema");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("usuario").focus();
+          document.getElementById("chofer").focus();
         })
-        accion = "addUsuario";
+        accion = "addChofer";
       });
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
-        let usuario = $.trim($('#usuario').val());
-        let id_usuario = $.trim($('#id_usuario').html());
-        let id_perfil = $.trim($('#id_perfil').val());
+        let id_chofer = $.trim($('#id_chofer').html());
+        let nombre = $.trim($('#nombre').val());
+        let telefono = $.trim($('#telefono').val());
         let email = $.trim($('#email').val());
-        let clave = $.trim($('#clave').val());
+        let id_usuario = $.trim($('#id_usuario').val());
 
         $.ajax({
-          url: "models/administrar_usuarios.php",
+          url: "models/administrar_choferes.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, usuario: usuario, id_perfil:id_perfil, email:email, clave:clave},
+          data:  {accion: accion, id_chofer: id_chofer, id_usuario:id_usuario, nombre: nombre, telefono: telefono, email:email},
           success: function(data) {
             if(data=="1"){
-              tablaUsuarios.ajax.reload(null, false);
+              tablachoferes.ajax.reload(null, false);
             }else{
               swal({
                 icon: 'error',
@@ -456,17 +439,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar usuario");
+        $(".modal-title").text("Editar chofer");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
-        let id_usuario = fila.find('td:eq(0)').text();
+        let id_chofer = fila.find('td:eq(0)').text();
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerUsuarioUpdate');
-        datosUpdate.append('id_usuario', id_usuario);
+        datosUpdate.append('accion', 'traerChoferUpdate');
+        datosUpdate.append('id_chofer', id_chofer);
         $.ajax({
           data: datosUpdate,
-          url: './models/administrar_usuarios.php',
+          url: './models/administrar_choferes.php',
           method: "post",
           cache: false,
           contentType: false,
@@ -477,13 +460,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
+            $("#nombre").val(datosInput.nombre);
             $("#email").val(datosInput.email);
-            $("#clave").val(datosInput.password);
-            $("#id_perfil").val(datosInput.id_perfil);
+            $('#telefono').val(datosInput.telefono);
+            $('#id_chofer').html(datosInput.id_chofer)
             $('#usuario').val(datosInput.usuario)
             $('#id_usuario').html(datosInput.id_usuario)
 
-            accion = "updateUsuario";
+            accion = "updateChofer";
           }
         });
 
@@ -493,25 +477,25 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
         fila = $(this);
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        id_chofer = parseInt($(this).closest('tr').find('td:eq(0)').text());       
         swal({
           title: "Estas seguro?",
-          text: "Una vez eliminado este usuario, no volveras a verlo",
+          text: "Una vez eliminado este chofer, no volveras a verlo",
           icon: "warning",
           buttons: true,
           dangerMode: true,
         })
         .then((willDelete) => {
           if (willDelete) {
-            accion = "eliminarUsuario";
+            accion = "eliminarChofer";
             $.ajax({
-              url: "models/administrar_usuarios.php",
+              url: "models/administrar_choferes.php",
               type: "POST",
               datatype:"json",
-              data:  {accion:accion, id_usuario:id_usuario},
+              data:  {accion:accion, id_chofer:id_chofer},
               success: function() {
-                //tablaUsuarios.row(fila.parents('tr')).remove().draw();
-                tablaUsuarios.ajax.reload(null, false);
+                //tablachoferes.row(fila.parents('tr')).remove().draw();
+                tablachoferes.ajax.reload(null, false);
               }
             }); 
           } else {
@@ -523,16 +507,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("change", ".estado", function(){
         fila = $(this);
         nuevoEstado = $(this).val();
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());
+        id_chofer = parseInt($(this).closest('tr').find('td:eq(0)').text());
         accion = "cambiarEstado";
         $.ajax({
-          url: "models/administrar_usuarios.php",
+          url: "models/administrar_choferes.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},    
+          data:  {accion: accion, id_chofer: id_chofer, estado: nuevoEstado},    
           success: function(data) {
             $('#modalCRUD').modal('hide');
-            tablaUsuarios.ajax.reload(null, false);
+            tablachoferes.ajax.reload(null, false);
             swal({
               icon: 'success',
               title: 'Estado cambiado exitosamente'

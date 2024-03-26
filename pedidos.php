@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once('./../conexion.php');
+include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 $hoy=date("Y/m/d");
 $ahora=date("Y-m-d\TH:i");
