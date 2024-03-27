@@ -49,7 +49,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <div class="row">
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
-              <div class="card d-none">
+              <div class="card">
                 <div class="card-header">
                   <h5>Administrar Choferes</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
@@ -179,6 +179,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label for="" class="col-form-label">Nombre:</label>
                     <input type="text" class="form-control" id="nombre" required>
+                    <input type="hidden" id="id_usuario" value="<?=$_SESSION['rowUsers']['id_usuario']?>">
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -400,7 +401,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("chofer").focus();
+          document.getElementById("nombre").focus();
         })
         accion = "addChofer";
       });
@@ -411,7 +412,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let nombre = $.trim($('#nombre').val());
         let telefono = $.trim($('#telefono').val());
         let email = $.trim($('#email').val());
-        let id_usuario = $.trim($('#id_usuario').val());
+        let usuario = $.trim($('#id_usuario').val());
 
         $.ajax({
           url: "models/administrar_choferes.php",
