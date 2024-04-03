@@ -5,7 +5,7 @@ class choferes{
   private $id_chofer;
   private $nombre;
   private $telefono;
-  private $mail;
+  private $email;
   
   public function __construct(){
       $this->conexion = new Conexion();
@@ -33,9 +33,10 @@ class choferes{
   }
 
   public function traerChoferes(){
-    $sqlTraerClientes = "SELECT id AS id_chofer, nombre, telefono, email FROM choferes WHERE id != 1";
-    $traerChoferes = $this->conexion->consultaRetorno($sqlTraerClientes);
+    $sqlTraerChoferes = "SELECT id AS id_chofer, nombre, telefono, email FROM choferes WHERE 1";
+    $traerChoferes = $this->conexion->consultaRetorno($sqlTraerChoferes);
     $choferes = array(); //creamos un array
+    
     while ($row = $traerChoferes->fetch_array()) {
       $choferes[] = array(
         'id_chofer'=>$row['id_chofer'],
@@ -56,7 +57,7 @@ class choferes{
     while ($row = $traerchofer->fetch_array()) {
       $choferes = array(
         'id_chofer'=> $row['id_chofer'],
-        'chofer'=> $row['chofer'],
+        'nombre'=> $row['nombre'],
         'telefono'=> $row['telefono'],
         'email'=>$row['email']
       );
@@ -104,12 +105,12 @@ class choferes{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrarChofer($mail, $telefono, $nombre){
-    $this->email = $mail;
-    $this->telefono = $telefono;
+  public function registrarChofer( $nombre, $telefono,$email ){
     $this->nombre = $nombre;
-
-    $queryInsertUser = "INSERT INTO choferes (chofer, email, telefono) VALUES('$chofer', '$this->nombre','$this->telefono','$this->email', NOW())";
+    $this->telefono = $telefono;
+    $this->email = $email;
+    $usuario = $_SESSION['rowUsers']['id_usuario'];
+    $queryInsertUser = "INSERT INTO choferes (id_usuario, nombre, telefono, email, fecha_hora_alta) VALUES('$usuario', '$this->nombre','$this->telefono','$this->email', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -129,7 +130,7 @@ if (isset($_POST['accion'])) {
   $choferes = new choferes();
   switch ($_POST['accion']) {
     case 'traerAlmacenes':
-      $almacenes->traerTodosClientes();
+      $almacenes->traerTodosChoferes();
       break;
     case 'traerChoferUpdate':
         $id_chofer = $_POST['id_chofer'];
@@ -146,23 +147,22 @@ if (isset($_POST['accion'])) {
         $id_chofer = $_POST['id_chofer'];
         $choferes->cambiarEstado($id_chofer);
       break;
-    case 'eliminarchofer':
+    case 'eliminarChofer':
         $id_chofer = $_POST['id_chofer'];
-        $choferes->deletechofer($id_chofer);
+        $choferes->deleteChofer($id_chofer);
       break;
     case 'traerDatosIniciales':
       $choferes->traerDatosIniciales();
       break;
     case 'verificarCuenta':
-      $mail = $_POST['email'];
-      $choferes->verificarCuentaExitente($mail);
+      $email = $_POST['email'];
+      $choferes->verificarCuentaExitente($email);
       break;
-    case 'addchofer':
-      $mail = $_POST['email'];
+    case 'addChofer':
       $nombre = $_POST['nombre'];
       $telefono = $_POST['telefono'];
-      $id_perfil = $_POST['id_perfil'];
-      echo $choferes->registrarchofer($mail, $nombre, $telefono);
+      $email = $_POST['email'];
+      echo $choferes->registrarChofer( $nombre,  $telefono ,$email);
       break;
   }
 }else{

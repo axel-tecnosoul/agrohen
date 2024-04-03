@@ -49,7 +49,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <div class="row">
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
-              <div class="card d-none">
+              <div class="card">
                 <div class="card-header">
                   <h5>Administrar Choferes</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
@@ -229,7 +229,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaChoferes= $('#tablaChoferes').DataTable({
+        tablaChoferes = $('#tablaChoferes').DataTable({
           "ajax": {
             "url" : "./models/administrar_choferes.php?accion=traerChoferes",
             "dataSrc": "",
@@ -381,12 +381,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             respuestaJson = JSON.parse(respuesta);
 
             /*Genero los options del select usuarios*/
-            respuestaJson.usuarios.forEach((usuario)=>{
-              $option = document.createElement("option");
-              let optionText = document.createTextNode(usuario.usuario);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", usuario.id_usuario);
-            })
+            // respuestaJson.usuarios.forEach((usuario)=>{
+            //   $option = document.createElement("option");
+            //   let optionText = document.createTextNode(usuario.usuario);
+            //   $option.appendChild(optionText);
+            //   $option.setAttribute("value", usuario.id_usuario);
+            // })
 
           }
         });
@@ -400,7 +400,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("chofer").focus();
+          document.getElementById("nombre").focus();
         })
         accion = "addChofer";
       });
@@ -411,16 +411,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let nombre = $.trim($('#nombre').val());
         let telefono = $.trim($('#telefono').val());
         let email = $.trim($('#email').val());
-        let id_usuario = $.trim($('#id_usuario').val());
+        //let usuario = $.trim($('#id_usuario').val());
 
         $.ajax({
           url: "models/administrar_choferes.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_chofer: id_chofer, id_usuario:id_usuario, nombre: nombre, telefono: telefono, email:email},
+          data:  {accion: accion, id_chofer: id_chofer, nombre: nombre, telefono: telefono, email:email},
           success: function(data) {
             if(data=="1"){
-              tablachoferes.ajax.reload(null, false);
+              tablaChoferes.ajax.reload(null, false);
             }else{
               swal({
                 icon: 'error',
@@ -460,12 +460,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
+            $('#id_chofer').html(datosInput.id_chofer);
             $("#nombre").val(datosInput.nombre);
-            $("#email").val(datosInput.email);
             $('#telefono').val(datosInput.telefono);
-            $('#id_chofer').html(datosInput.id_chofer)
-            $('#usuario').val(datosInput.usuario)
-            $('#id_usuario').html(datosInput.id_usuario)
+            $("#email").val(datosInput.email);
+            //$('#usuario').val(datosInput.usuario)
+            //$('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateChofer";
           }
@@ -494,8 +494,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               datatype:"json",
               data:  {accion:accion, id_chofer:id_chofer},
               success: function() {
-                //tablachoferes.row(fila.parents('tr')).remove().draw();
-                tablachoferes.ajax.reload(null, false);
+                //tablaChoferes.row(fila.parents('tr')).remove().draw();
+                tablaChoferes.ajax.reload(null, false);
               }
             }); 
           } else {
@@ -516,7 +516,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           data:  {accion: accion, id_chofer: id_chofer, estado: nuevoEstado},    
           success: function(data) {
             $('#modalCRUD').modal('hide');
-            tablachoferes.ajax.reload(null, false);
+            tablaChoferes.ajax.reload(null, false);
             swal({
               icon: 'success',
               title: 'Estado cambiado exitosamente'
