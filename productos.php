@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include_once('./conexion.php');
+include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 $hora = date('Hi');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
@@ -34,7 +34,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>Productos</h3>
+                  <h3>Producto</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
                     <li class="breadcrumb-item active">Productos</li>
@@ -49,22 +49,22 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <div class="row">
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
-              <div class="card d-none">
+              <div class="card">
                 <div class="card-header">
                   <h5>Administrar Productos</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
-                    <table class="table table-hover" id="tablaUsuarios">
+                    <table class="table table-hover" id="tablaproducto">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
-                          <th>Usuario</th>
-                          <th>Perfil</th>
-                          <th>Email</th>
-                          <th>Estado</th>
-                          <th>Fecha alta</th>
+                          <th>Nombre</th>
+                          <th>Presentacion</th>
+                          <th>Unidad de Medida</th>
+                          <th>Ultimo Precio</th>
+                          <!-- <th>Estado</th> -->
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -100,7 +100,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
+            <span id="id_producto" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAlmacen">
@@ -140,8 +140,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="perfil2" disabled="true">
+                    <label for="" class="col-form-label">usuario</label>
+                    <select class="form-control" id="usuario2" disabled="true">
                       <option value="">Seleccione</option>
                     </select>
                   </div>
@@ -171,7 +171,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
+            <span id="id_producto" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAdmin">
@@ -179,33 +179,28 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Usuario:</label>
-                    <input type="text" class="form-control" id="usuario" required>
+                    <label for="" class="col-form-label">Nombre:</label>
+                    <input type="text" class="form-control" id="nombre" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="id_perfil" required>
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
+                    <label for="" class="col-form-label">Presentacion:</label>
+                    <input type="text" class="form-control" id="presentacion" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="email" class="form-control" id="email">
+                    <label for="" class="col-form-label">Unidad de Medida:</label>
+                    <input type="text" class="form-control" id="unidad_medida" required>
                   </div>
                 </div>
-              </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Ultimo Precio:</label>
+                    <input type="text" class="form-control" id="ultimo_precio" required>
+                  </div>
+                </div>  
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
@@ -241,40 +236,40 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaUsuarios= $('#tablaUsuarios').DataTable({
+        tablaproducto = $('#tablaproducto').DataTable({
           "ajax": {
-            "url" : "./models/administrar_usuarios.php?accion=traerUsuarios",
+            "url" : "./models/administrar_producto.php?accion=traerProducto",
             "dataSrc": "",
           },
           "columns":[
-            {"data": "id_usuario"},
-            {"data": "usuario"},
-            {"data": "perfil"},
-            {"data": "email"},
-            {
-              render: function(data, type, full, meta) {
-                return ()=>{
-                  const estados = {
-                    0: "Inactivo",
-                    1: "Activo",
-                  }
-                  $options="";
-                  for(key in estados){
-                    if(full.activo == key){
-                      $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
-                    }else{
-                      $options+=`<option value="${key}">${estados[key]}</option>`;
-                    }
-                  }
-                  $selectInit = `<select class="estado">`;
-                  $selectEnd = "</select>";
-                  $selectComplete = $selectInit + $options+$selectEnd
+            {"data": "id_producto"},
+            {"data": "nombre"},
+            {"data": "presentacion"},
+            {"data": "unidad_medida"},
+            {"data": "ultimo_precio"},
+            // {
+            //   render: function(data, type, full, meta) {
+            //     const estados = {
+            //         0: "Inactivo",
+            //         1: "Activo",
+            //       }
+            //     return ()=>{
+            //       $options="";
+            //       for(key in estados){
+            //         if(full.activo == key){
+            //           $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
+            //         }else{
+            //           $options+=`<option value="${key}">${estados[key]}</option>`;
+            //           }
+            //       }
+            //       $selectInit = `<select class="estado">`;
+            //       $selectEnd = "</select>";
+            //       $selectComplete = $selectInit + $options+$selectEnd
 
-                  return $selectComplete;
-                };
-              }
-            },
-            {"data": "fecha_alta"},
+            //       return $selectComplete;
+            //     };
+            //   }
+            // },
             {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
           "language":  idiomaEsp
@@ -381,7 +376,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosIniciales.append('accion', 'traerDatosIniciales');
         $.ajax({
           data: datosIniciales,
-          url: "./models/administrar_usuarios.php",
+          url: "./models/administrar_producto.php",
           method: "post",
           cache: false,
           contentType: false,
@@ -393,17 +388,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
-            /*Identifico el select de perfiles*/
-            $selecPerfil = document.getElementById("id_perfil");
-
-            /*Genero los options del select perfiles*/
-            respuestaJson.perfiles.forEach((perfil)=>{
-              $option = document.createElement("option");
-              let optionText = document.createTextNode(perfil.perfil);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", perfil.id_perfil);
-              $selecPerfil.appendChild($option);
-            })
+            /*Genero los options del select usuarios*/
+            // respuestaJson.usuarios.forEach((usuario)=>{
+            //   $option = document.createElement("option");
+            //   let optionText = document.createTextNode(usuario.usuario);
+            //   $option.appendChild(optionText);
+            //   $option.setAttribute("value", usuario.id_usuario);
+            // })
 
           }
         });
@@ -413,31 +404,31 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta usuarios del sistema");
+        $(".modal-title").text("Alta producto del sistema");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("usuario").focus();
+          document.getElementById("nombre").focus();
         })
-        accion = "addUsuario";
+        accion = "addProducto";
       });
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
-        let usuario = $.trim($('#usuario').val());
-        let id_usuario = $.trim($('#id_usuario').html());
-        let id_perfil = $.trim($('#id_perfil').val());
-        let email = $.trim($('#email').val());
-        let clave = $.trim($('#clave').val());
+        let id_producto = $.trim($('#id_producto').html());
+        let nombre = $.trim($('#nombre').val());
+        let presentacion = $.trim($('#presentacion').val());
+        let unidad_medida = $.trim($('#unidad_medida').val());
+        let ultimo_precio = $.trim($('#ultimo_precio').val());
 
         $.ajax({
-          url: "models/administrar_usuarios.php",
+          url: "models/administrar_producto.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, usuario: usuario, id_perfil:id_perfil, email:email, clave:clave},
+          data:  {accion: accion, id_producto: id_producto, nombre: nombre, presentacion: presentacion, unidad_medida: unidad_medida, ultimo_precio: ultimo_precio},
           success: function(data) {
             if(data=="1"){
-              tablaUsuarios.ajax.reload(null, false);
+              tablaproducto.ajax.reload(null, false);
             }else{
               swal({
                 icon: 'error',
@@ -456,17 +447,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar usuario");
+        $(".modal-title").text("Editar producto");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
-        let id_usuario = fila.find('td:eq(0)').text();
+        let id_producto = fila.find('td:eq(0)').text();
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerUsuarioUpdate');
-        datosUpdate.append('id_usuario', id_usuario);
+        datosUpdate.append('accion', 'traerProductoUpdate');
+        datosUpdate.append('id_producto', id_producto);
         $.ajax({
           data: datosUpdate,
-          url: './models/administrar_usuarios.php',
+          url: './models/administrar_producto.php',
           method: "post",
           cache: false,
           contentType: false,
@@ -477,13 +468,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
-            $("#email").val(datosInput.email);
-            $("#clave").val(datosInput.password);
-            $("#id_perfil").val(datosInput.id_perfil);
-            $('#usuario').val(datosInput.usuario)
-            $('#id_usuario').html(datosInput.id_usuario)
+            $('#id_producto').html(datosInput.id_producto);
+            $("#nombre").val(datosInput.nombre);
+            $("#presentacion").val(datosInput.presentacion);
+            $("#unidad_medida").val(datosInput.unidad_medida);
+            $("#ultimo_precio").val(datosInput.ultimo_precio);
+            //$('#usuario').val(datosInput.usuario)
+            //$('#id_usuario').html(datosInput.id_usuario)
 
-            accion = "updateUsuario";
+            accion = "updateProducto";
           }
         });
 
@@ -493,25 +486,25 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
         fila = $(this);
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        id_producto = parseInt($(this).closest('tr').find('td:eq(0)').text());       
         swal({
           title: "Estas seguro?",
-          text: "Una vez eliminado este usuario, no volveras a verlo",
+          text: "Una vez eliminado este producto, no volveras a verlo",
           icon: "warning",
           buttons: true,
           dangerMode: true,
         })
         .then((willDelete) => {
           if (willDelete) {
-            accion = "eliminarUsuario";
+            accion = "eliminarproducto";
             $.ajax({
-              url: "models/administrar_usuarios.php",
+              url: "models/administrar_producto.php",
               type: "POST",
               datatype:"json",
-              data:  {accion:accion, id_usuario:id_usuario},
+              data:  {accion:accion, id_producto:id_producto},
               success: function() {
-                //tablaUsuarios.row(fila.parents('tr')).remove().draw();
-                tablaUsuarios.ajax.reload(null, false);
+                //tablaproducto.row(fila.parents('tr')).remove().draw();
+                tablaproducto.ajax.reload(null, false);
               }
             }); 
           } else {
@@ -520,26 +513,26 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         })
       });
 
-      $(document).on("change", ".estado", function(){
-        fila = $(this);
-        nuevoEstado = $(this).val();
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());
-        accion = "cambiarEstado";
-        $.ajax({
-          url: "models/administrar_usuarios.php",
-          type: "POST",
-          datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},    
-          success: function(data) {
-            $('#modalCRUD').modal('hide');
-            tablaUsuarios.ajax.reload(null, false);
-            swal({
-              icon: 'success',
-              title: 'Estado cambiado exitosamente'
-            });
-          }
-        })
-      })
+      // $(document).on("change", ".estado", function(){
+      //   fila = $(this);
+      //   nuevoEstado = $(this).val();
+      //   id_producto = parseInt($(this).closest('tr').find('td:eq(0)').text());
+      //   accion = "cambiarEstado";
+      //   $.ajax({
+      //     url: "models/administrar_producto.php",
+      //     type: "POST",
+      //     datatype:"json",
+      //     data:  {accion: accion, id_producto: id_producto, estado: nuevoEstado},    
+      //     success: function(data) {
+      //       $('#modalCRUD').modal('hide');
+      //       tablaproducto.ajax.reload(null, false);
+      //       swal({
+      //         icon: 'success',
+      //         title: 'Estado cambiado exitosamente'
+      //       });
+      //     }
+      //   })
+      // })
     </script>
   </body>
 </html>

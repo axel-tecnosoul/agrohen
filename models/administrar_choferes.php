@@ -57,7 +57,7 @@ class choferes{
     while ($row = $traerchofer->fetch_array()) {
       $choferes = array(
         'id_chofer'=> $row['id_chofer'],
-        'chofer'=> $row['chofer'],
+        'nombre'=> $row['nombre'],
         'telefono'=> $row['telefono'],
         'email'=>$row['email']
       );
@@ -105,13 +105,12 @@ class choferes{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrarChofer($usuario, $email, $telefono, $nombre){
-    $this->usuario = $usuario;
-    $this->email = $email;
-    $this->telefono = $telefono;
+  public function registrarChofer( $nombre, $telefono,$email ){
     $this->nombre = $nombre;
-
-    $queryInsertUser = "INSERT INTO choferes (id_usuario, chofer, telefono, email, fecha_hora_alta) VALUES('$usuario','$chofer', '$this->nombre','$this->telefono','$this->email', NOW())";
+    $this->telefono = $telefono;
+    $this->email = $email;
+    $usuario = $_SESSION['rowUsers']['id_usuario'];
+    $queryInsertUser = "INSERT INTO choferes (id_usuario, nombre, telefono, email, fecha_hora_alta) VALUES('$usuario', '$this->nombre','$this->telefono','$this->email', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -148,7 +147,7 @@ if (isset($_POST['accion'])) {
         $id_chofer = $_POST['id_chofer'];
         $choferes->cambiarEstado($id_chofer);
       break;
-    case 'eliminarchofer':
+    case 'eliminarChofer':
         $id_chofer = $_POST['id_chofer'];
         $choferes->deleteChofer($id_chofer);
       break;
@@ -160,11 +159,10 @@ if (isset($_POST['accion'])) {
       $choferes->verificarCuentaExitente($email);
       break;
     case 'addChofer':
-      $email = $_POST['email'];
       $nombre = $_POST['nombre'];
       $telefono = $_POST['telefono'];
-      $usuario = $_POST['usuario'];
-      echo $choferes->registrarChofer($usuario, $email, $nombre, $telefono);
+      $email = $_POST['email'];
+      echo $choferes->registrarChofer( $nombre,  $telefono ,$email);
       break;
   }
 }else{
