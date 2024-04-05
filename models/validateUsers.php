@@ -31,6 +31,8 @@ class validateUsers{
         if ($userRows['activo'] > 0) {
           $_SESSION['rowUsers'] = $userRows;
           echo "1";
+          $queryGetUser = "UPDATE usuarios SET fecha_hora_ultimo_login = NOW() WHERE id = ".$userRows["id_usuario"];
+          $getUser = $this->conexion->consultaRetorno($queryGetUser);
         }else{
           echo "El usuario no está activo";
         }
