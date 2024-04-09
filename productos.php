@@ -60,6 +60,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
+                          <th>Familia</th>
                           <th>Nombre</th>
                           <th>Presentacion</th>
                           <th>Unidad de Medida</th>
@@ -179,6 +180,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
+                    <label for="" class="col-form-label">Familia:</label>
+                    <select class="form-control js-example-basic-single" id="id_familia" required></select>
+                  </div>
+                </div>  
+                <div class="col-lg-6">
+                  <div class="form-group">
                     <label for="" class="col-form-label">Nombre:</label>
                     <input type="text" class="form-control" id="nombre" required>
                   </div>
@@ -192,15 +199,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Unidad de Medida:</label>
-                    <input type="text" class="form-control" id="unidad_medida" required>
+                    <select class="form-control js-example-basic-single" id="id_unidad_medida" required></select>
                   </div>
                 </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Ultimo Precio:</label>
-                    <input type="text" class="form-control" id="ultimo_precio" required>
-                  </div>
-                </div>  
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
@@ -243,6 +244,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           },
           "columns":[
             {"data": "id_producto"},
+            {"data": "familia"},
             {"data": "nombre"},
             {"data": "presentacion"},
             {"data": "unidad_medida"},
@@ -388,13 +390,27 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
+            /*Identifico el select de perfiles*/
+            $selecFamilia = document.getElementById("id_familia");
             /*Genero los options del select usuarios*/
-            // respuestaJson.usuarios.forEach((usuario)=>{
-            //   $option = document.createElement("option");
-            //   let optionText = document.createTextNode(usuario.usuario);
-            //   $option.appendChild(optionText);
-            //   $option.setAttribute("value", usuario.id_usuario);
-            // })
+            respuestaJson.familias.forEach((familia)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(familia.familia);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", familia.id_familia);
+              $selecFamilia.appendChild($option);
+            })
+
+            /*Identifico el select de perfiles*/
+            $selecUnidadMedida = document.getElementById("id_unidad_medida");
+            /*Genero los options del select usuarios*/
+            respuestaJson.unidades_medidas.forEach((unidad_medida)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(unidad_medida.unidad_medida);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", unidad_medida.id_unidad_medida);
+              $selecUnidadMedida.appendChild($option);
+            })
 
           }
         });
@@ -404,7 +420,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta producto del sistema");
+        $(".modal-title").text("Alta producto");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -416,16 +432,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
         let id_producto = $.trim($('#id_producto').html());
+        let id_familia = $.trim($('#id_familia').val());
         let nombre = $.trim($('#nombre').val());
         let presentacion = $.trim($('#presentacion').val());
-        let unidad_medida = $.trim($('#unidad_medida').val());
-        let ultimo_precio = $.trim($('#ultimo_precio').val());
+        let id_unidad_medida = $.trim($('#id_unidad_medida').val());
 
         $.ajax({
           url: "models/administrar_producto.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_producto: id_producto, nombre: nombre, presentacion: presentacion, unidad_medida: unidad_medida, ultimo_precio: ultimo_precio},
+          data:  {accion: accion, id_producto: id_producto, nombre: nombre, presentacion: presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia},
           success: function(data) {
             if(data=="1"){
               tablaproducto.ajax.reload(null, false);
@@ -471,8 +487,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $('#id_producto').html(datosInput.id_producto);
             $("#nombre").val(datosInput.nombre);
             $("#presentacion").val(datosInput.presentacion);
-            $("#unidad_medida").val(datosInput.unidad_medida);
-            $("#ultimo_precio").val(datosInput.ultimo_precio);
+            $("#id_unidad_medida").val(datosInput.id_unidad_medida);
+            $("#id_familia").val(datosInput.id_familia);
             //$('#usuario').val(datosInput.usuario)
             //$('#id_usuario').html(datosInput.id_usuario)
 

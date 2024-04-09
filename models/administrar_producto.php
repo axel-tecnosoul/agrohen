@@ -10,28 +10,47 @@ class producto{
       date_default_timezone_set("America/Buenos_Aires");
   }
 
-   public function traerDatosIniciales(){
-
-   /*Usuarios*/
-    $queryUsuarios = "SELECT id as id_usuario, usuario FROM usuarios";
-    $getUsuarios = $this->conexion->consultaRetorno($queryUsuarios);
+  public function traerDatosIniciales(){
 
     $datosIniciales = array();
-    $arrayUsuarios = array();
-
-    /*CARGO ARRAY usuarios*/
-    while ($rowUsuarios = $getUsuarios->fetch_array()) {
-      $id_usuario = $rowUsuarios['id_usuario'];
-      $usuario = $rowUsuarios['usuario'];
-      $arrayUsuarios[]= array('id_usuario' => $id_usuario, 'usuario' =>$usuario);
+    
+    /*Familia*/
+    $queryFamilias = "SELECT id as id_familia, familia FROM familias_productos";
+    $getFamilias = $this->conexion->consultaRetorno($queryFamilias);
+    $arrayFamilias[] = [
+      'id_familia' => 0,
+      'familia' =>"Seleccione..."
+    ];
+    /*CARGO ARRAY Familias*/
+    while ($row = $getFamilias->fetch_array()) {
+      $arrayFamilias[]=[
+        'id_familia' => $row["id_familia"],
+        'familia' =>$row["familia"]
+      ];
     }
 
-    $datosIniciales["usuarios"] = $arrayUsuarios;
+    /*Unidades de medida*/
+    $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida";
+    $getUnidadMedida = $this->conexion->consultaRetorno($queryUnidadMedida);
+    $arrayUnidadMedida[] = [
+      'id_unidad_medida' => 0,
+      'unidad_medida' =>"Seleccione..."
+    ];
+    /*CARGO ARRAY UnidadMedida*/
+    while ($row = $getUnidadMedida->fetch_array()) {
+      $arrayUnidadMedida[]=[
+        'id_unidad_medida' => $row["id_unidad_medida"],
+        'unidad_medida' =>$row["unidad_medida"]
+      ];
+    }
+
+    $datosIniciales["familias"] = $arrayFamilias;
+    $datosIniciales["unidades_medidas"] = $arrayUnidadMedida;
     echo json_encode($datosIniciales);
   }
 
   public function traerProducto(){
-    $sqltraerProducto = "SELECT id AS id_producto, nombre, presentacion, unidad_medida, ultimo_precio FROM producto WHERE 1";
+    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, p.presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM producto p LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqltraerProducto);
     $producto = array(); //creamos un array
     
@@ -39,6 +58,7 @@ class producto{
       $producto[] = array(
         'id_producto'=>$row['id_producto'],
         'nombre'=>$row['nombre'],
+        'familia'=>$row['familia'],
         'presentacion'=>$row['presentacion'],
         'unidad_medida'=>$row['unidad_medida'],
         'ultimo_precio'=>$row['ultimo_precio'],
@@ -49,7 +69,7 @@ class producto{
 
   public function traerProductoUpdate($id_producto){
     $this->id_producto = $id_producto;
-    $sqlTraerproducto = "SELECT id as id_producto, nombre, presentacion, unidad_medida, ultimo_precio FROM producto WHERE id = $this->id_producto";
+    $sqlTraerproducto = "SELECT id as id_producto, nombre, presentacion, id_unidad_medida, id_familia FROM producto WHERE id = $this->id_producto";
     $traerproducto = $this->conexion->consultaRetorno($sqlTraerproducto);
 
     $producto = array(); //creamos un array
@@ -58,18 +78,18 @@ class producto{
         'id_producto'=> $row['id_producto'],
         'nombre'=> $row['nombre'],
         'presentacion'=> $row['presentacion'],
-        'unidad_medida'=> $row['unidad_medida'],
-        'ultimo_precio'=> $row['ultimo_precio']
+        'id_unidad_medida'=> $row['id_unidad_medida'],
+        'id_familia'=> $row['id_familia']
       );
     }
     return json_encode($producto);
   }
 
-  public function productoUpdate($id_producto, $nombre, $presentacion, $unidad_medida, $ultimo_precio){
+  public function productoUpdate($id_producto, $nombre, $presentacion, $id_unidad_medida, $id_familia){
 
     $this->id_producto = $id_producto;
 
-    $sqlupdateProducto = "UPDATE producto SET nombre ='$nombre', presentacion ='$presentacion', unidad_medida ='$unidad_medida', ultimo_precio ='$ultimo_precio' WHERE id=$this->id_producto";
+    $sqlupdateProducto = "UPDATE producto SET nombre ='$nombre', presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
     $updateProducto = $this->conexion->consultaSimple($sqlupdateProducto);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -104,13 +124,14 @@ class producto{
   //   $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   // }
 
-  public function registrarProducto( $nombre, $presentacion, $unidad_medida, $ultimo_precio ){
+  public function registrarProducto( $nombre, $presentacion, $id_unidad_medida, $id_familia ){
     $this->nombre = $nombre;
     $this->presentacion = $presentacion;
-    $this->unidad_medida = $unidad_medida;
-    $this->ultimo_precio = $ultimo_precio;
+    $this->id_unidad_medida = $id_unidad_medida;
+    $this->id_familia = $id_familia;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, presentacion, unidad_medida, ultimo_precio, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->presentacion', '$this->unidad_medida', '$this->ultimo_precio', NOW())";
+
+    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -140,9 +161,9 @@ if (isset($_POST['accion'])) {
         $id_producto = $_POST['id_producto'];
         $nombre = $_POST['nombre'];
         $presentacion = $_POST['presentacion'];
-        $unidad_medida = $_POST['unidad_medida'];
-        $ultimo_precio = $_POST['ultimo_precio'];
-        echo $producto->productoUpdate($id_producto, $nombre, $presentacion, $unidad_medida, $ultimo_precio);
+        $id_unidad_medida = $_POST['id_unidad_medida'];
+        $id_familia = $_POST['id_familia'];
+        echo $producto->productoUpdate($id_producto, $nombre, $presentacion, $id_unidad_medida, $id_familia);
       break;
     // case 'cambiarEstado':
     //     $id_producto = $_POST['id_producto'];
@@ -164,9 +185,9 @@ if (isset($_POST['accion'])) {
     case 'addProducto':
       $nombre = $_POST['nombre'];
       $presentacion = $_POST['presentacion'];
-      $unidad_medida = $_POST['unidad_medida'];
-      $ultimo_precio = $_POST['ultimo_precio'];
-      echo $producto->registrarProducto( $nombre, $presentacion, $unidad_medida, $ultimo_precio);
+      $id_unidad_medida = $_POST['id_unidad_medida'];
+      $id_familia = $_POST['id_familia'];
+      echo $producto->registrarProducto( $nombre, $presentacion, $id_unidad_medida, $id_familia);
       break;
   }
 }else{
