@@ -121,9 +121,6 @@ class origenes{
 if (isset($_POST['accion'])) {
   $origenes = new origenes();
   switch ($_POST['accion']) {
-    case 'traerAlmacenes':
-      $almacenes->traerTodosorigenes();
-      break;
     case 'traerOrigenUpdate':
         $id_origen = $_POST['id_origen'];
         echo $origenes->traerOrigenUpdate($id_origen);

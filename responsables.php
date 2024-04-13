@@ -34,10 +34,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>Proveedores</h3>
+                  <h3>responsables</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
-                    <li class="breadcrumb-item active">Proveedoress</li>
+                    <li class="breadcrumb-item active">Responsables de deposito</li>
                   </ol>
                 </div>
               </div>
@@ -51,19 +51,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="col-sm-12">
               <div class="card">
                 <div class="card-header">
-                  <h5>Administrar Proveedor</h5>
+                  <h5>Administrar Responsables de deposito</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
-                    <table class="table table-hover" id="tablaproveedor">
+                    <table class="table table-hover" id="tablaResponsables">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
                           <th>Nombre</th>
-                          <th>CUIT</th>
-                          <th>E-Mail</th>
-                          <th>Telefono</th>
                           <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
@@ -94,13 +91,84 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       </footer>
     </div>
 
+    <!--Modal para CRUD-->
+    <!-- <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"></h5>
+            <span id="id_responsable" class="d-none"></span>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form id="formAlmacen">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Email:</label>
+                    <input type="text" class="form-control" id="email" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Clave:</label>
+                    <input type="text" class="form-control" id="clave" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Proveedor</label>
+                    <select class="form-control" id="proveedor">
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Cliente</label>
+                    <select class="form-control" id="cliente">
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">usuario</label>
+                    <select class="form-control" id="usuario2" disabled="true">
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Empresa</label>
+                    <select class="form-control" id="empresaU" >
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div> -->
+
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_proveedor" class="d-none"></span>
+            <span id="id_responsable" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAdmin">
@@ -110,24 +178,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label for="" class="col-form-label">Nombre:</label>
                     <input type="text" class="form-control" id="nombre" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">CUIT:</label>
-                    <input type="text" class="form-control" id="cuit" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">E-Mail:</label>
-                    <input type="email" class="form-control" id="email" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Telefono:</label>
-                    <input type="number" class="form-control" id="telefono" required>
                   </div>
                 </div>
             </div>
@@ -165,17 +215,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaproveedor = $('#tablaproveedor').DataTable({
-          ajax: {
-            url : "./models/administrar_proveedores.php?accion=traerProveedores",
-            dataSrc: "",
+        tablaResponsables = $('#tablaResponsables').DataTable({
+          "ajax": {
+            "url" : "./models/administrar_responsables.php?accion=traerresponsables",
+            "dataSrc": "",
           },
-          columns:[
-            {data: "id_proveedor"},
-            {data: "nombre"},
-            {data: "cuit"},
-            {data: "email"},
-            {data: "telefono"},
+          "columns":[
+            {"data": "id_responsable"},
+            {"data": "nombre"},
             {
               render: function(data, type, full, meta) {
                 const estados = {
@@ -199,9 +246,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 };
               }
             },
-            {defaultContent: "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
+            {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
-          language: idiomaEsp
+          "language":  idiomaEsp
         });
         
         cargarDatosComponentes();
@@ -305,7 +352,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosIniciales.append('accion', 'traerDatosIniciales');
         $.ajax({
           data: datosIniciales,
-          url: "./models/administrar_proveedores.php",
+          url: "./models/administrar_responsables.php",
           method: "post",
           cache: false,
           contentType: false,
@@ -317,6 +364,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
+            /*Genero los options del select usuarios*/
+            // respuestaJson.usuarios.forEach((usuario)=>{
+            //   $option = document.createElement("option");
+            //   let optionText = document.createTextNode(usuario.usuario);
+            //   $option.appendChild(optionText);
+            //   $option.setAttribute("value", usuario.id_usuario);
+            // })
+
           }
         });
       }
@@ -325,38 +380,28 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta proveedor");
+        $(".modal-title").text("Alta responsables");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
           document.getElementById("nombre").focus();
         })
-        accion = "addProveedor";
+        accion = "addResponsable";
       });
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
-        let id_proveedor = $.trim($('#id_proveedor').html());
+        let id_responsable = $.trim($('#id_responsable').html());
         let nombre = $.trim($('#nombre').val());
-        let cuit = $.trim($('#cuit').val());
-        let email = $.trim($('#email').val());
-        let telefono = $.trim($('#telefono').val());
 
         $.ajax({
-          url: "models/administrar_proveedores.php",
+          url: "models/administrar_responsables.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_proveedor: id_proveedor, nombre: nombre, email: email, telefono: telefono, cuit: cuit},
+          data:  {accion: accion, id_responsable: id_responsable, nombre: nombre},
           success: function(data) {
             if(data=="1"){
-              tablaproveedor.ajax.reload(null, false);
-              
-              swal({
-                icon: 'success',
-                title: 'Accion realizada correctamente'
-              });
-
-              $('#modalCRUDadmin').modal('hide');
+              tablaResponsables.ajax.reload(null, false);
             }else{
               swal({
                 icon: 'error',
@@ -365,23 +410,27 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             }
           }
         });
+        $('#modalCRUDadmin').modal('hide');
+        swal({
+          icon: 'success',
+          title: 'Accion realizada correctamente'
+        });
       });
 
       $(document).on("click", ".btnEditar", function(){
-        $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar proveedor");
+        $(".modal-title").text("Editar responsables");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
-        let id_proveedor = fila.find('td:eq(0)').text();
+        let id_responsable = fila.find('td:eq(0)').text();
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerProveedorUpdate');
-        datosUpdate.append('id_proveedor', id_proveedor);
+        datosUpdate.append('accion', 'traerResponsableUpdate');
+        datosUpdate.append('id_responsable', id_responsable);
         $.ajax({
           data: datosUpdate,
-          url: './models/administrar_proveedores.php',
+          url: './models/administrar_responsables.php',
           method: "post",
           cache: false,
           contentType: false,
@@ -392,13 +441,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
-            $('#id_proveedor').html(datosInput.id_proveedor);
+            $('#id_responsable').html(datosInput.id_responsable);
             $("#nombre").val(datosInput.nombre);
-            $("#cuit").val(datosInput.cuit);
-            $("#email").val(datosInput.email);
-            $("#telefono").val(datosInput.telefono);
+            //$('#usuario').val(datosInput.usuario)
+            //$('#id_usuario').html(datosInput.id_usuario)
 
-            accion = "updateProveedor";
+            accion = "updateResponsable";
           }
         });
 
@@ -408,25 +456,25 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
         fila = $(this);
-        id_proveedor = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        id_responsable = parseInt($(this).closest('tr').find('td:eq(0)').text());       
         swal({
           title: "Estas seguro?",
-          text: "Una vez eliminado este proveedor, no volveras a verlo",
+          text: "Una vez eliminado este responsables, no volveras a verlo",
           icon: "warning",
           buttons: true,
           dangerMode: true,
         })
         .then((willDelete) => {
           if (willDelete) {
-            accion = "eliminarProveedor";
+            accion = "eliminarResponsable";
             $.ajax({
-              url: "models/administrar_proveedores.php",
+              url: "models/administrar_responsables.php",
               type: "POST",
               datatype:"json",
-              data:  {accion:accion, id_proveedor:id_proveedor},
+              data:  {accion:accion, id_responsable:id_responsable},
               success: function() {
-                //tablaproveedor.row(fila.parents('tr')).remove().draw();
-                tablaproveedor.ajax.reload(null, false);
+                //tablaResponsables.row(fila.parents('tr')).remove().draw();
+                tablaResponsables.ajax.reload(null, false);
               }
             }); 
           } else {
@@ -438,16 +486,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("change", ".estado", function(){
         fila = $(this);
         nuevoEstado = $(this).val();
-        id_proveedor = parseInt($(this).closest('tr').find('td:eq(0)').text());
+        id_responsable = parseInt($(this).closest('tr').find('td:eq(0)').text());
         accion = "cambiarEstado";
         $.ajax({
-          url: "models/administrar_proveedores.php",
+          url: "models/administrar_responsables.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_proveedor: id_proveedor, estado: nuevoEstado},    
+          data:  {accion: accion, id_responsable: id_responsable, estado: nuevoEstado},    
           success: function(data) {
             $('#modalCRUD').modal('hide');
-            tablaproveedor.ajax.reload(null, false);
+            tablaResponsables.ajax.reload(null, false);
             swal({
               icon: 'success',
               title: 'Estado cambiado exitosamente'
