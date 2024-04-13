@@ -4,34 +4,40 @@ include_once('conexion.php');
 class depositos{
   private $id_deposito;
   private $nombre;
+  private $id_responsable;
+  private $porcentaje_extra;
   
   public function __construct(){
       $this->conexion = new Conexion();
       date_default_timezone_set("America/Buenos_Aires");
   }
 
-   public function traerDatosIniciales(){
+  public function traerDatosIniciales(){
 
-   /*Usuarios*/
-    $queryUsuarios = "SELECT id as id_usuario, usuario FROM usuarios";
-    $getUsuarios = $this->conexion->consultaRetorno($queryUsuarios);
+    /*Usuarios*/
+    $queryResponsable = "SELECT id as id_responsable, nombre FROM responsables_deposito";
+    $getResponsable = $this->conexion->consultaRetorno($queryResponsable);
 
     $datosIniciales = array();
-    $arrayUsuarios = array();
+    $arrayResponsable[] = [
+      'id_responsable' => "",
+      'responsable' =>"Seleccione..."
+    ];
 
-    /*CARGO ARRAY usuarios*/
-    while ($rowUsuarios = $getUsuarios->fetch_array()) {
-      $id_usuario = $rowUsuarios['id_usuario'];
-      $usuario = $rowUsuarios['usuario'];
-      $arrayUsuarios[]= array('id_usuario' => $id_usuario, 'usuario' =>$usuario);
+    /*CARGO ARRAY responsables*/
+    while ($rowResponsable = $getResponsable->fetch_array()) {
+      $arrayResponsable[]= array(
+        'id_responsable' =>$rowResponsable['id_responsable'],
+        'responsable' =>$rowResponsable['nombre'],
+      );
     }
 
-    $datosIniciales["usuarios"] = $arrayUsuarios;
+    $datosIniciales["responsable"] = $arrayResponsable;
     echo json_encode($datosIniciales);
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT id AS id_deposito, nombre, activo FROM destino WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destino d INNER JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     
@@ -39,6 +45,8 @@ class depositos{
       $depositos[] = array(
         'id_deposito'=>$row['id_deposito'],
         'nombre'=>$row['nombre'],
+        'responsable'=>$row['responsable'],
+        'porcentaje_extra'=>$row['porcentaje_extra'],
         'activo'=>$row['activo'],
       );
     }
@@ -47,24 +55,29 @@ class depositos{
 
   public function traerDepositoUpdate($id_deposito){
     $this->id_deposito = $id_deposito;
-    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, activo FROM destino WHERE id = $this->id_deposito";
+    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, porcentaje_extra, activo FROM destino WHERE id = $this->id_deposito";
     $traerdeposito = $this->conexion->consultaRetorno($sqlTraerdeposito);
 
     $depositos = array(); //creamos un array
     while ($row = $traerdeposito->fetch_array()) {
       $depositos = array(
         'id_deposito'=> $row['id_deposito'],
-        'nombre'=> $row['nombre']
+        'nombre'=> $row['nombre'],
+        'id_responsable'=> $row['id_responsable'],
+        'porcentaje_extra'=> $row['porcentaje_extra'],
       );
     }
     return json_encode($depositos);
   }
 
-  public function depositoUpdate($id_deposito, $nombre){
+  public function depositoUpdate($id_deposito, $nombre, $id_responsable, $porcentaje_extra){
 
     $this->id_deposito = $id_deposito;
+    $this->nombre = $nombre;
+    $this->id_responsable = $id_responsable;
+    $this->porcentaje_extra = $porcentaje_extra;
 
-    $sqlUpdateDeposito = "UPDATE destino SET nombre ='$nombre' WHERE id=$this->id_deposito";
+    $sqlUpdateDeposito = "UPDATE destino SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  porcentaje_extra ='$this->porcentaje_extra' WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -99,10 +112,13 @@ class depositos{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrardeposito( $nombre ){
+  public function registrardeposito($nombre,$id_responsable,$porcentaje_extra){
     $this->nombre = $nombre;
+    $this->id_responsable = $id_responsable;
+    $this->porcentaje_extra = $porcentaje_extra;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertUser = "INSERT INTO destino (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
+
+    $queryInsertUser = "INSERT INTO destino (id_usuario, nombre, id_responsable, porcentaje_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$this->porcentaje_extra', 1)";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -152,7 +168,9 @@ if (isset($_POST['accion'])) {
       break;
     case 'adddeposito':
       $nombre = $_POST['nombre'];
-      echo $depositos->registrardeposito( $nombre);
+      $id_responsable = $_POST['id_responsable'];
+      $porcentaje_extra = $_POST['porcentaje_extra'];
+      echo $depositos->registrardeposito($nombre,$id_responsable,$porcentaje_extra);
       break;
   }
 }else{

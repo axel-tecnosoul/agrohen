@@ -34,3 +34,4 @@
 <link rel="stylesheet" href="assets/css/light-1.css" media="screen" id="color">
 <!-- Responsive css-->
 <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+<link rel="stylesheet" type="text/css" href="assets/css/select2.css">

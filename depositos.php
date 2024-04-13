@@ -10,6 +10,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 <html lang="en">
   <head>
     <?php include('./views/head_tables.php');?>
+    <style>
+      /* Estilo para que el borde del select2 sea igual al de los inputs form-control */
+      .select2-container .select2-selection--single,
+      .select2-container .select2-selection--multiple {
+          border: 1px solid #ced4da !important; /* Ajusta el color y el grosor del borde según tus necesidades */
+      }
+
+      /* Estilo para resaltar el borde cuando el select2 tiene foco */
+      .select2-container .select2-selection--single:focus,
+      .select2-container .select2-selection--multiple:focus {
+          border-color: #80bdff !important; /* Puedes ajustar el color de resaltado del borde al tener foco */
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
+      }
+    </style>
   </head>
   <body>
     <!-- Loader starts-->
@@ -61,6 +75,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                         <tr>
                           <th class="text-center">#ID</th>
                           <th>Nombre</th>
+                          <th>Responsable</th>
+                          <th>Porcentaje Extra</th>
                           <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
@@ -91,77 +107,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       </footer>
     </div>
 
-    <!--Modal para CRUD-->
-    <!-- <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_deposito" class="d-none"></span>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          </div>
-          <form id="formAlmacen">
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="text" class="form-control" id="email" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Proveedor</label>
-                    <select class="form-control" id="proveedor">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Cliente</label>
-                    <select class="form-control" id="cliente">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">usuario</label>
-                    <select class="form-control" id="usuario2" disabled="true">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Empresa</label>
-                    <select class="form-control" id="empresaU" >
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div> -->
-
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -176,10 +121,23 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Nombre:</label>
+                    <label for="nombre" class="col-form-label">Nombre:</label>
                     <input type="text" class="form-control" id="nombre" required>
                   </div>
                 </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="id_responsable" class="col-form-label">Responsable:</label>
+                    <select class="form-control" style="width: 100%;" id="id_responsable" required></select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="porcentaje_extra" class="col-form-label">Porcentaje extra:</label>
+                    <input type="number" class="form-control" id="porcentaje_extra">
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
@@ -207,6 +165,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
     <script src="assets/js/chat-menu.js"></script>
     <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/select2/select2.full.min.js"></script>
+    <script src="assets/js/select2/select2-custom.js"></script>
     <!-- Plugins JS Ends-->
     <!-- Theme js-->
     <script src="assets/js/script.js"></script>
@@ -216,13 +176,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       var accion
       $(document).ready(function(){
         tablaDeposito = $('#tablaDeposito').DataTable({
-          "ajax": {
-            "url" : "./models/administrar_deposito.php?accion=traerDeposito",
-            "dataSrc": "",
+          ajax: {
+            url : "./models/administrar_deposito.php?accion=traerDeposito",
+            dataSrc: "",
           },
-          "columns":[
-            {"data": "id_deposito"},
-            {"data": "nombre"},
+          columns:[
+            {data: "id_deposito"},
+            {data: "nombre"},
+            {data: "responsable"},
+            {data: "porcentaje_extra"},
             {
               render: function(data, type, full, meta) {
                 const estados = {
@@ -246,9 +208,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 };
               }
             },
-            {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
+            {defaultContent : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
-          "language":  idiomaEsp
+          language: idiomaEsp
         });
         
         cargarDatosComponentes();
@@ -364,14 +326,18 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
+            /*Identifico el select de perfiles*/
+            $selectResponsable = document.getElementById("id_responsable");
             /*Genero los options del select usuarios*/
-            // respuestaJson.usuarios.forEach((usuario)=>{
-            //   $option = document.createElement("option");
-            //   let optionText = document.createTextNode(usuario.usuario);
-            //   $option.appendChild(optionText);
-            //   $option.setAttribute("value", usuario.id_usuario);
-            // })
+            respuestaJson.responsable.forEach((responsable)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(responsable.responsable);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", responsable.id_responsable);
+              $selectResponsable.appendChild($option);
+            })
 
+            $($selectResponsable).select2()
           }
         });
       }
@@ -386,6 +352,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         modal.on('shown.bs.modal', function (e) {
           document.getElementById("nombre").focus();
         })
+        $('#id_responsable').val("").change();
         accion = "adddeposito";
       });
 
@@ -393,12 +360,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
         let id_deposito = $.trim($('#id_deposito').html());
         let nombre = $.trim($('#nombre').val());
+        let id_responsable = $.trim($('#id_responsable').val());
+        let porcentaje_extra = $.trim($('#porcentaje_extra').val());
 
         $.ajax({
           url: "models/administrar_deposito.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre},
+          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, porcentaje_extra: porcentaje_extra},
           success: function(data) {
             if(data=="1"){
               tablaDeposito.ajax.reload(null, false);
@@ -443,6 +412,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             console.log(datosInput);
             $('#id_deposito').html(datosInput.id_deposito);
             $("#nombre").val(datosInput.nombre);
+            $('#id_responsable').val(datosInput.id_responsable).change();
+            $("#porcentaje_extra").val(datosInput.porcentaje_extra);
+            
             //$('#usuario').val(datosInput.usuario)
             //$('#id_usuario').html(datosInput.id_usuario)
 

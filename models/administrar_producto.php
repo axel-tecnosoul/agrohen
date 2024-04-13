@@ -18,7 +18,7 @@ class producto{
     $queryFamilias = "SELECT id as id_familia, familia FROM familias_productos";
     $getFamilias = $this->conexion->consultaRetorno($queryFamilias);
     $arrayFamilias[] = [
-      'id_familia' => 0,
+      'id_familia' => "",
       'familia' =>"Seleccione..."
     ];
     /*CARGO ARRAY Familias*/
@@ -33,7 +33,7 @@ class producto{
     $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida";
     $getUnidadMedida = $this->conexion->consultaRetorno($queryUnidadMedida);
     $arrayUnidadMedida[] = [
-      'id_unidad_medida' => 0,
+      'id_unidad_medida' => "",
       'unidad_medida' =>"Seleccione..."
     ];
     /*CARGO ARRAY UnidadMedida*/

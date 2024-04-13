@@ -10,6 +10,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 <html lang="en">
   <head>
     <?php include('./views/head_tables.php');?>
+    <style>
+      /* Estilo para que el borde del select2 sea igual al de los inputs form-control */
+      .select2-container .select2-selection--single,
+      .select2-container .select2-selection--multiple {
+          border: 1px solid #ced4da !important; /* Ajusta el color y el grosor del borde según tus necesidades */
+      }
+
+      /* Estilo para resaltar el borde cuando el select2 tiene foco */
+      .select2-container .select2-selection--single:focus,
+      .select2-container .select2-selection--multiple:focus {
+          border-color: #80bdff !important; /* Puedes ajustar el color de resaltado del borde al tener foco */
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
+      }
+    </style>
   </head>
   <body>
     <!-- Loader starts-->
@@ -181,7 +195,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Familia:</label>
-                    <select class="form-control js-example-basic-single" id="id_familia" required></select>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
                   </div>
                 </div>  
                 <div class="col-lg-6">
@@ -199,7 +213,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Unidad de Medida:</label>
-                    <select class="form-control js-example-basic-single" id="id_unidad_medida" required></select>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_unidad_medida" required></select>
                   </div>
                 </div>
             </div>
@@ -229,6 +243,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
     <script src="assets/js/chat-menu.js"></script>
     <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/select2/select2.full.min.js"></script>
+    <script src="assets/js/select2/select2-custom.js"></script>
     <!-- Plugins JS Ends-->
     <!-- Theme js-->
     <script src="assets/js/script.js"></script>
@@ -391,26 +407,30 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             respuestaJson = JSON.parse(respuesta);
 
             /*Identifico el select de perfiles*/
-            $selecFamilia = document.getElementById("id_familia");
+            $selectFamilia = document.getElementById("id_familia");
             /*Genero los options del select usuarios*/
             respuestaJson.familias.forEach((familia)=>{
               $option = document.createElement("option");
               let optionText = document.createTextNode(familia.familia);
               $option.appendChild(optionText);
               $option.setAttribute("value", familia.id_familia);
-              $selecFamilia.appendChild($option);
+              $selectFamilia.appendChild($option);
             })
 
+            $($selectFamilia).select2()
+
             /*Identifico el select de perfiles*/
-            $selecUnidadMedida = document.getElementById("id_unidad_medida");
+            $selectUnidadMedida = document.getElementById("id_unidad_medida");
             /*Genero los options del select usuarios*/
             respuestaJson.unidades_medidas.forEach((unidad_medida)=>{
               $option = document.createElement("option");
               let optionText = document.createTextNode(unidad_medida.unidad_medida);
               $option.appendChild(optionText);
               $option.setAttribute("value", unidad_medida.id_unidad_medida);
-              $selecUnidadMedida.appendChild($option);
+              $selectUnidadMedida.appendChild($option);
             })
+
+            $($selectUnidadMedida).select2()
 
           }
         });
@@ -426,6 +446,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         modal.on('shown.bs.modal', function (e) {
           document.getElementById("nombre").focus();
         })
+        $('#id_unidad_medida').val("").change();
+        $('#id_familia').val("").change();
         accion = "addProducto";
       });
 
@@ -487,8 +509,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $('#id_producto').html(datosInput.id_producto);
             $("#nombre").val(datosInput.nombre);
             $("#presentacion").val(datosInput.presentacion);
-            $("#id_unidad_medida").val(datosInput.id_unidad_medida);
-            $("#id_familia").val(datosInput.id_familia);
+            $("#id_unidad_medida").val(datosInput.id_unidad_medida).change();
+            $("#id_familia").val(datosInput.id_familia).change();
             //$('#usuario').val(datosInput.usuario)
             //$('#id_usuario').html(datosInput.id_usuario)
 
