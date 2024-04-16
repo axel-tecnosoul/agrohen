@@ -37,7 +37,7 @@ class depositos{
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destino d INNER JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destino d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     

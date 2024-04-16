@@ -62,6 +62,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th class="text-center">#ID</th>
                           <th>Usuario</th>
                           <th>Perfil</th>
+                          <th>Deposito</th>
                           <th>Email</th>
                           <th>Estado</th>
                           <th>Fecha alta</th>
@@ -94,77 +95,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       </footer>
     </div>
 
-    <!--Modal para CRUD-->
-    <!-- <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          </div>
-          <form id="formAlmacen">
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="text" class="form-control" id="email" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Proveedor</label>
-                    <select class="form-control" id="proveedor">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Cliente</label>
-                    <select class="form-control" id="cliente">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="perfil2" disabled="true">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Empresa</label>
-                    <select class="form-control" id="empresaU" >
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div> -->
-
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -179,14 +109,22 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Usuario:</label>
+                    <label for="usuario" class="col-form-label">Usuario:</label>
                     <input type="text" class="form-control" id="usuario" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
+                    <label for="id_perfil" class="col-form-label">Perfil</label>
                     <select class="form-control" id="id_perfil" required>
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-6 d-none" id="colIdDeposito">
+                  <div class="form-group">
+                    <label for="id_deposito" class="col-form-label">Deposito</label>
+                    <select class="form-control" id="id_deposito">
                       <option value="">Seleccione</option>
                     </select>
                   </div>
@@ -195,13 +133,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
+                    <label for="clave" class="col-form-label">Clave:</label>
                     <input type="text" class="form-control" id="clave" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
+                    <label for="email" class="col-form-label">Email:</label>
                     <input type="email" class="form-control" id="email">
                   </div>
                 </div>
@@ -250,6 +188,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {"data": "id_usuario"},
             {"data": "usuario"},
             {"data": "perfil"},
+            {"data": "deposito"},
             {"data": "email"},
             {
               render: function(data, type, full, meta) {
@@ -394,7 +333,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             respuestaJson = JSON.parse(respuesta);
 
             /*Identifico el select de perfiles*/
-            $selecPerfil = document.getElementById("id_perfil");
+            $selectPerfil = document.getElementById("id_perfil");
 
             /*Genero los options del select perfiles*/
             respuestaJson.perfiles.forEach((perfil)=>{
@@ -402,7 +341,19 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               let optionText = document.createTextNode(perfil.perfil);
               $option.appendChild(optionText);
               $option.setAttribute("value", perfil.id_perfil);
-              $selecPerfil.appendChild($option);
+              $selectPerfil.appendChild($option);
+            })
+
+            /*Identifico el select de depositos*/
+            $selectDeposito = document.getElementById("id_deposito");
+
+            /*Genero los options del select depositos*/
+            respuestaJson.depositos.forEach((deposito)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(deposito.nombre);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", deposito.id_deposito);
+              $selectDeposito.appendChild($option);
             })
 
           }
@@ -422,11 +373,22 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         accion = "addUsuario";
       });
 
+      $(document).on("change","#id_perfil",function(){
+        if(this.value==2){
+          $("#colIdDeposito").removeClass("d-none");
+          $("#id_deposito").attr("required",true)
+        }else{
+          $("#colIdDeposito").addClass("d-none");
+          $("#id_deposito").attr("required",false)
+        }
+      })
+
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
         let usuario = $.trim($('#usuario').val());
         let id_usuario = $.trim($('#id_usuario').html());
         let id_perfil = $.trim($('#id_perfil').val());
+        let id_deposito = $.trim($('#id_deposito').val());
         let email = $.trim($('#email').val());
         let clave = $.trim($('#clave').val());
 
@@ -434,7 +396,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           url: "models/administrar_usuarios.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, usuario: usuario, id_perfil:id_perfil, email:email, clave:clave},
+          data:  {accion: accion, id_usuario: id_usuario, usuario: usuario, id_perfil:id_perfil, id_deposito:id_deposito, email:email, clave:clave},
           success: function(data) {
             if(data=="1"){
               tablaUsuarios.ajax.reload(null, false);

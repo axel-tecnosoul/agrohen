@@ -6,6 +6,7 @@ class Usuarios{
   private $mail;
   private $pass;
   private $id_perfil;
+  private $id_deposito;
   private $usuario;
   
   public function __construct(){
@@ -15,26 +16,41 @@ class Usuarios{
 
   public function traerDatosIniciales(){
 
+    $datosIniciales = array();
+    
     /*PERFILES*/
     $queryPerfiles = "SELECT id as id_perfil, perfil FROM perfiles";
     $getPerfiles = $this->conexion->consultaRetorno($queryPerfiles);
 
-    $datosIniciales = array();
     $arrayPerfiles = array();
-
     /*CARGO ARRAY PERFILES*/
     while ($rowPerfiles = $getPerfiles->fetch_array()) {
-      $id_perfil = $rowPerfiles['id_perfil'];
-      $perfil = $rowPerfiles['perfil'];
-      $arrayPerfiles[]= array('id_perfil' => $id_perfil, 'perfil' =>$perfil);
+      $arrayPerfiles[]= array(
+        'id_perfil' =>$rowPerfiles['id_perfil'],
+        'perfil' =>$rowPerfiles['perfil'],
+      );
+    }
+
+    /*DEPOSITOS*/
+    $queryDepositos = "SELECT id as id_deposito, nombre FROM destino WHERE activo = 1";
+    $getDepositoss = $this->conexion->consultaRetorno($queryDepositos);
+
+    $arrayDepositos = array();
+    /*CARGO ARRAY DEPOSITOS*/
+    while ($rowDepositos = $getDepositoss->fetch_array()) {
+      $arrayDepositos[]= array(
+        'id_deposito' =>$rowDepositos['id_deposito'],
+        'nombre' =>$rowDepositos['nombre'],
+      );
     }
 
     $datosIniciales["perfiles"] = $arrayPerfiles;
+    $datosIniciales["depositos"] = $arrayDepositos;
     echo json_encode($datosIniciales);
   }
 
   public function traerUsuarios(){
-    $sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id WHERE u.id!=1";
+    $sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil, d.nombre AS deposito FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id LEFT JOIN destino d ON u.id_deposito = d.id WHERE u.id!=1";
     $traerUsuarios = $this->conexion->consultaRetorno($sqlTraerClientes);
     $usuarios = array(); //creamos un array
     while ($row = $traerUsuarios->fetch_array()) {
@@ -45,7 +61,8 @@ class Usuarios{
         'activo'=>$row['activo'],
         'fecha_alta'=>date("d/m/Y H:i",strtotime($row['fecha_hora_alta'])),
         'id_perfil'=>$row['id_perfil'],
-        'perfil'=>$row['perfil']
+        'perfil'=>$row['perfil'],
+        'deposito'=>$row['deposito']
       );
     }
     return json_encode($usuarios);
@@ -70,11 +87,15 @@ class Usuarios{
     return json_encode($usuarios);
   }
 
-  public function usuariosUpdate($id_usuario, $usuario, $email, $password, $id_perfil){
-
+  public function usuariosUpdate($id_usuario, $usuario, $email, $password, $id_perfil, $id_deposito){
+    $this->email = $email;
+    $this->pass = $password;
+    $this->id_perfil = $id_perfil;
+    $this->id_deposito = $id_deposito;
+    $this->usuario = $usuario;
     $this->id_usuario = $id_usuario;
 
-    $sqlUpdateUsuario = "UPDATE usuarios SET usuario ='$usuario', email ='$email', password= '$password', id_perfil = $id_perfil WHERE id=$this->id_usuario";
+    $sqlUpdateUsuario = "UPDATE usuarios SET usuario ='$this->usuario', email ='$this->email', password= '$this->pass', id_perfil = $this->id_perfil, id_deposito = $this->id_deposito WHERE id=$this->id_usuario";
     $updateUsuario = $this->conexion->consultaSimple($sqlUpdateUsuario);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -110,13 +131,14 @@ class Usuarios{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrarUsuario($mail, $password, $id_perfil, $usuario){
+  public function registrarUsuario($mail, $password, $id_perfil, $usuario, $id_deposito){
     $this->email = $mail;
     $this->pass = $password;
     $this->id_perfil = $id_perfil;
+    $this->id_deposito = $id_deposito;
     $this->usuario = $usuario;
 
-    $queryInsertUser = "INSERT INTO usuarios (usuario, email, password, activo, fecha_hora_alta, id_perfil) VALUES('$usuario', '$this->email', '$this->pass', 1, NOW(), $this->id_perfil)";
+    $queryInsertUser = "INSERT INTO usuarios (usuario, email, password, id_perfil, id_deposito) VALUES('$this->usuario', '$this->email', '$this->pass', $this->id_perfil, $this->id_deposito)";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -148,7 +170,11 @@ if (isset($_POST['accion'])) {
         $email = $_POST['email'];
         $password = $_POST['clave'];
         $id_perfil = $_POST['id_perfil'];
-        echo $usuarios->usuariosUpdate($id_usuario, $usuario, $email, $password, $id_perfil);
+        $id_deposito = $_POST['id_deposito'];
+        if(empty($id_deposito)){
+          $id_deposito="NULL";
+        }
+        echo $usuarios->usuariosUpdate($id_usuario, $usuario, $email, $password, $id_perfil, $id_deposito);
       break;
     case 'cambiarEstado':
         $id_usuario = $_POST['id_usuario'];
@@ -171,7 +197,11 @@ if (isset($_POST['accion'])) {
       $password = $_POST['clave'];
       $usuario = $_POST['usuario'];
       $id_perfil = $_POST['id_perfil'];
-      echo $usuarios->registrarUsuario($mail, $password, $id_perfil, $usuario);
+      $id_deposito = $_POST['id_deposito'];
+      if(empty($id_deposito)){
+        $id_deposito="NULL";
+      }
+      echo $usuarios->registrarUsuario($mail, $password, $id_perfil, $usuario, $id_deposito);
       break;
   }
 }else{
