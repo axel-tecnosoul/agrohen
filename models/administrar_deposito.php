@@ -141,23 +141,27 @@ if (isset($_POST['accion'])) {
       $almacenes->traerTodosdepositos();
       break;
     case 'traerDepositoUpdate':
-        $id_deposito = $_POST['id_deposito'];
-        echo $depositos->traerDepositoUpdate($id_deposito);
+      $id_deposito = $_POST['id_deposito'];
+      echo $depositos->traerDepositoUpdate($id_deposito);
       break;
     case 'updateDeposito':
-        $id_deposito = $_POST['id_deposito'];
-        $nombre = $_POST['nombre'];
-        echo $depositos->depositoUpdate($id_deposito, $nombre);
+      $id_deposito = $_POST['id_deposito'];
+      $nombre = $_POST['nombre'];
+      $id_responsable = $_POST['id_responsable'];
+      $porcentaje_extra = $_POST['porcentaje_extra'];
+      if(empty($porcentaje_extra)){
+        $porcentaje_extra=0;
+      }
+      echo $depositos->depositoUpdate($id_deposito, $nombre, $id_responsable, $porcentaje_extra);
       break;
     case 'cambiarEstado':
-        $id_deposito = $_POST['id_deposito'];
-        $estado = $_POST['estado'];
-        $depositos->cambiarEstado($id_deposito, $estado);
-        
+      $id_deposito = $_POST['id_deposito'];
+      $estado = $_POST['estado'];
+      $depositos->cambiarEstado($id_deposito, $estado);
       break;
     case 'eliminarDeposito':
-        $id_deposito = $_POST['id_deposito'];
-        $depositos->deletedeposito($id_deposito);
+      $id_deposito = $_POST['id_deposito'];
+      $depositos->deletedeposito($id_deposito);
       break;
     case 'traerDatosIniciales':
       $depositos->traerDatosIniciales();
@@ -170,6 +174,9 @@ if (isset($_POST['accion'])) {
       $nombre = $_POST['nombre'];
       $id_responsable = $_POST['id_responsable'];
       $porcentaje_extra = $_POST['porcentaje_extra'];
+      if(empty($porcentaje_extra)){
+        $porcentaje_extra=0;
+      }
       echo $depositos->registrardeposito($nombre,$id_responsable,$porcentaje_extra);
       break;
   }

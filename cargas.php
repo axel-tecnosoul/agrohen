@@ -49,7 +49,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <div class="row">
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
-              <div class="card d-none">
+              <div class="card">
                 <div class="card-header">
                   <h5>Administrar Cargas</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
@@ -93,77 +93,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         </div>
       </footer>
     </div>
-
-    <!--Modal para CRUD-->
-    <!-- <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          </div>
-          <form id="formAlmacen">
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="text" class="form-control" id="email" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Proveedor</label>
-                    <select class="form-control" id="proveedor">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Cliente</label>
-                    <select class="form-control" id="cliente">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="perfil2" disabled="true">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Empresa</label>
-                    <select class="form-control" id="empresaU" >
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div> -->
 
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
