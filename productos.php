@@ -135,7 +135,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Presentacion:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="presentacion" required></select>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required></select>
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -331,9 +331,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#addProdLocal').modal('hide');
           },
           success: function(respuesta){
+            
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
-
+            console.log(respuestaJson)
             /*Identifico el select de perfiles*/
             $selectFamilia = document.getElementById("id_familia");
             /*Genero los options del select usuarios*/
@@ -347,18 +348,18 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
             $($selectFamilia).select2()
 
-            /*Identifico el select de presentaciones*/
-            $selectPresentaciones = document.getElementById("presentacion");
-            /*Genero los options del select Presentaciones*/
-            respuestaJson.presentacioness.forEach((presentaciones)=>{
+            /*Identifico el select de presentacion*/
+            $selectPresentacion = document.getElementById("id_presentacion");
+            /*Genero los options del select Presentacion*/
+            respuestaJson.presentacion.forEach((presentacion)=>{
               $option = document.createElement("option");
-              let optionText = document.createTextNode(presentaciones.presentaciones);
+              let optionText = document.createTextNode(presentacion.presentacion);
               $option.appendChild(optionText);
-              $option.setAttribute("value", presentaciones.presentaciones);
-              $selectPresentaciones.appendChild($option);
+              $option.setAttribute("value", presentacion.id_presentacion);
+              $selectPresentacion.appendChild($option);
             })
 
-            $($selectPresentaciones).select2()
+            $($selectPresentacion).select2()
 
             /*Identifico el select de perfiles*/
             $selectUnidadMedida = document.getElementById("id_unidad_medida");
@@ -387,6 +388,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         modal.on('shown.bs.modal', function (e) {
           document.getElementById("nombre").focus();
         })
+        $('#id_presentacion').val("").change();
         $('#id_unidad_medida').val("").change();
         $('#id_familia').val("").change();
         accion = "addProducto";
@@ -397,14 +399,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let id_producto = $.trim($('#id_producto').html());
         let id_familia = $.trim($('#id_familia').val());
         let nombre = $.trim($('#nombre').val());
-        let presentacion = $.trim($('#presentacion').val());
+        let id_presentacion = $.trim($('#id_presentacion').val());
         let id_unidad_medida = $.trim($('#id_unidad_medida').val());
 
         $.ajax({
           url: "models/administrar_producto.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_producto: id_producto, nombre: nombre, presentacion: presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia},
+          data:  {accion: accion, id_producto: id_producto, nombre: nombre, id_presentacion: id_presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia},
           success: function(data) {
             if(data=="1"){
               tablaproducto.ajax.reload(null, false);
@@ -449,7 +451,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             console.log(datosInput);
             $('#id_producto').html(datosInput.id_producto);
             $("#nombre").val(datosInput.nombre);
-            $("#presentacion").val(datosInput.presentacion);
+            $("#id_presentacion").val(datosInput.id_presentacion);
             $("#id_unidad_medida").val(datosInput.id_unidad_medida).change();
             $("#id_familia").val(datosInput.id_familia).change();
             //$('#usuario').val(datosInput.usuario)

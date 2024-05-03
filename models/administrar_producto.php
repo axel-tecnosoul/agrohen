@@ -30,16 +30,16 @@ class producto{
     }
 
     /*presentaciones*/
-    $queryPresentaciones = "SELECT id as id_presentaciones, nombre FROM presentaciones_productos";
+    $queryPresentaciones = "SELECT id as id_presentacion, nombre FROM presentaciones_productos";
     $getPresentaciones = $this->conexion->consultaRetorno($queryPresentaciones);
     $arrayPresentaciones[] = [
-      'id_presentaciones' => "",
+      'id_presentacion' => "",
       'presentacion' =>"Seleccione..."
     ];
     /*CARGO ARRAY presentaciones*/
     while ($row = $getPresentaciones->fetch_array()) {
       $arrayPresentaciones[]=[
-        'id_presentaciones' => $row["id_presentaciones"],
+        'id_presentacion' => $row["id_presentacion"],
         'presentacion' =>$row["nombre"]
       ];
     }
@@ -75,7 +75,7 @@ class producto{
         'id_producto'=>$row['id_producto'],
         'nombre'=>$row['nombre'],
         'familia'=>$row['familia'],
-        'presentacion'=>$row['id_presentacion'],
+        'presentacion'=>$row['presentacion'],
         'unidad_medida'=>$row['unidad_medida'],
         'ultimo_precio'=>$row['ultimo_precio'],
       );
@@ -140,14 +140,14 @@ class producto{
   //   $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   // }
 
-  public function registrarProducto( $nombre, $presentacion, $id_unidad_medida, $id_familia ){
+  public function registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia ){
     $this->nombre = $nombre;
-    $this->presentacion = $presentacion;
+    $this->id_presentacion = $id_presentacion;
     $this->id_unidad_medida = $id_unidad_medida;
     $this->id_familia = $id_familia;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
+    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->id_presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -200,10 +200,10 @@ if (isset($_POST['accion'])) {
       break;
     case 'addProducto':
       $nombre = $_POST['nombre'];
-      $presentacion = $_POST['presentacion'];
+      $id_presentacion = $_POST['id_presentacion'];
       $id_unidad_medida = $_POST['id_unidad_medida'];
       $id_familia = $_POST['id_familia'];
-      echo $producto->registrarProducto( $nombre, $presentacion, $id_unidad_medida, $id_familia);
+      echo $producto->registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
       break;
   }
 }else{
