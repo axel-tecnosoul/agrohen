@@ -29,6 +29,21 @@ class producto{
       ];
     }
 
+    /*presentaciones*/
+    $queryPresentaciones = "SELECT id as id_presentaciones, nombre FROM presentaciones_productos";
+    $getPresentaciones = $this->conexion->consultaRetorno($queryPresentaciones);
+    $arrayPresentaciones[] = [
+      'id_presentaciones' => "",
+      'presentacion' =>"Seleccione..."
+    ];
+    /*CARGO ARRAY presentaciones*/
+    while ($row = $getPresentaciones->fetch_array()) {
+      $arrayPresentaciones[]=[
+        'id_presentaciones' => $row["id_presentaciones"],
+        'presentacion' =>$row["nombre"]
+      ];
+    }
+
     /*Unidades de medida*/
     $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida";
     $getUnidadMedida = $this->conexion->consultaRetorno($queryUnidadMedida);
@@ -45,12 +60,13 @@ class producto{
     }
 
     $datosIniciales["familias"] = $arrayFamilias;
+    $datosIniciales["presentacion"] = $arrayPresentaciones;
     $datosIniciales["unidades_medidas"] = $arrayUnidadMedida;
     echo json_encode($datosIniciales);
   }
 
   public function traerProducto(){
-    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, p.presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM producto p LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
+    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM producto p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqltraerProducto);
     $producto = array(); //creamos un array
     
@@ -59,7 +75,7 @@ class producto{
         'id_producto'=>$row['id_producto'],
         'nombre'=>$row['nombre'],
         'familia'=>$row['familia'],
-        'presentacion'=>$row['presentacion'],
+        'presentacion'=>$row['id_presentacion'],
         'unidad_medida'=>$row['unidad_medida'],
         'ultimo_precio'=>$row['ultimo_precio'],
       );
@@ -69,7 +85,7 @@ class producto{
 
   public function traerProductoUpdate($id_producto){
     $this->id_producto = $id_producto;
-    $sqlTraerproducto = "SELECT id as id_producto, nombre, presentacion, id_unidad_medida, id_familia FROM producto WHERE id = $this->id_producto";
+    $sqlTraerproducto = "SELECT id as id_producto, nombre, id_presentacion, id_unidad_medida, id_familia FROM producto WHERE id = $this->id_producto";
     $traerproducto = $this->conexion->consultaRetorno($sqlTraerproducto);
 
     $producto = array(); //creamos un array
@@ -77,7 +93,7 @@ class producto{
       $producto = array(
         'id_producto'=> $row['id_producto'],
         'nombre'=> $row['nombre'],
-        'presentacion'=> $row['presentacion'],
+        'presentacion'=> $row['id_presentacion'],
         'id_unidad_medida'=> $row['id_unidad_medida'],
         'id_familia'=> $row['id_familia']
       );
@@ -89,7 +105,7 @@ class producto{
 
     $this->id_producto = $id_producto;
 
-    $sqlupdateProducto = "UPDATE producto SET nombre ='$nombre', presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
+    $sqlupdateProducto = "UPDATE producto SET nombre ='$nombre', id_presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
     $updateProducto = $this->conexion->consultaSimple($sqlupdateProducto);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -131,7 +147,7 @@ class producto{
     $this->id_familia = $id_familia;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
+    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
