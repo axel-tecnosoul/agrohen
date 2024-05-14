@@ -56,19 +56,21 @@
     script_name=script_name[0].replace("#", '');
     console.log(script_name);
     let anchor=document.querySelector("a[href='"+script_name+"']")
-    let el=anchor.parentElement;
-    el.style.border="solid 1px white";
-    el.style.borderRadius="20px";
-    el.style.paddingLeft="10px";
-    el.style.backgroundColor="rgb(255 255 255 / 10%)";
-    while(!el.classList.contains('sidebar-menu')){
-      if(el.nodeName=="LI"){
-        el.classList.add('active')
+    if(anchor!=undefined){
+      let el=anchor.parentElement;
+      el.style.border="solid 1px white";
+      el.style.borderRadius="20px";
+      el.style.paddingLeft="10px";
+      el.style.backgroundColor="rgb(255 255 255 / 10%)";
+      while(!el.classList.contains('sidebar-menu')){
+        if(el.nodeName=="LI"){
+          el.classList.add('active')
+        }
+        if(el.nodeName=="UL" && el.classList.contains('sidebar-submenu')){
+          el.classList.add('menu-open')
+        }
+        el=el.parentElement;
       }
-      if(el.nodeName=="UL" && el.classList.contains('sidebar-submenu')){
-        el.classList.add('menu-open')
-      }
-      el=el.parentElement;
     }
   });
 </script>

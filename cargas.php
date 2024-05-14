@@ -3,6 +3,7 @@ session_start();
 include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 $hora = date('Hi');
+$hoy = date('Y-m-d');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
   header("location:./models/redireccionar.php");
 }?>
@@ -10,6 +11,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 <html lang="en">
   <head>
     <?php include('./views/head_tables.php');?>
+    <style>
+      /* Estilo para que el borde del select2 sea igual al de los inputs form-control */
+      .select2-container .select2-selection--single,
+      .select2-container .select2-selection--multiple {
+          border: 1px solid #ced4da !important; /* Ajusta el color y el grosor del borde según tus necesidades */
+      }
+
+      /* Estilo para resaltar el borde cuando el select2 tiene foco */
+      .select2-container .select2-selection--single:focus,
+      .select2-container .select2-selection--multiple:focus {
+          border-color: #80bdff !important; /* Puedes ajustar el color de resaltado del borde al tener foco */
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
+      }
+    </style>
   </head>
   <body>
     <!-- Loader starts-->
@@ -55,17 +70,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
                 </div>
                 <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-hover" id="tablaUsuarios">
+                  <div class="dt-ext table-responsive">
+                    <table class="table table-hover display" id="tablaCargas">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
-                          <th>Usuario</th>
-                          <th>Perfil</th>
-                          <th>Email</th>
-                          <th>Estado</th>
-                          <th>Fecha alta</th>
+                          <th>Fecha</th>
+                          <th>Origen</th>
+                          <th>Chofer</th>
+                          <th>Kilos</th>
+                          <th>Monto</th>
+                          <!-- <th>Datos adicionales del chofer</th> -->
                           <th>Acciones</th>
+                          <th class="none">Despachado:</th>
+                          <th class="none">Usuario:</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -108,37 +126,48 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Usuario:</label>
-                    <input type="text" class="form-control" id="usuario" required>
+                    <label for="fecha_carga" class="col-form-label">Fecha de carga:</label>
+                    <input type="date" class="form-control" id="fecha_carga" value="<?=$hoy?>" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Perfil</label>
-                    <select class="form-control" id="id_perfil" required>
-                      <option value="">Seleccione</option>
-                    </select>
+                    <label for="id_origen" class="col-form-label">Origen</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_origen" required></select>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
+                    <label for="id_chofer" class="col-form-label">Chofer:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_chofer" required></select>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="email" class="form-control" id="email">
+                    <label for="datos_adicionales_chofer" class="col-form-label">Datos adicionales del chofer:</label>
+                    <input type="text" class="form-control" id="datos_adicionales_chofer">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="id_proveedor_default" class="col-form-label">Proveedor:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default" required></select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    
                   </div>
                 </div>
               </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar y continuar</button>
             </div>
           </form>
         </div>
@@ -157,56 +186,109 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script src="assets/js/sidebar-menu.js"></script>
     <script src="assets/js/config.js"></script>
     <!-- Plugins JS start-->
-    <script src="assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
     <!--<script src="assets/js/datatable/datatables/datatable.custom.js"></script>-->
+    <script src="assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.buttons.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/jszip.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.colVis.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/pdfmake.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/vfs_fonts.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.autoFill.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.select.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.html5.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.print.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.responsive.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/responsive.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.keyTable.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.colReorder.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.fixedHeader.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.rowReorder.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.scroller.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/custom.js"></script>
     <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
     <script src="assets/js/chat-menu.js"></script>
     <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/select2/select2.full.min.js"></script>
+    <script src="assets/js/select2/select2-custom.js"></script>
     <!-- Plugins JS Ends-->
     <!-- Theme js-->
     <script src="assets/js/script.js"></script>
     <!--<script src="assets/js/theme-customizer/customizer.js"></script>-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaUsuarios= $('#tablaUsuarios').DataTable({
+        tablaCargas= $('#tablaCargas').DataTable({
           "ajax": {
-            "url" : "./models/administrar_usuarios.php?accion=traerUsuarios",
+            "url" : "./models/administrar_cargas.php?accion=traerCargas",
             "dataSrc": "",
           },
+          "responsive": true,
           "columns":[
-            {"data": "id_usuario"},
-            {"data": "usuario"},
-            {"data": "perfil"},
-            {"data": "email"},
+            {"data": "id_carga"},
+            {"data": "fecha_formatted"},
+            {"data": "origen"},
+            //{"data": "chofer"},
             {
               render: function(data, type, full, meta) {
                 return ()=>{
-                  const estados = {
-                    0: "Inactivo",
-                    1: "Activo",
+                  let datos_adicionales_chofer
+                  if(full.datos_adicionales_chofer!=""){
+                    datos_adicionales_chofer=" ("+full.datos_adicionales_chofer+")"
                   }
-                  $options="";
-                  for(key in estados){
-                    if(full.activo == key){
-                      $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
-                    }else{
-                      $options+=`<option value="${key}">${estados[key]}</option>`;
-                    }
-                  }
-                  $selectInit = `<select class="estado">`;
-                  $selectEnd = "</select>";
-                  $selectComplete = $selectInit + $options+$selectEnd
-
-                  return $selectComplete;
+                  return full.chofer+datos_adicionales_chofer;
                 };
               }
             },
-            {"data": "fecha_alta"},
-            {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
+            //{"data": "datos_adicionales_chofer"},
+            //{"data": "total_kilos"},
+            {render: function(data, type, full, meta) {
+              return formatNumber2Decimal(full.total_kilos);
+            }},
+            //{"data": "total_monto"},
+            {render: function(data, type, full, meta) {
+              return formatCurrency(full.total_monto);
+            }},
+            {
+              render: function(data, type, full, meta) {
+                return ()=>{
+                  $buttonsGroup="<div class='text-center'><div class='btn-group'>";
+                  $btnEliminar=''
+                  $btnEditar=''
+                  $btnGestionarCarga=''
+                  $btnDespachar=''
+                  if(full.despachado=="No"){
+                    $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                    $btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
+                  }
+
+                  $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
+                  $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
+                  
+                  $buttonsGroupEnd=`</div></div>`
+
+                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnDespachar+$buttonsGroupEnd
+                  
+                  return $btnComplete;
+                };
+              }
+            },
+            {"data": "despachado"},
+            {"data": "usuario"},
           ],
-          "language":  idiomaEsp
+          "columnDefs": [
+            {
+              "targets": [4,5],
+              "className": 'text-right'
+            }
+          ],
+          "language":  idiomaEsp,
+          initComplete: function(settings, json){
+            $('[title]').tooltip();
+          }
         });
         
         cargarDatosComponentes();
@@ -310,7 +392,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosIniciales.append('accion', 'traerDatosIniciales');
         $.ajax({
           data: datosIniciales,
-          url: "./models/administrar_usuarios.php",
+          url: "./models/administrar_cargas.php",
           method: "post",
           cache: false,
           contentType: false,
@@ -322,17 +404,41 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
 
-            /*Identifico el select de perfiles*/
-            $selecPerfil = document.getElementById("id_perfil");
-
-            /*Genero los options del select perfiles*/
-            respuestaJson.perfiles.forEach((perfil)=>{
+            /*Identifico el select de choferes*/
+            $selectChofer = document.getElementById("id_chofer");
+            //Genero los options del select choferes
+            respuestaJson.choferes.forEach((chofer)=>{
               $option = document.createElement("option");
-              let optionText = document.createTextNode(perfil.perfil);
+              let optionText = document.createTextNode(chofer.chofer);
               $option.appendChild(optionText);
-              $option.setAttribute("value", perfil.id_perfil);
-              $selecPerfil.appendChild($option);
+              $option.setAttribute("value", chofer.id_chofer);
+              $selectChofer.appendChild($option);
             })
+            $($selectChofer).select2()
+
+            /*Identifico el select de origenes*/
+            $selectOrigen = document.getElementById("id_origen");
+            //Genero los options del select origenes
+            respuestaJson.origenes.forEach((origen)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(origen.origen);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", origen.id_origen);
+              $selectOrigen.appendChild($option);
+            })
+            $($selectOrigen).select2()
+
+            /*Identifico el select de proveedores*/
+            $selectProveedor = document.getElementById("id_proveedor_default");
+            //Genero los options del select proveedores
+            respuestaJson.proveedores.forEach((proveedor)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(proveedor.proveedor);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", proveedor.id_proveedor);
+              $selectProveedor.appendChild($option);
+            })
+            $($selectProveedor).select2()
 
           }
         });
@@ -342,31 +448,34 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta usuarios");
+        $(".modal-title").text("Alta de carga");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("usuario").focus();
+          document.getElementById("fecha_carga").focus();
         })
-        accion = "addUsuario";
+        accion = "addCarga";
       });
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
-        let usuario = $.trim($('#usuario').val());
-        let id_usuario = $.trim($('#id_usuario').html());
-        let id_perfil = $.trim($('#id_perfil').val());
-        let email = $.trim($('#email').val());
-        let clave = $.trim($('#clave').val());
+        let id_carga = $.trim($('#id_carga').html());
+        let fecha_carga = $.trim($('#fecha_carga').val());
+        let id_origen = $.trim($('#id_origen').val());
+        let id_chofer = $.trim($('#id_chofer').val());
+        let datos_adicionales_chofer = $.trim($('#datos_adicionales_chofer').val());
+        let id_proveedor_default = $.trim($('#id_proveedor_default').val());
 
         $.ajax({
-          url: "models/administrar_usuarios.php",
+          url: "models/administrar_cargas.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, usuario: usuario, id_perfil:id_perfil, email:email, clave:clave},
-          success: function(data) {
-            if(data=="1"){
-              tablaUsuarios.ajax.reload(null, false);
+          data:  {accion:accion, fecha_carga:fecha_carga, id_origen:id_origen, id_chofer:id_chofer, datos_adicionales_chofer:datos_adicionales_chofer, id_proveedor_default:id_proveedor_default, id_carga:id_carga},
+          success: function(respuesta) {
+            respuestaJson = JSON.parse(respuesta);
+            if(respuestaJson.ok=="1"){
+              //tablaCargas.ajax.reload(null, false);
+              window.location.href="cargas_abm.php?id="+respuestaJson.id_carga;
             }else{
               swal({
                 icon: 'error',
@@ -375,11 +484,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             }
           }
         });
-        $('#modalCRUDadmin').modal('hide');
+        /*$('#modalCRUDadmin').modal('hide');
         swal({
           icon: 'success',
           title: 'Accion realizada correctamente'
-        });
+        });*/
       });
 
       $(document).on("click", ".btnEditar", function(){
@@ -391,11 +500,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let id_usuario = fila.find('td:eq(0)').text();
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerUsuarioUpdate');
+        datosUpdate.append('accion', 'traerCargaUpdate');
         datosUpdate.append('id_usuario', id_usuario);
         $.ajax({
           data: datosUpdate,
-          url: './models/administrar_usuarios.php',
+          url: './models/administrar_cargas.php',
           method: "post",
           cache: false,
           contentType: false,
@@ -412,11 +521,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $('#usuario').val(datosInput.usuario)
             $('#id_usuario').html(datosInput.id_usuario)
 
-            accion = "updateUsuario";
+            accion = "updateCarga";
           }
         });
 
         $('#modalCRUD').modal('show');
+      });
+
+      $(document).on("click", ".btnGestionar", function(){
+        fila = $(this).closest("tr");
+        let id_carga = fila.find('td:eq(0)').text();
+        window.location.href="cargas_abm.php?id="+id_carga
       });
 
       //Borrar
@@ -432,15 +547,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         })
         .then((willDelete) => {
           if (willDelete) {
-            accion = "eliminarUsuario";
+            accion = "eliminarCarga";
             $.ajax({
-              url: "models/administrar_usuarios.php",
+              url: "models/administrar_cargas.php",
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_usuario:id_usuario},
               success: function() {
-                //tablaUsuarios.row(fila.parents('tr')).remove().draw();
-                tablaUsuarios.ajax.reload(null, false);
+                //tablaCargas.row(fila.parents('tr')).remove().draw();
+                tablaCargas.ajax.reload(null, false);
               }
             }); 
           } else {
@@ -455,13 +570,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());
         accion = "cambiarEstado";
         $.ajax({
-          url: "models/administrar_usuarios.php",
+          url: "models/administrar_cargas.php",
           type: "POST",
           datatype:"json",
           data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},    
           success: function(data) {
             $('#modalCRUD').modal('hide');
-            tablaUsuarios.ajax.reload(null, false);
+            tablaCargas.ajax.reload(null, false);
             swal({
               icon: 'success',
               title: 'Estado cambiado exitosamente'

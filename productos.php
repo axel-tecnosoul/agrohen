@@ -48,7 +48,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>Producto</h3>
+                  <h3>Productos</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
                     <li class="breadcrumb-item active">Productos</li>
