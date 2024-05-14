@@ -81,12 +81,22 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Kilos</th>
                           <th>Monto</th>
                           <!-- <th>Datos adicionales del chofer</th> -->
-                          <th>Acciones</th>
+                          <th class="text-center">Acciones</th>
                           <th class="none">Despachado:</th>
                           <th class="none">Usuario:</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
+                      <tfoot>
+                        <tr>
+                          <th style="text-align:right" colspan="4">Totales</th>
+                          <th style="text-align:right">Total kilos</th>
+                          <th style="text-align:right">Total Monto</th>
+                          <th class="text-center">Acciones</th>
+                          <th class="none"></th>
+                          <th class="none"></th>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 </div>
@@ -118,7 +128,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_usuario" class="d-none"></span>
+            <span id="id_carga" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAdmin">
@@ -261,11 +271,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   $btnGestionarCarga=''
                   $btnDespachar=''
                   if(full.despachado=="No"){
+                    $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                     $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
                     $btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
                   }
 
-                  $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                   $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                   
                   $buttonsGroupEnd=`</div></div>`
@@ -286,6 +296,22 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             }
           ],
           "language":  idiomaEsp,
+          drawCallback: function(settings) {
+            if(settings.json){
+              let suma_kilos=0;
+              let suma_monto=0;
+              settings.json.forEach(row => {
+                suma_kilos+=parseFloat(row.total_kilos)
+                suma_monto+=parseFloat(row.total_monto)
+              });
+              // Update footer
+              var api = this.api();
+              $(api.column(4).footer()).html(formatNumber2Decimal(suma_kilos));
+              $(api.column(5).footer()).html(formatCurrency(suma_monto));
+              //$("#total_bultos").html(suma_bultos);
+              //$("#total_kilos").html(suma_kilos);
+            }
+          },
           initComplete: function(settings, json){
             $('[title]').tooltip();
           }
@@ -494,14 +520,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar usuario");
+        $(".modal-title").text("Editar carga");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
-        let id_usuario = fila.find('td:eq(0)').text();
+        let id_carga = fila.find('td:eq(0)').text();
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerCargaUpdate');
-        datosUpdate.append('id_usuario', id_usuario);
+        datosUpdate.append('accion', 'getDatosCarga');
+        datosUpdate.append('id_carga', id_carga);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_cargas.php',
@@ -515,11 +541,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
-            $("#email").val(datosInput.email);
-            $("#clave").val(datosInput.password);
-            $("#id_perfil").val(datosInput.id_perfil);
-            $('#usuario').val(datosInput.usuario)
-            $('#id_usuario').html(datosInput.id_usuario)
+            $("#fecha_carga").val(datosInput.fecha);
+            $("#id_origen").val(datosInput.id_origen).change();
+            $("#id_chofer").val(datosInput.id_chofer).change();
+            $('#datos_adicionales_chofer').val(datosInput.datos_adicionales_chofer)
+            $('#id_proveedor_default').val(datosInput.id_proveedor).change()
+            $('#id_carga').html(id_carga)
 
             accion = "updateCarga";
           }
@@ -534,13 +561,46 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         window.location.href="cargas_abm.php?id="+id_carga
       });
 
+      $(document).on("click", ".btnDespachar", function(){
+        fila = $(this);
+        id_carga = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        swal({
+          title: "Estas seguro?",
+          text: "Una vez despachada esta carga, no podras modificarla",
+          icon: "info",
+          buttons: true,
+          dangerMode: true,
+        })
+        .then((willDelete) => {
+          if (willDelete) {
+            accion = "despacharCarga";
+            $.ajax({
+              url: "models/administrar_cargas.php",
+              type: "POST",
+              datatype:"json",
+              data:  {accion:accion, id_carga:id_carga},
+              success: function() {
+                //tablaCargas.row(fila.parents('tr')).remove().draw();
+                tablaCargas.ajax.reload(null, false);
+                swal({
+                  icon: 'success',
+                  title: 'Carga despachada correctamente'
+                })
+              }
+            });
+          } else {
+            swal("La carga no se despachó!");
+          }
+        })
+      });
+
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
         fila = $(this);
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+        id_carga = parseInt($(this).closest('tr').find('td:eq(0)').text());       
         swal({
           title: "Estas seguro?",
-          text: "Una vez eliminado este usuario, no volveras a verlo",
+          text: "Se eliminaran todos los productos y destinos asignados. Una vez eliminada esta carga, no volveras a verla",
           icon: "warning",
           buttons: true,
           dangerMode: true,
@@ -552,38 +612,21 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               url: "models/administrar_cargas.php",
               type: "POST",
               datatype:"json",
-              data:  {accion:accion, id_usuario:id_usuario},
+              data:  {accion:accion, id_carga:id_carga},
               success: function() {
                 //tablaCargas.row(fila.parents('tr')).remove().draw();
                 tablaCargas.ajax.reload(null, false);
+                swal({
+                  icon: 'success',
+                  title: 'Carga eliminada correctamente'
+                })
               }
             }); 
           } else {
-            swal("El registro no se eliminó!");
+            swal("La carga no se eliminó!");
           }
         })
       });
-
-      $(document).on("change", ".estado", function(){
-        fila = $(this);
-        nuevoEstado = $(this).val();
-        id_usuario = parseInt($(this).closest('tr').find('td:eq(0)').text());
-        accion = "cambiarEstado";
-        $.ajax({
-          url: "models/administrar_cargas.php",
-          type: "POST",
-          datatype:"json",
-          data:  {accion: accion, id_usuario: id_usuario, estado: nuevoEstado},    
-          success: function(data) {
-            $('#modalCRUD').modal('hide');
-            tablaCargas.ajax.reload(null, false);
-            swal({
-              icon: 'success',
-              title: 'Estado cambiado exitosamente'
-            });
-          }
-        })
-      })
     </script>
   </body>
 </html>

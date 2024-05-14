@@ -134,9 +134,14 @@ class cargas{
   public function getDatosCarga($id_carga){
     $datosCarga = array();
 
-    $queryCarga = "SELECT id_proveedor_default as id_proveedor, fecha, id_origen, o.nombre AS origen, id_chofer, datos_adicionales_chofer, ch.nombre AS chofer FROM carga c INNER JOIN origen o ON c.id_origen=o.id INNER JOIN choferes ch ON c.id_chofer=ch.id WHERE c.id = $id_carga";
+    $queryCarga = "SELECT id_proveedor_default as id_proveedor, fecha, id_origen, o.nombre AS origen, id_chofer, datos_adicionales_chofer, ch.nombre AS chofer,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario FROM carga c INNER JOIN origen o ON c.id_origen=o.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE c.id = $id_carga";
     $getCarga = $this->conexion->consultaRetorno($queryCarga);
     $rowCarga = $getCarga->fetch_array();
+
+    $fecha_hora_despacho="(La carga aún no fue despachada)";
+    if($rowCarga['fecha_hora_despacho']){
+      $fecha_hora_despacho=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_despacho']));
+    }
 
     $datosCarga=[
       'id_proveedor' =>$rowCarga['id_proveedor'],
@@ -147,13 +152,16 @@ class cargas{
       'id_chofer' =>$rowCarga['id_chofer'],
       'datos_adicionales_chofer' =>$rowCarga['datos_adicionales_chofer'],
       'chofer' =>$rowCarga['chofer'],
+      'despachado' =>$rowCarga['despachado'],
+      'fecha_hora_despacho' =>$fecha_hora_despacho,
+      'usuario' =>$rowCarga['usuario'],
     ];
 
     echo json_encode($datosCarga);
   }
 
   public function traerCargas(){
-    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_kilos,total_monto,IF(c.despachado=0,'No','Si') AS despachado,c.id_usuario,u.usuario,c.anulado FROM carga c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origen o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
+    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM carga c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origen o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cargas = array(); //creamos un array
     
@@ -169,6 +177,7 @@ class cargas{
         'datos_adicionales_chofer'=>$row['datos_adicionales_chofer'],
         'total_kilos'=>$row['total_kilos'],
         'total_monto'=>$row['total_monto'],
+        'fecha_hora_despacho'=>date("d-m-Y H:i",strtotime($row['fecha_hora_despacho'])),
         'despachado'=>$row['despachado'],
         'id_usuario'=>$row['id_usuario'],
         'usuario'=>$row['usuario'],
@@ -316,24 +325,30 @@ class cargas{
     return $respuesta;
   }
 
-  public function deletedeposito($id_deposito){
-    $this->id_deposito = $id_deposito;
+  public function eliminarCarga($id_carga){
 
-    /*ELIMINO ALMACEN*/
-    $sqldeletedeposito = "DELETE FROM destino WHERE id = $this->id_deposito";
-    $deletedeposito = $this->conexion->consultaSimple($sqldeletedeposito);
+    $sqltraerCargas = "SELECT id FROM carga_producto WHERE id_carga = ".$id_carga;
+    $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
+    $cant=$cantOk=0;
+    while ($row = $traerCargas->fetch_array()) {
+      $cant++;
+      $id_carga_producto=$row["id"];
+      $respuesta=$this->eliminarProductoCarga($id_carga_producto,$id_carga);
+      if($respuesta=="ok"){
+        $cantOk++;
+      }
+    }
+
+    if($cant==$cantOk){
+      /*ELIMINO la carga*/
+      $sqleliminarCarga = "DELETE FROM carga WHERE id = $id_carga";
+      $eliminarCarga = $this->conexion->consultaSimple($sqleliminarCarga);
+    }
   }
 
-  public function cambiarEstado($id_deposito, $estado){
-    $this->id_deposito = $id_deposito;
-    
-    /*if ($estado == 'Activo') {
-      $estado = 1;
-    }else{
-      $estado = 0;
-    }*/
+  public function despacharCarga($id_carga){
 
-    $queryUpdateEstado = "UPDATE destino SET activo = $estado WHERE id = $this->id_deposito";
+    $queryUpdateEstado = "UPDATE carga SET fecha_hora_despacho = NOW() WHERE id = $id_carga";
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
@@ -426,24 +441,27 @@ class cargas{
 
   public function eliminarProductoCarga($id_carga_producto,$id_carga){
 
-    /*ELIMINO ALMACEN*/
+    /*ELIMINO los destinos*/
     $sqleliminarProductoCarga = "DELETE FROM carga_producto_destinos WHERE id_carga_producto = $id_carga_producto";
     $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
+    $respuesta="";
     if($mensajeError==""){
-
-      /*ELIMINO ALMACEN*/
+      /*ELIMINO el producto*/
       $sqleliminarProductoCarga = "DELETE FROM carga_producto WHERE id = $id_carga_producto";
       $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
       $mensajeError=$this->conexion->conectar->error;
       if($mensajeError==""){
         $this->updateTotalesCarga($id_carga);
+        $respuesta="ok";
       }else{
-        echo $mensajeError;
+        $respuesta=$mensajeError;
       }
     }else{
-      echo $mensajeError;
+      $respuesta=$mensajeError;
     }
+
+    return $respuesta;
   }
 
   private function updateTotalesCarga($id_carga){
@@ -473,6 +491,28 @@ class cargas{
         $respuesta="Algo ha fallado al actualizar los kilos y el monto total del producto";
       }
   }
+
+  public function updateCarga($id_carga,$fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default){
+
+    $id_usuario = $_SESSION['rowUsers']['id_usuario'];
+
+    $queryUpdateCarga = "UPDATE carga SET fecha='$fecha_carga', id_origen=$id_origen, id_chofer=$id_chofer, datos_adicionales_chofer='$datos_adicionales_chofer', id_proveedor_default=$id_proveedor_default WHERE id = $id_carga";
+    $insertCarga = $this->conexion->consultaSimple($queryUpdateCarga);
+    $mensajeError=$this->conexion->conectar->error;
+
+    $respuesta=$mensajeError;
+    if($mensajeError!=""){
+      $respuesta.="<br><br>".$queryUpdateCarga;
+    }else{
+      $respuesta=[
+        "ok"=>1,
+        "id_carga"=>$id_carga,
+      ];
+      $respuesta=json_encode($respuesta);
+    }
+    
+    return $respuesta;
+  }
 }	
 
 if (isset($_POST['accion'])) {
@@ -485,15 +525,14 @@ if (isset($_POST['accion'])) {
       $id_carga_producto = $_POST['id_carga_producto'];
       echo $cargas->traerProductoDestinosCarga($id_carga_producto);
     break;
-    case 'updateDeposito':
-      $id_deposito = $_POST['id_deposito'];
-      $nombre = $_POST['nombre'];
-      $id_responsable = $_POST['id_responsable'];
-      $porcentaje_extra = $_POST['porcentaje_extra'];
-      if(empty($porcentaje_extra)){
-        $porcentaje_extra=0;
-      }
-      echo $cargas->depositoUpdate($id_deposito, $nombre, $id_responsable, $porcentaje_extra);
+    case 'updateCarga':
+      $id_carga = $_POST['id_carga'];
+      $fecha_carga=$_POST["fecha_carga"];
+      $id_origen=$_POST["id_origen"];
+      $id_chofer=$_POST["id_chofer"];
+      $datos_adicionales_chofer=$_POST["datos_adicionales_chofer"];
+      $id_proveedor_default=$_POST["id_proveedor_default"];
+      echo $cargas->updateCarga($id_carga,$fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default);
     break;
     case 'updateProductoCarga':
       $id_carga_producto=$_POST["id_carga_producto"];
@@ -505,14 +544,13 @@ if (isset($_POST['accion'])) {
       $datosDepositos=$_POST["datosDepositos"];
       echo $cargas->updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$datosDepositos);
     break;
-    case 'cambiarEstado':
-      $id_deposito = $_POST['id_deposito'];
-      $estado = $_POST['estado'];
-      $cargas->cambiarEstado($id_deposito, $estado);
+    case 'despacharCarga':
+      $id_carga = $_POST['id_carga'];
+      $cargas->despacharCarga($id_carga);
     break;
-    case 'eliminarDeposito':
-      $id_deposito = $_POST['id_deposito'];
-      $cargas->deletedeposito($id_deposito);
+    case 'eliminarCarga':
+      $id_carga = $_POST['id_carga'];
+      $cargas->eliminarCarga($id_carga);
     break;
     case 'traerDatosIniciales':
       $cargas->traerDatosIniciales();

@@ -107,10 +107,17 @@ if(isset($_GET["id"])){
                             <div class="col-sm-3 text-right"><strong>Datos adicionales chofer:</strong></div>
                             <div class="col-sm-5" id="datos_adicionales_chofer_carga"></div>
                           </div>
+                          <div class="row">
+                            <div class="col-sm-2 text-right"><strong>Usuario:</strong></div>
+                            <div class="col-sm-2" id="usuario"></div>
+                            <div class="col-sm-3 text-right"><strong>Fecha y hora despacho:</strong></div>
+                            <div class="col-sm-5" id="fecha_hora_despacho"></div>
+                          </div>
                           <input type="hidden" id="id_carga" value="<?=$id?>">
                           <input type="hidden" id="id_chofer">
                           <input type="hidden" id="id_origen">
                           <input type="hidden" id="id_proveedor_default">
+                          <input type="hidden" id="despachado">
                         </div>
                       </div>
                     </div>
@@ -127,7 +134,7 @@ if(isset($_GET["id"])){
                           <th style="text-align:right">Kg x bulto</th>
                           <th style="text-align:right">Total kilos</th>
                           <th style="text-align:right">Total Monto</th>
-                          <th>Acciones</th>
+                          <th class="text-center">Acciones</th>
                           <th class="none">Usuario:</th>
                           <th class="none">Fecha y hora de alta:</th>
                         </tr>
@@ -135,10 +142,10 @@ if(isset($_GET["id"])){
                       <tbody></tbody>
                       <tfoot>
                         <tr>
-                          <th style="text-align:right" colspan="4">Total
-                          <th style="text-align:right">Total kilos</th>es</th>
+                          <th style="text-align:right" colspan="4">Totales</th>
+                          <th style="text-align:right">Total kilos</th>
                           <th style="text-align:right">Total Monto</th>
-                          <th>Acciones</th>
+                          <th class="text-center">Acciones</th>
                           <th class="none"></th>
                           <th class="none"></th>
                         </tr>
@@ -291,6 +298,10 @@ if(isset($_GET["id"])){
       var accion
       var id_carga=$("#id_carga").val();
       var bandera_buscar_producto=true;
+
+      cargarDatosComponentes();
+      getDatosCarga();
+
       $(document).ready(function(){
 
         tablaProductosCarga= $('#tablaProductosCarga').DataTable({
@@ -314,7 +325,27 @@ if(isset($_GET["id"])){
             {render: function(data, type, full, meta) {
               return formatCurrency(full.total_monto);
             }},
-            {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
+            {
+              render: function(data, type, full, meta) {
+                return ()=>{
+                  $buttonsGroup="<div class='text-center'><div class='btn-group'>";
+                  $btnEliminar=''
+                  $btnEditar=''
+                  if(full.despachado=="No"){
+                    $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
+                    $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                  }else{
+                    
+                  }
+                  
+                  $buttonsGroupEnd=`</div></div>`
+
+                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$buttonsGroupEnd
+                  
+                  return $btnComplete;
+                };
+              }
+            },
             {"data": "usuario"},
             {"data": "fecha_hora_alta"},
           ],
@@ -345,9 +376,6 @@ if(isset($_GET["id"])){
             $('[title]').tooltip();
           }
         });
-        
-        cargarDatosComponentes();
-        getDatosCarga();
 
         $("#id_familia").on("change", function(e){
           let id_familia=this.value
@@ -547,6 +575,10 @@ if(isset($_GET["id"])){
                 success: function() {
                   //tablaProductosCarga.row(fila.parents('tr')).remove().draw();
                   tablaProductosCarga.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Producto eliminado correctamente'
+                  })
                 }
               }); 
             } else {
@@ -862,10 +894,13 @@ if(isset($_GET["id"])){
             $("#origen_carga").html(data.origen)
             $("#chofer_carga").html(data.chofer)
             $("#datos_adicionales_chofer_carga").html(data.datos_adicionales_chofer)
+            $("#fecha_hora_despacho").html(data.fecha_hora_despacho)
+            $("#usuario").html(data.usuario)
 
             $("#id_chofer").val(data.id_chofer)
             $("#id_origen").val(data.id_origen)
             $("#id_proveedor_default").val(data.id_proveedor)
+            $("#despachado").val(data.despachado)
           }
         });
       }
