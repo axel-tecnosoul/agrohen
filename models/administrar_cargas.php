@@ -192,23 +192,25 @@ class cargas{
     $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM carga_producto cp INNER JOIN producto p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
     //echo $sqltraerProductosCarga;
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
-    $cargas = array(); //creamos un array
     
-    while ($row = $traerProductosCarga->fetch_array()) {
-      $cargas[] = array(
-        'id_carga_producto'=>$row['id_carga_producto'],
-        'id_producto'=>$row['id_producto'],
-        'familia'=>$row['familia'],
-        'presentacion'=>$row['presentacion'],
-        'unidad_medida'=>$row['unidad_medida'],
-        'producto'=>$row['producto'],
-        'proveedor'=>$row['proveedor'],
-        'kg_x_bulto'=>$row['kg_x_bulto'],
-        'total_kilos'=>$row['total_kilos'],
-        'total_monto'=>$row['total_monto'],
-        'usuario'=>$row['usuario'],
-        'fecha_hora_alta'=>$row['fecha_hora_alta'],
-      );
+    $cargas = array(); //creamos un array
+    if($traerProductosCarga){
+      while ($row = $traerProductosCarga->fetch_array()) {
+        $cargas[] = array(
+          'id_carga_producto'=>$row['id_carga_producto'],
+          'id_producto'=>$row['id_producto'],
+          'familia'=>$row['familia'],
+          'presentacion'=>$row['presentacion'],
+          'unidad_medida'=>$row['unidad_medida'],
+          'producto'=>$row['producto'],
+          'proveedor'=>$row['proveedor'],
+          'kg_x_bulto'=>$row['kg_x_bulto'],
+          'total_kilos'=>$row['total_kilos'],
+          'total_monto'=>$row['total_monto'],
+          'usuario'=>$row['usuario'],
+          'fecha_hora_alta'=>$row['fecha_hora_alta'],
+        );
+      }
     }
 
     return json_encode($cargas);

@@ -331,11 +331,12 @@ if(isset($_GET["id"])){
                   $buttonsGroup="<div class='text-center'><div class='btn-group'>";
                   $btnEliminar=''
                   $btnEditar=''
-                  if(full.despachado=="No"){
+                  let despachado=$("#despachado").val();
+                  if(despachado=="No"){
                     $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                     $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
                   }else{
-                    
+
                   }
                   
                   $buttonsGroupEnd=`</div></div>`
@@ -901,6 +902,10 @@ if(isset($_GET["id"])){
             $("#id_origen").val(data.id_origen)
             $("#id_proveedor_default").val(data.id_proveedor)
             $("#despachado").val(data.despachado)
+            if(data.despachado=="Si"){
+              $("#btnNuevo").remove();
+              $("#modalCRUDadmin").remove();
+            }
           }
         });
       }

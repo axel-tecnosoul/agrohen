@@ -123,7 +123,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     </div>
 
     <!--Modal para CRUD admin-->
-    <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCRUDadmin" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -162,9 +162,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 </div>
               </div>
               <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                   <div class="form-group">
-                    <label for="id_proveedor_default" class="col-form-label">Proveedor:</label>
+                    <label for="id_proveedor_default" class="col-form-label">Proveedor por defecto:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default" required></select>
                   </div>
                 </div>
