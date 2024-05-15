@@ -16,8 +16,8 @@
     $script_name=$script_name[count($script_name)-1];
   
     if ($_SESSION['rowUsers']['id_perfil'] == 1) {?>
-      <li><a class="sidebar-header" href="cargas.php"><i data-feather="user"></i><span>Cargas</span><i class="fa fa-angle-right pull-right"></i></a></li>
-      <li><a class="sidebar-header" href="cuenta_corriente.php"><i data-feather="user"></i><span>Cta Cte</span><i class="fa fa-angle-right pull-right"></i></a></li>
+      <li><a class="sidebar-header" href="cargas.php"><i data-feather="truck"></i><span>Cargas</span><i class="fa fa-angle-right pull-right"></i></a></li>
+      <li><a class="sidebar-header" href="cuenta_corriente.php"><i data-feather="dollar-sign"></i><span>Cta Cte</span><i class="fa fa-angle-right pull-right"></i></a></li>
 
       <li><a class="sidebar-header" href="#"><i data-feather="plus"></i><span>Maestros</span><i class="fa fa-angle-right pull-right"></i></a>
         <ul class="sidebar-submenu">
