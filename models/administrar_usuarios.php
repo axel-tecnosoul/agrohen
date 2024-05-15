@@ -32,7 +32,7 @@ class Usuarios{
     }
 
     /*DEPOSITOS*/
-    $queryDepositos = "SELECT id as id_deposito, nombre FROM destino WHERE activo = 1";
+    $queryDepositos = "SELECT id as id_deposito, nombre FROM destinos WHERE activo = 1";
     $getDepositoss = $this->conexion->consultaRetorno($queryDepositos);
 
     $arrayDepositos = array();
@@ -50,7 +50,7 @@ class Usuarios{
   }
 
   public function traerUsuarios(){
-    $sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil, d.nombre AS deposito FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id LEFT JOIN destino d ON u.id_deposito = d.id WHERE u.id!=1";
+    $sqlTraerClientes = "SELECT u.id AS id_usuario, u.usuario, u.email, u.activo, u.fecha_hora_alta, u.id_perfil, p.perfil, d.nombre AS deposito FROM usuarios u INNER JOIN perfiles p ON u.id_perfil=p.id LEFT JOIN destinos d ON u.id_deposito = d.id WHERE u.id!=1";
     $traerUsuarios = $this->conexion->consultaRetorno($sqlTraerClientes);
     $usuarios = array(); //creamos un array
     while ($row = $traerUsuarios->fetch_array()) {

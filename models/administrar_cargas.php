@@ -31,7 +31,7 @@ class cargas{
     }
 
     /*Origenes*/
-    $queryOrigenes = "SELECT id as id_origen, nombre FROM origen";
+    $queryOrigenes = "SELECT id as id_origen, nombre FROM origenes";
     $getOrigenes = $this->conexion->consultaRetorno($queryOrigenes);
     $arrayOrigenes[] = [
       'id_origen' => "",
@@ -76,7 +76,7 @@ class cargas{
     }
 
     /*Destino*/
-    $queryDestinos = "SELECT id as id_destino, nombre, porcentaje_extra FROM destino";
+    $queryDestinos = "SELECT id as id_destino, nombre, porcentaje_extra FROM destinos";
     $getDestinos = $this->conexion->consultaRetorno($queryDestinos);
     /*CARGO ARRAY Destinos*/
     while ($row = $getDestinos->fetch_array()) {
@@ -100,7 +100,7 @@ class cargas{
 
     if($id_familia>0){
       /*Productos*/
-      $queryProductos = "SELECT id as id_producto, nombre FROM producto WHERE id_familia = $id_familia";
+      $queryProductos = "SELECT id as id_producto, nombre FROM productos WHERE id_familia = $id_familia";
       $getProductos = $this->conexion->consultaRetorno($queryProductos);
 
       if ($getProductos->num_rows > 0) {
@@ -134,7 +134,7 @@ class cargas{
   public function getDatosCarga($id_carga){
     $datosCarga = array();
 
-    $queryCarga = "SELECT id_proveedor_default as id_proveedor, fecha, id_origen, o.nombre AS origen, id_chofer, datos_adicionales_chofer, ch.nombre AS chofer,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario FROM carga c INNER JOIN origen o ON c.id_origen=o.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE c.id = $id_carga";
+    $queryCarga = "SELECT id_proveedor_default as id_proveedor, fecha, id_origen, o.nombre AS origen, id_chofer, datos_adicionales_chofer, ch.nombre AS chofer,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario FROM cargas c INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE c.id = $id_carga";
     $getCarga = $this->conexion->consultaRetorno($queryCarga);
     $rowCarga = $getCarga->fetch_array();
 
@@ -161,7 +161,7 @@ class cargas{
   }
 
   public function traerCargas(){
-    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM carga c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origen o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
+    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cargas = array(); //creamos un array
     
@@ -189,7 +189,7 @@ class cargas{
   }
 
   public function traerProductosCarga($id_carga){
-    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM carga_producto cp INNER JOIN producto p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
+    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM carga_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
     //echo $sqltraerProductosCarga;
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
     
@@ -217,7 +217,7 @@ class cargas{
   }
 
   public function traerProductoDestinosCarga($id_carga_producto){
-    $sqlTraerProductoDestinosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,p.id_familia,cp.id_proveedor,cp.kg_x_bulto,cp.precio,cp.total_kilos,cp.total_monto FROM carga_producto cp INNER JOIN producto p ON cp.id_producto=p.id WHERE cp.id = $id_carga_producto";
+    $sqlTraerProductoDestinosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,p.id_familia,cp.id_proveedor,cp.kg_x_bulto,cp.precio,cp.total_kilos,cp.total_monto FROM carga_productos cp INNER JOIN productos p ON cp.id_producto=p.id WHERE cp.id = $id_carga_producto";
     //var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $row = $traerProductoCarga->fetch_array();
@@ -232,7 +232,7 @@ class cargas{
       'total_monto'=> $row['total_monto'],
     ];
 
-    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM carga_producto_destinos cpd INNER JOIN destino d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
+    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM carga_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
     //var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoDestinosCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $productoDestinosCarga=[];
@@ -254,7 +254,7 @@ class cargas{
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryUpdateProductoCarga = "UPDATE carga_producto SET id_producto=$id_producto, id_proveedor=$id_proveedor, kg_x_bulto=$kg_x_bulto, precio=$precio WHERE id = $id_carga_producto";
+    $queryUpdateProductoCarga = "UPDATE carga_productos SET id_producto=$id_producto, id_proveedor=$id_proveedor, kg_x_bulto=$kg_x_bulto, precio=$precio WHERE id = $id_carga_producto";
     $insertCarga = $this->conexion->consultaSimple($queryUpdateProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
 
@@ -273,16 +273,16 @@ class cargas{
       if($cantidad_bultos>0){
         $monto=$cantidad_bultos*$precio;
         if($id_producto_destino>0){
-          $query=$queryUpdateCarga = "UPDATE carga_producto_destinos SET id_destino = $id_deposito, porcentaje_extra = $porcentaje_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
+          $query=$queryUpdateCarga = "UPDATE carga_productos_destinos SET id_destino = $id_deposito, porcentaje_extra = $porcentaje_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
           $mensajeError=$this->conexion->conectar->error;
         }else{
-          $query=$queryInsertCarga = "INSERT INTO carga_producto_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $subtotal_kilos, $id_usuario)";
+          $query=$queryInsertCarga = "INSERT INTO carga_productos_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $subtotal_kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
         }
       }elseif($id_producto_destino>0){
-        $query=$sqleliminarProductoCarga = "DELETE FROM carga_producto_destinos WHERE id = $id_producto_destino";
+        $query=$sqleliminarProductoCarga = "DELETE FROM carga_productos_destinos WHERE id = $id_producto_destino";
         $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
         $mensajeError=$this->conexion->conectar->error;
       }
@@ -297,7 +297,7 @@ class cargas{
     $respuesta=$errores;
     if($respuesta==""){
 
-      $queryGetSumas = "SELECT SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM carga_producto_destinos WHERE id_carga_producto=".$id_carga_producto;
+      $queryGetSumas = "SELECT SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM carga_productos_destinos WHERE id_carga_producto=".$id_carga_producto;
       $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
       $row = $getSumas->fetch_array();
       $sumaKilos=0;
@@ -309,7 +309,7 @@ class cargas{
         $sumaMonto=$row["suma_monto"];
       }
 
-      $queryInsertCarga = "UPDATE carga_producto SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
+      $queryInsertCarga = "UPDATE carga_productos SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
 
@@ -329,7 +329,7 @@ class cargas{
 
   public function eliminarCarga($id_carga){
 
-    $sqltraerCargas = "SELECT id FROM carga_producto WHERE id_carga = ".$id_carga;
+    $sqltraerCargas = "SELECT id FROM carga_productos WHERE id_carga = ".$id_carga;
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cant=$cantOk=0;
     while ($row = $traerCargas->fetch_array()) {
@@ -343,14 +343,14 @@ class cargas{
 
     if($cant==$cantOk){
       /*ELIMINO la carga*/
-      $sqleliminarCarga = "DELETE FROM carga WHERE id = $id_carga";
+      $sqleliminarCarga = "DELETE FROM cargas WHERE id = $id_carga";
       $eliminarCarga = $this->conexion->consultaSimple($sqleliminarCarga);
     }
   }
 
   public function despacharCarga($id_carga){
 
-    $queryUpdateEstado = "UPDATE carga SET fecha_hora_despacho = NOW() WHERE id = $id_carga";
+    $queryUpdateEstado = "UPDATE cargas SET fecha_hora_despacho = NOW() WHERE id = $id_carga";
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
@@ -358,7 +358,7 @@ class cargas{
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertCarga = "INSERT INTO carga (id_chofer, id_origen, fecha, datos_adicionales_chofer, id_proveedor_default, id_usuario) VALUES($id_chofer, $id_origen, '$fecha_carga', '$datos_adicionales_chofer', '$id_proveedor_default', $id_usuario)";
+    $queryInsertCarga = "INSERT INTO cargas (id_chofer, id_origen, fecha, datos_adicionales_chofer, id_proveedor_default, id_usuario) VALUES($id_chofer, $id_origen, '$fecha_carga', '$datos_adicionales_chofer', '$id_proveedor_default', $id_usuario)";
     $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
     $mensajeError=$this->conexion->conectar->error;
     $id_carga=$this->conexion->conectar->insert_id;
@@ -381,7 +381,7 @@ class cargas{
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertCarga = "INSERT INTO carga_producto (id_carga, id_producto, id_proveedor, kg_x_bulto, precio, id_usuario) VALUES($id_carga, $id_producto, '$id_proveedor', '$kg_x_bulto', $precio, $id_usuario)";
+    $queryInsertCarga = "INSERT INTO carga_productos (id_carga, id_producto, id_proveedor, kg_x_bulto, precio, id_usuario) VALUES($id_carga, $id_producto, '$id_proveedor', '$kg_x_bulto', $precio, $id_usuario)";
     $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
     $mensajeError=$this->conexion->conectar->error;
     $id_carga_producto=$this->conexion->conectar->insert_id;
@@ -405,7 +405,7 @@ class cargas{
           $sumaMonto+=$monto;
           $sumaKilos+=$kilos;
 
-          $queryInsertCarga = "INSERT INTO carga_producto_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
+          $queryInsertCarga = "INSERT INTO carga_productos_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
           
@@ -420,7 +420,7 @@ class cargas{
       $respuesta=$errores;
       if($respuesta==""){
 
-        $queryInsertCarga = "UPDATE carga_producto SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
+        $queryInsertCarga = "UPDATE carga_productos SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
         $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
         $mensajeError=$this->conexion->conectar->error;
 
@@ -444,13 +444,13 @@ class cargas{
   public function eliminarProductoCarga($id_carga_producto,$id_carga){
 
     /*ELIMINO los destinos*/
-    $sqleliminarProductoCarga = "DELETE FROM carga_producto_destinos WHERE id_carga_producto = $id_carga_producto";
+    $sqleliminarProductoCarga = "DELETE FROM carga_productos_destinos WHERE id_carga_producto = $id_carga_producto";
     $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
     $respuesta="";
     if($mensajeError==""){
       /*ELIMINO el producto*/
-      $sqleliminarProductoCarga = "DELETE FROM carga_producto WHERE id = $id_carga_producto";
+      $sqleliminarProductoCarga = "DELETE FROM carga_productos WHERE id = $id_carga_producto";
       $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
       $mensajeError=$this->conexion->conectar->error;
       if($mensajeError==""){
@@ -468,7 +468,7 @@ class cargas{
 
   private function updateTotalesCarga($id_carga){
 
-    $queryGetSumas = "SELECT SUM(total_kilos) AS suma_kilos, SUM(total_monto) AS suma_monto FROM carga_producto WHERE id_carga=".$id_carga;
+    $queryGetSumas = "SELECT SUM(total_kilos) AS suma_kilos, SUM(total_monto) AS suma_monto FROM carga_productos WHERE id_carga=".$id_carga;
       $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
       $row = $getSumas->fetch_array();
       $sumaKilos=0;
@@ -480,7 +480,7 @@ class cargas{
         $sumaMonto=$row["suma_monto"];
       }
 
-      $queryInsertCarga = "UPDATE carga SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
+      $queryInsertCarga = "UPDATE cargas SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
 
@@ -498,7 +498,7 @@ class cargas{
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryUpdateCarga = "UPDATE carga SET fecha='$fecha_carga', id_origen=$id_origen, id_chofer=$id_chofer, datos_adicionales_chofer='$datos_adicionales_chofer', id_proveedor_default=$id_proveedor_default WHERE id = $id_carga";
+    $queryUpdateCarga = "UPDATE cargas SET fecha='$fecha_carga', id_origen=$id_origen, id_chofer=$id_chofer, datos_adicionales_chofer='$datos_adicionales_chofer', id_proveedor_default=$id_proveedor_default WHERE id = $id_carga";
     $insertCarga = $this->conexion->consultaSimple($queryUpdateCarga);
     $mensajeError=$this->conexion->conectar->error;
 

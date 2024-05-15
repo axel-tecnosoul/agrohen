@@ -67,7 +67,7 @@ class producto{
   }
 
   public function traerProducto(){
-    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM producto p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
+    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqltraerProducto);
     $producto = array(); //creamos un array
     
@@ -86,7 +86,7 @@ class producto{
 
   public function traerProductoUpdate($id_producto){
     $this->id_producto = $id_producto;
-    $sqlTraerproducto = "SELECT id as id_producto, nombre, id_presentacion, id_unidad_medida, id_familia FROM producto WHERE id = $this->id_producto";
+    $sqlTraerproducto = "SELECT id as id_producto, nombre, id_presentacion, id_unidad_medida, id_familia FROM productos WHERE id = $this->id_producto";
     $traerproducto = $this->conexion->consultaRetorno($sqlTraerproducto);
 
     $producto = array(); //creamos un array
@@ -106,7 +106,7 @@ class producto{
 
     $this->id_producto = $id_producto;
 
-    $sqlupdateProducto = "UPDATE producto SET nombre ='$nombre', id_presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
+    $sqlupdateProducto = "UPDATE productos SET nombre ='$nombre', id_presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
     $updateProducto = $this->conexion->consultaSimple($sqlupdateProducto);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -124,7 +124,7 @@ class producto{
     $this->id_producto = $id_producto;
 
     /*ELIMINO ALMACEN*/
-    $sqldeleteProducto = "DELETE FROM producto WHERE id = $this->id_producto";
+    $sqldeleteProducto = "DELETE FROM productos WHERE id = $this->id_producto";
     $deleteProducto = $this->conexion->consultaSimple($sqldeleteProducto);
   }
 
@@ -148,7 +148,7 @@ class producto{
     $this->id_familia = $id_familia;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO producto (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->id_presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
+    $queryInsertUser = "INSERT INTO productos (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->id_presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     

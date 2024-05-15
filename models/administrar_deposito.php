@@ -37,7 +37,7 @@ class depositos{
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destino d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     
@@ -55,7 +55,7 @@ class depositos{
 
   public function traerDepositoUpdate($id_deposito){
     $this->id_deposito = $id_deposito;
-    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, porcentaje_extra, activo FROM destino WHERE id = $this->id_deposito";
+    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, porcentaje_extra, activo FROM destinos WHERE id = $this->id_deposito";
     $traerdeposito = $this->conexion->consultaRetorno($sqlTraerdeposito);
 
     $depositos = array(); //creamos un array
@@ -77,7 +77,7 @@ class depositos{
     $this->id_responsable = $id_responsable;
     $this->porcentaje_extra = $porcentaje_extra;
 
-    $sqlUpdateDeposito = "UPDATE destino SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  porcentaje_extra ='$this->porcentaje_extra' WHERE id = $this->id_deposito";
+    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  porcentaje_extra ='$this->porcentaje_extra' WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -95,7 +95,7 @@ class depositos{
     $this->id_deposito = $id_deposito;
 
     /*ELIMINO ALMACEN*/
-    $sqldeletedeposito = "DELETE FROM destino WHERE id = $this->id_deposito";
+    $sqldeletedeposito = "DELETE FROM destinos WHERE id = $this->id_deposito";
     $deletedeposito = $this->conexion->consultaSimple($sqldeletedeposito);
   }
 
@@ -108,7 +108,7 @@ class depositos{
       $estado = 0;
     }*/
 
-    $queryUpdateEstado = "UPDATE destino SET activo = $estado WHERE id = $this->id_deposito";
+    $queryUpdateEstado = "UPDATE destinos SET activo = $estado WHERE id = $this->id_deposito";
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
@@ -118,7 +118,7 @@ class depositos{
     $this->porcentaje_extra = $porcentaje_extra;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO destino (id_usuario, nombre, id_responsable, porcentaje_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$this->porcentaje_extra', 1)";
+    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, porcentaje_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$this->porcentaje_extra', 1)";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     

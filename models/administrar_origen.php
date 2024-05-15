@@ -31,7 +31,7 @@ class origenes{
   }
 
   public function traerOrigenes(){
-    $sqltraerOrigenes = "SELECT id AS id_origen, nombre, activo FROM origen WHERE 1";
+    $sqltraerOrigenes = "SELECT id AS id_origen, nombre, activo FROM origenes WHERE 1";
     $traerOrigenes = $this->conexion->consultaRetorno($sqltraerOrigenes);
     $origenes = array(); //creamos un array
     
@@ -47,7 +47,7 @@ class origenes{
 
   public function traerOrigenUpdate($id_origen){
     $this->id_origen = $id_origen;
-    $sqlTraerorigen = "SELECT id as id_origen, nombre, activo FROM origen WHERE id = $this->id_origen";
+    $sqlTraerorigen = "SELECT id as id_origen, nombre, activo FROM origenes WHERE id = $this->id_origen";
     $traerorigen = $this->conexion->consultaRetorno($sqlTraerorigen);
 
     $origenes = array(); //creamos un array
@@ -64,7 +64,7 @@ class origenes{
 
     $this->id_origen = $id_origen;
 
-    $sqlupdateOrigen = "UPDATE origen SET nombre ='$nombre' WHERE id=$this->id_origen";
+    $sqlupdateOrigen = "UPDATE origenes SET nombre ='$nombre' WHERE id=$this->id_origen";
     $updateOrigen = $this->conexion->consultaSimple($sqlupdateOrigen);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -82,7 +82,7 @@ class origenes{
     $this->id_origen = $id_origen;
 
     /*ELIMINO ALMACEN*/
-    $sqldeleteOrigen = "DELETE FROM origen WHERE id = $this->id_origen";
+    $sqldeleteOrigen = "DELETE FROM origenes WHERE id = $this->id_origen";
     $deleteOrigen = $this->conexion->consultaSimple($sqldeleteOrigen);
   }
 
@@ -95,14 +95,14 @@ class origenes{
       $estado = 0;
     }*/
 
-    $queryUpdateEstado = "UPDATE origen SET activo = $estado WHERE id = $this->id_origen";
+    $queryUpdateEstado = "UPDATE origenes SET activo = $estado WHERE id = $this->id_origen";
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
   public function registrarOrigen( $nombre ){
     $this->nombre = $nombre;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertUser = "INSERT INTO origen (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
+    $queryInsertUser = "INSERT INTO origenes (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
