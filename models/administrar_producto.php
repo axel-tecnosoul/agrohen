@@ -42,7 +42,7 @@ class producto{
         'id_presentacion' => $row["id_presentacion"],
         'presentacion' =>$row["nombre"]
       ];
-    }
+    };
 
     /*Unidades de medida*/
     $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida";
@@ -57,11 +57,12 @@ class producto{
         'id_unidad_medida' => $row["id_unidad_medida"],
         'unidad_medida' =>$row["unidad_medida"]
       ];
-    }
+    };
 
     $datosIniciales["familias"] = $arrayFamilias;
     $datosIniciales["presentacion"] = $arrayPresentaciones;
     $datosIniciales["unidades_medidas"] = $arrayUnidadMedida;
+    //var_dump($datosIniciales);
     echo json_encode($datosIniciales);
   }
 

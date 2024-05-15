@@ -331,10 +331,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#addProdLocal').modal('hide');
           },
           success: function(respuesta){
-            
             /*Convierto en json la respuesta del servidor*/
             respuestaJson = JSON.parse(respuesta);
-            console.log(respuestaJson)
             /*Identifico el select de perfiles*/
             $selectFamilia = document.getElementById("id_familia");
             /*Genero los options del select usuarios*/
