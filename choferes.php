@@ -60,7 +60,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
-                          <th>Nombre</th>
+                          <th>Nombre y apellido</th>
                           <th>Telefono</th>
                           <th>Email</th>
                           <th>Acciones</th>
@@ -92,77 +92,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       </footer>
     </div>
 
-    <!--Modal para CRUD-->
-    <!-- <div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_chofer" class="d-none"></span>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          </div>
-          <form id="formAlmacen">
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Email:</label>
-                    <input type="text" class="form-control" id="email" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Clave:</label>
-                    <input type="text" class="form-control" id="clave" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Proveedor</label>
-                    <select class="form-control" id="proveedor">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Cliente</label>
-                    <select class="form-control" id="cliente">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">usuario</label>
-                    <select class="form-control" id="usuario2" disabled="true">
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label for="" class="col-form-label">Empresa</label>
-                    <select class="form-control" id="empresaU" >
-                      <option value="">Seleccione</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div> -->
-
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -177,7 +106,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="" class="col-form-label">Nombre:</label>
+                    <label for="" class="col-form-label">Nombre y apellido:</label>
                     <input type="text" class="form-control" id="nombre" required>
                     <input type="hidden" id="id_usuario" value="<?=$_SESSION['rowUsers']['id_usuario']?>">
                   </div>
@@ -185,13 +114,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Telefono:</label>
-                    <input type="text" class="form-control" id="telefono" required>
+                    <input type="text" class="form-control" id="telefono">
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">E-mail:</label>
-                    <input type="text" class="form-control" id="email" required>
+                    <input type="text" class="form-control" id="email">
                   </div>
                 </div>
               </div>
