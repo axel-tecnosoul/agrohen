@@ -34,7 +34,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>Presentacion</h3>
+                  <h3>Presentaciones</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
                     <li class="breadcrumb-item active">Presentaciones de Productos</li>
