@@ -367,7 +367,7 @@
     $(document).on("click", ".btnEditar", function(){
       $(".modal-header").css( "background-color", "#22af47");
       $(".modal-header").css( "color", "white" );
-      $(".modal-title").text("Editar almacén");
+      $(".modal-title").text("Editar Almacén");
       $('#modalCRUD').modal('show');      
       fila = $(this).closest("tr");
       let id_almacen = fila.find('td:eq(0)').text();    

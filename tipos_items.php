@@ -387,7 +387,7 @@
     $("#formTItem").trigger("reset");
     $(".modal-header").css( "background-color", "#17a2b8");
     $(".modal-header").css( "color", "white" );
-    $(".modal-title").text("Alta tipo de item");
+    $(".modal-title").text("Alta de tipo de item");
     $('#modalCRUD').modal('show');      
 });
 

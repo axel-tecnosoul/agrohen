@@ -520,7 +520,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar carga");
+        $(".modal-title").text("Editar Carga");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();

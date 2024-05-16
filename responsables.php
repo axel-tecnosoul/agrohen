@@ -37,7 +37,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <h3>responsables</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
-                    <li class="breadcrumb-item active">Responsables de deposito</li>
+                    <li class="breadcrumb-item active">Responsables de depositos</li>
                   </ol>
                 </div>
               </div>
@@ -380,7 +380,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta responsables");
+        $(".modal-title").text("Alta de Responsable");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -420,7 +420,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar responsables");
+        $(".modal-title").text("Editar Responsable");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_responsable = fila.find('td:eq(0)').text();

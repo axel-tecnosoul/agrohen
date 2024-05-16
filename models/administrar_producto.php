@@ -67,8 +67,8 @@ class producto{
   }
 
   public function traerProducto(){
-    $sqltraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
-    $traerProducto = $this->conexion->consultaRetorno($sqltraerProducto);
+    $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
+    $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
     $producto = array(); //creamos un array
     
     while ($row = $traerProducto->fetch_array()) {
@@ -86,11 +86,11 @@ class producto{
 
   public function traerProductoUpdate($id_producto){
     $this->id_producto = $id_producto;
-    $sqlTraerproducto = "SELECT id as id_producto, nombre, id_presentacion, id_unidad_medida, id_familia FROM productos WHERE id = $this->id_producto";
-    $traerproducto = $this->conexion->consultaRetorno($sqlTraerproducto);
+    $sqlTraerProducto = "SELECT id as id_producto, nombre, id_presentacion, id_unidad_medida, id_familia FROM productos WHERE id = $this->id_producto";
+    $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
 
     $producto = array(); //creamos un array
-    while ($row = $traerproducto->fetch_array()) {
+    while ($row = $traerProducto->fetch_array()) {
       $producto = array(
         'id_producto'=> $row['id_producto'],
         'nombre'=> $row['nombre'],
@@ -167,8 +167,8 @@ class producto{
 if (isset($_POST['accion'])) {
   $producto = new producto();
   switch ($_POST['accion']) {
-    case 'traerProductos':
-      $productos->traerTodosProducto();
+    case 'traerProducto':
+      $producto->traerTodosProducto();
       break;
     case 'traerProductoUpdate':
         $id_producto = $_POST['id_producto'];
@@ -188,7 +188,7 @@ if (isset($_POST['accion'])) {
     //     $producto->cambiarEstado($id_producto, $estado);
         
     //   break;
-    case 'eliminarproducto':
+    case 'eliminarProducto':
         $id_producto = $_POST['id_producto'];
         $producto->deleteProducto($id_producto);
       break;

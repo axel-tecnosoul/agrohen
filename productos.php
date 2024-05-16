@@ -70,7 +70,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 </div>
                 <div class="card-body">
                   <div class="table-responsive">
-                    <table class="table table-hover" id="tablaproducto">
+                    <table class="table table-hover" id="tablaProducto">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
@@ -181,7 +181,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       $(document).ready(function(){
-        tablaproducto = $('#tablaproducto').DataTable({
+        tablaProducto = $('#tablaProducto').DataTable({
           "ajax": {
             "url" : "./models/administrar_producto.php?accion=traerProducto",
             "dataSrc": "",
@@ -380,7 +380,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta producto");
+        $(".modal-title").text("Alta de Producto");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -407,7 +407,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           data:  {accion: accion, id_producto: id_producto, nombre: nombre, id_presentacion: id_presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia},
           success: function(data) {
             if(data=="1"){
-              tablaproducto.ajax.reload(null, false);
+              tablaProducto.ajax.reload(null, false);
             }else{
               swal({
                 icon: 'error',
@@ -426,7 +426,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar producto");
+        $(".modal-title").text("Editar Producto");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_producto = fila.find('td:eq(0)').text();
@@ -475,7 +475,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         })
         .then((willDelete) => {
           if (willDelete) {
-            accion = "eliminarproducto";
+            accion = "eliminarProducto";
             $.ajax({
               url: "models/administrar_producto.php",
               type: "POST",
@@ -483,7 +483,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               data:  {accion:accion, id_producto:id_producto},
               success: function() {
                 //tablaproducto.row(fila.parents('tr')).remove().draw();
-                tablaproducto.ajax.reload(null, false);
+                tablaProducto.ajax.reload(null, false);
               }
             }); 
           } else {

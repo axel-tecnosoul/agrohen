@@ -413,7 +413,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta usuarios");
+        $(".modal-title").text("Alta de Usuario");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -456,7 +456,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar usuario");
+        $(".modal-title").text("Editar Usuario");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_usuario = fila.find('td:eq(0)').text();

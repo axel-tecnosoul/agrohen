@@ -407,7 +407,7 @@
         $("#formSubrubros").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta de subrubro");
+        $(".modal-title").text("Alta de Subrubro");
         $('#modalCRUD').modal('show');
       });
 

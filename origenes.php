@@ -34,7 +34,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>origen</h3>
+                  <h3>Origenes</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
                     <li class="breadcrumb-item active">Origenes</li>
@@ -380,7 +380,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta origen");
+        $(".modal-title").text("Alta de Origen");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -420,7 +420,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnEditar", function(){
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar origen");
+        $(".modal-title").text("Editar Origen");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_origen = fila.find('td:eq(0)').text();

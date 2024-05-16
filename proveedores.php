@@ -51,7 +51,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="col-sm-12">
               <div class="card">
                 <div class="card-header">
-                  <h5>Administrar Proveedor</h5>
+                  <h5>Administrar Proveedores</h5>
                     <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
                 </div>
                 <div class="card-body">
@@ -325,7 +325,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Alta proveedor");
+        $(".modal-title").text("Alta de Proveedor");
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -371,7 +371,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
-        $(".modal-title").text("Editar proveedor");
+        $(".modal-title").text("Editar Proveedor");
         $('#modalCRUDadmin').modal('show');
         fila = $(this).closest("tr");
         let id_proveedor = fila.find('td:eq(0)').text();

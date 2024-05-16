@@ -396,7 +396,7 @@
     $("#formRubros").trigger("reset");
     $(".modal-header").css( "background-color", "#17a2b8");
     $(".modal-header").css( "color", "white" );
-    $(".modal-title").text("Alta de rubro");
+    $(".modal-title").text("Alta de Rubro");
     $('#modalCRUD').modal('show');      
 });
 
