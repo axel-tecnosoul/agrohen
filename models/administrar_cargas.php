@@ -1,6 +1,9 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
 include_once('conexion.php');
+include_once('administrar_producto.php');
 class cargas{
   private $id_deposito;
   private $nombre;
@@ -100,7 +103,7 @@ class cargas{
 
     if($id_familia>0){
       /*Productos*/
-      $queryProductos = "SELECT id as id_producto, nombre FROM productos WHERE id_familia = $id_familia";
+      $queryProductos = "SELECT id as id_producto, nombre, ultimo_precio, ultimo_kg_x_bulto FROM productos WHERE id_familia = $id_familia";
       $getProductos = $this->conexion->consultaRetorno($queryProductos);
 
       if ($getProductos->num_rows > 0) {
@@ -113,6 +116,8 @@ class cargas{
           $productosByFamilia[]= array(
             'id_producto' =>$rowProductos['id_producto'],
             'producto' =>$rowProductos['nombre'],
+            'ultimo_precio' =>$rowProductos['ultimo_precio'],
+            'ultimo_kg_x_bulto' =>$rowProductos['ultimo_kg_x_bulto'],
           );
         }
       }else{
@@ -161,7 +166,7 @@ class cargas{
   }
 
   public function traerCargas(){
-    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
+    $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cargas = array(); //creamos un array
     
@@ -175,6 +180,7 @@ class cargas{
         'id_chofer'=>$row['id_chofer'],
         'chofer'=>$row['chofer'],
         'datos_adicionales_chofer'=>$row['datos_adicionales_chofer'],
+        'total_bultos'=>$row['total_bultos'],
         'total_kilos'=>$row['total_kilos'],
         'total_monto'=>$row['total_monto'],
         'fecha_hora_despacho'=>date("d-m-Y H:i",strtotime($row['fecha_hora_despacho'])),
@@ -189,7 +195,7 @@ class cargas{
   }
 
   public function traerProductosCarga($id_carga){
-    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
+    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
     //echo $sqltraerProductosCarga;
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
     
@@ -205,6 +211,8 @@ class cargas{
           'producto'=>$row['producto'],
           'proveedor'=>$row['proveedor'],
           'kg_x_bulto'=>$row['kg_x_bulto'],
+          'precio'=>$row['precio'],
+          'total_bultos'=>$row['total_bultos'],
           'total_kilos'=>$row['total_kilos'],
           'total_monto'=>$row['total_monto'],
           'usuario'=>$row['usuario'],
@@ -258,6 +266,9 @@ class cargas{
     $insertCarga = $this->conexion->consultaSimple($queryUpdateProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
 
+    $producto = new producto();
+    $producto->actualizarDatosProducto($id_producto, $precio, $kg_x_bulto);
+
     $cantDatos=$cantDatosOk=0;
     $errores="";
     foreach ($datosDepositos as $row) {
@@ -297,9 +308,13 @@ class cargas{
     $respuesta=$errores;
     if($respuesta==""){
 
-      $queryGetSumas = "SELECT SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM cargas_productos_destinos WHERE id_carga_producto=".$id_carga_producto;
+      $queryGetSumas = "SELECT SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM cargas_productos_destinos WHERE id_carga_producto=".$id_carga_producto;
       $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
       $row = $getSumas->fetch_array();
+      $sumaBultos=0;
+      if($row["suma_bultos"]>0){
+        $sumaBultos=$row["suma_bultos"];
+      }
       $sumaKilos=0;
       if($row["suma_kilos"]>0){
         $sumaKilos=$row["suma_kilos"];
@@ -309,7 +324,7 @@ class cargas{
         $sumaMonto=$row["suma_monto"];
       }
 
-      $queryInsertCarga = "UPDATE cargas_productos SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
+      $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
 
@@ -358,7 +373,7 @@ class cargas{
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertCarga = "INSERT INTO cargas (id_chofer, id_origen, fecha, datos_adicionales_chofer, id_proveedor_default, id_usuario) VALUES($id_chofer, $id_origen, '$fecha_carga', '$datos_adicionales_chofer', '$id_proveedor_default', $id_usuario)";
+    $queryInsertCarga = "INSERT INTO cargas (id_chofer, id_origen, fecha, datos_adicionales_chofer, id_proveedor_default, id_usuario) VALUES($id_chofer, $id_origen, '$fecha_carga', '$datos_adicionales_chofer', $id_proveedor_default, $id_usuario)";
     $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
     $mensajeError=$this->conexion->conectar->error;
     $id_carga=$this->conexion->conectar->insert_id;
@@ -387,10 +402,14 @@ class cargas{
     $id_carga_producto=$this->conexion->conectar->insert_id;
     
     if($mensajeError=="" and $id_carga_producto>0){
+
+      $producto = new producto();
+      $producto->actualizarDatosProducto($id_producto, $precio, $kg_x_bulto);
+
       $cantDatos=$cantDatosOk=0;
       $errores="";
 
-      $sumaMonto=$sumaKilos=0;
+      $sumaMonto=$sumaKilos=$sumaBultos=0;
       foreach ($datosDepositos as $row) {
         $cantDatos++;
         //var_dump($row);
@@ -404,6 +423,7 @@ class cargas{
 
           $sumaMonto+=$monto;
           $sumaKilos+=$kilos;
+          $sumaBultos+=$cantidad_bultos;
 
           $queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
@@ -420,7 +440,7 @@ class cargas{
       $respuesta=$errores;
       if($respuesta==""){
 
-        $queryInsertCarga = "UPDATE cargas_productos SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
+        $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
         $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
         $mensajeError=$this->conexion->conectar->error;
 
@@ -468,9 +488,13 @@ class cargas{
 
   private function updateTotalesCarga($id_carga){
 
-    $queryGetSumas = "SELECT SUM(total_kilos) AS suma_kilos, SUM(total_monto) AS suma_monto FROM cargas_productos WHERE id_carga=".$id_carga;
+    $queryGetSumas = "SELECT SUM(total_bultos) AS suma_bultos, SUM(total_kilos) AS suma_kilos, SUM(total_monto) AS suma_monto FROM cargas_productos WHERE id_carga=".$id_carga;
       $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
       $row = $getSumas->fetch_array();
+      $sumaBultos=0;
+      if($row["suma_bultos"]>0){
+        $sumaBultos=$row["suma_bultos"];
+      }
       $sumaKilos=0;
       if($row["suma_kilos"]>0){
         $sumaKilos=$row["suma_kilos"];
@@ -480,7 +504,7 @@ class cargas{
         $sumaMonto=$row["suma_monto"];
       }
 
-      $queryInsertCarga = "UPDATE cargas SET total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
+      $queryInsertCarga = "UPDATE cargas SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
 
@@ -534,6 +558,9 @@ if (isset($_POST['accion'])) {
       $id_chofer=$_POST["id_chofer"];
       $datos_adicionales_chofer=$_POST["datos_adicionales_chofer"];
       $id_proveedor_default=$_POST["id_proveedor_default"];
+      if(empty($id_proveedor_default)){
+        $id_proveedor_default="NULL";
+      }
       echo $cargas->updateCarga($id_carga,$fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default);
     break;
     case 'updateProductoCarga':
@@ -554,7 +581,7 @@ if (isset($_POST['accion'])) {
       $id_carga = $_POST['id_carga'];
       $cargas->eliminarCarga($id_carga);
     break;
-    case 'traerDatosIniciales':
+    case 'traerDatosInicialesCargas':
       $cargas->traerDatosIniciales();
     break;
     case 'addCarga':
@@ -563,6 +590,9 @@ if (isset($_POST['accion'])) {
       $id_chofer=$_POST["id_chofer"];
       $datos_adicionales_chofer=$_POST["datos_adicionales_chofer"];
       $id_proveedor_default=$_POST["id_proveedor_default"];
+      if(empty($id_proveedor_default)){
+        $id_proveedor_default="NULL";
+      }
 
       echo $cargas->registrarCarga($fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default);
     break;

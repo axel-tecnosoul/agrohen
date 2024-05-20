@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
 include_once('conexion.php');
 class producto{
   private $id_producto;
@@ -67,7 +69,7 @@ class producto{
   }
 
   public function traerProducto(){
-    $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, ultimo_precio FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
+    $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, p.ultimo_precio,p.ultimo_kg_x_bulto FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
     $producto = array(); //creamos un array
     
@@ -79,6 +81,7 @@ class producto{
         'presentacion'=>$row['presentacion'],
         'unidad_medida'=>$row['unidad_medida'],
         'ultimo_precio'=>$row['ultimo_precio'],
+        'ultimo_kg_x_bulto'=>$row['ultimo_kg_x_bulto'],
       );
     }
     return json_encode($producto);
@@ -94,7 +97,7 @@ class producto{
       $producto = array(
         'id_producto'=> $row['id_producto'],
         'nombre'=> $row['nombre'],
-        'presentacion'=> $row['id_presentacion'],
+        'id_presentacion'=> $row['id_presentacion'],
         'id_unidad_medida'=> $row['id_unidad_medida'],
         'id_familia'=> $row['id_familia']
       );
@@ -102,11 +105,11 @@ class producto{
     return json_encode($producto);
   }
 
-  public function productoUpdate($id_producto, $nombre, $presentacion, $id_unidad_medida, $id_familia){
+  public function productoUpdate($id_producto, $nombre, $id_presentacion, $id_unidad_medida, $id_familia){
 
     $this->id_producto = $id_producto;
 
-    $sqlupdateProducto = "UPDATE productos SET nombre ='$nombre', id_presentacion ='$presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
+    $sqlupdateProducto = "UPDATE productos SET nombre ='$nombre', id_presentacion ='$id_presentacion', id_unidad_medida ='$id_unidad_medida', id_familia ='$id_familia' WHERE id=$this->id_producto";
     $updateProducto = $this->conexion->consultaSimple($sqlupdateProducto);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -148,28 +151,50 @@ class producto{
     $this->id_familia = $id_familia;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO productos (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->id_presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
-    $insertUser = $this->conexion->consultaSimple($queryInsertUser);
+    $queryInsertProducto = "INSERT INTO productos (id_usuario, nombre, id_presentacion, id_unidad_medida, id_familia, fecha_hora_alta) VALUES('$usuario', '$this->nombre', '$this->id_presentacion', '$this->id_unidad_medida', '$this->id_familia', NOW())";
+    $insertUser = $this->conexion->consultaSimple($queryInsertProducto);
+    $mensajeError=$this->conexion->conectar->error;
+    $id_producto=$this->conexion->conectar->insert_id;
+    
+    $respuesta=$mensajeError;
+    if($mensajeError!=""){
+      $respuesta.="<br><br>".$queryInsertProducto;
+    }else{
+      $respuesta=[
+        "ok"=>1,
+        "id_producto"=>$id_producto,
+      ];
+      $respuesta=json_encode($respuesta);
+    }
+  
+    return $respuesta;
+  }
+		
+  public function actualizarDatosProducto($id_producto, $precio, $kg_x_bulto){
+
+    $this->id_producto = $id_producto;
+
+    $sqlupdateProducto = "UPDATE productos SET ultimo_precio='$precio', ultimo_kg_x_bulto='$kg_x_bulto' WHERE id=$this->id_producto";
+    $updateProducto = $this->conexion->consultaSimple($sqlupdateProducto);
     $mensajeError=$this->conexion->conectar->error;
     
     $respuesta=$mensajeError;
     if($mensajeError!=""){
-      $respuesta.="<br><br>".$queryInsertUser;
+      $respuesta.="<br><br>".$sqlupdateProducto;
     }else{
       $respuesta=1;
     }
-    
+
     return $respuesta;
   }
-		
 }	
 
 if (isset($_POST['accion'])) {
   $producto = new producto();
   switch ($_POST['accion']) {
-    case 'traerProducto':
+    /*case 'traerProducto':
       $producto->traerTodosProducto();
-      break;
+      break;*/
     case 'traerProductoUpdate':
         $id_producto = $_POST['id_producto'];
         echo $producto->traerProductoUpdate($id_producto);
@@ -177,10 +202,10 @@ if (isset($_POST['accion'])) {
     case 'updateProducto':
         $id_producto = $_POST['id_producto'];
         $nombre = $_POST['nombre'];
-        $presentacion = $_POST['presentacion'];
+        $id_presentacion = $_POST['id_presentacion'];
         $id_unidad_medida = $_POST['id_unidad_medida'];
         $id_familia = $_POST['id_familia'];
-        echo $producto->productoUpdate($id_producto, $nombre, $presentacion, $id_unidad_medida, $id_familia);
+        echo $producto->productoUpdate($id_producto, $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
       break;
     // case 'cambiarEstado':
     //     $id_producto = $_POST['id_producto'];
@@ -192,7 +217,7 @@ if (isset($_POST['accion'])) {
         $id_producto = $_POST['id_producto'];
         $producto->deleteProducto($id_producto);
       break;
-    case 'traerDatosIniciales':
+    case 'traerDatosInicialesProducto':
       $producto->traerDatosIniciales();
       break;
     case 'verificarCuenta':
@@ -208,9 +233,11 @@ if (isset($_POST['accion'])) {
       break;
   }
 }else{
-  if (isset($_GET['accion'])) {
-    $producto = new producto();
-    echo $producto->traerProducto();
+  $producto = new producto();
+  switch ($_GET['accion']) {
+    case 'traerProducto':
+      echo $producto->traerProducto();
+    break;
   }
 }
 ?>

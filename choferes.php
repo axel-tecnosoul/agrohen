@@ -120,7 +120,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">E-mail:</label>
-                    <input type="text" class="form-control" id="email">
+                    <input type="email" class="form-control" id="email">
                   </div>
                 </div>
               </div>

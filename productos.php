@@ -79,6 +79,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Presentacion</th>
                           <th>Unidad de Medida</th>
                           <th>Ultimo Precio</th>
+                          <th>Ultimo KG x Bulto</th>
                           <!-- <th>Estado</th> -->
                           <th>Acciones</th>
                         </tr>
@@ -108,8 +109,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         </div>
       </footer>
     </div>
+    
     <!--Modal para CRUD admin-->
-    <div class="modal fade" id="modalCRUDadmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCRUDadmin" tabindex="-100000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -193,29 +195,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {"data": "presentacion"},
             {"data": "unidad_medida"},
             {"data": "ultimo_precio"},
-            // {
-            //   render: function(data, type, full, meta) {
-            //     const estados = {
-            //         0: "Inactivo",
-            //         1: "Activo",
-            //       }
-            //     return ()=>{
-            //       $options="";
-            //       for(key in estados){
-            //         if(full.activo == key){
-            //           $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
-            //         }else{
-            //           $options+=`<option value="${key}">${estados[key]}</option>`;
-            //           }
-            //       }
-            //       $selectInit = `<select class="estado">`;
-            //       $selectEnd = "</select>";
-            //       $selectComplete = $selectInit + $options+$selectEnd
-
-            //       return $selectComplete;
-            //     };
-            //   }
-            // },
+            {"data": "ultimo_kg_x_bulto"},
             {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
           "language":  idiomaEsp
@@ -319,7 +299,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
-        datosIniciales.append('accion', 'traerDatosIniciales');
+        datosIniciales.append('accion', 'traerDatosInicialesProducto');
         $.ajax({
           data: datosIniciales,
           url: "./models/administrar_producto.php",
@@ -406,8 +386,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           datatype:"json",
           data:  {accion: accion, id_producto: id_producto, nombre: nombre, id_presentacion: id_presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia},
           success: function(data) {
-            if(data=="1"){
+            respuestaJson = JSON.parse(data);
+            if(respuestaJson.ok=="1"){
+            //if(data=="1"){
               tablaProducto.ajax.reload(null, false);
+              $('#modalCRUDadmin').modal('hide');
+              swal({
+                icon: 'success',
+                title: 'Accion realizada correctamente'
+              });
             }else{
               swal({
                 icon: 'error',
@@ -415,11 +402,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               });
             }
           }
-        });
-        $('#modalCRUDadmin').modal('hide');
-        swal({
-          icon: 'success',
-          title: 'Accion realizada correctamente'
         });
       });
 
@@ -449,7 +431,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             console.log(datosInput);
             $('#id_producto').html(datosInput.id_producto);
             $("#nombre").val(datosInput.nombre);
-            $("#id_presentacion").val(datosInput.id_presentacion);
+            $("#id_presentacion").val(datosInput.id_presentacion).change();
             $("#id_unidad_medida").val(datosInput.id_unidad_medida).change();
             $("#id_familia").val(datosInput.id_familia).change();
             //$('#usuario').val(datosInput.usuario)

@@ -28,14 +28,31 @@ if(isset($_GET["id"])){
           box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
       }
 
-      #modalCRUDadmin .modal-body {
-        max-height: 90%; /* Establece el alto máximo */
-        overflow-y: auto; /* Agrega un scroll vertical cuando el contenido supere el alto máximo */
-      }
+      
 
       #tableDepositos tbody td{
-        padding: 00.3rem;
+        padding: 0.3rem;
       }
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header, .modal-footer {
+  flex-shrink: 0;
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.select2-container {
+    z-index: 2000 !important; /* Ajusta según sea necesario */
+}
 
     </style>
   </head>
@@ -132,6 +149,8 @@ if(isset($_GET["id"])){
                           <th>Producto</th>
                           <th>Proveedor</th>
                           <th style="text-align:right">Kg x bulto</th>
+                          <th style="text-align:right">Precio</th>
+                          <th style="text-align:right">Total bultos</th>
                           <th style="text-align:right">Total kilos</th>
                           <th style="text-align:right">Total Monto</th>
                           <th class="text-center">Acciones</th>
@@ -142,7 +161,8 @@ if(isset($_GET["id"])){
                       <tbody></tbody>
                       <tfoot>
                         <tr>
-                          <th style="text-align:right" colspan="4">Totales</th>
+                          <th style="text-align:right" colspan="5">Totales</th>
+                          <th style="text-align:right">Total bultos</th>
                           <th style="text-align:right">Total kilos</th>
                           <th style="text-align:right">Total Monto</th>
                           <th class="text-center">Acciones</th>
@@ -184,7 +204,7 @@ if(isset($_GET["id"])){
             <span id="id_carga_producto" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
-          <form id="formAdmin">
+          <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
                 <div class="col-lg-3">
@@ -249,6 +269,52 @@ if(isset($_GET["id"])){
         </div>
       </div>
     </div>
+
+
+    <div class="modal fade" id="modalNuevoProducto" tabindex="-100000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="z-index:2000">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="background-color:#f39c12;color:white">
+            <h5 class="modal-title" id="exampleModalLabel">Alta rapida de productos</h5>
+            <span id="id_producto" class="d-none"></span>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form id="formProducto">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Familia:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia_nuevo_producto" required></select>
+                  </div>
+                </div>  
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Nombre:</label>
+                    <input type="text" class="form-control" id="nombre" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Presentacion:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required></select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="" class="col-form-label">Unidad de Medida:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_unidad_medida" required></select>
+                  </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
@@ -298,8 +364,10 @@ if(isset($_GET["id"])){
       var accion
       var id_carga=$("#id_carga").val();
       var bandera_buscar_producto=true;
+      var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
 
       cargarDatosComponentes();
+      cargarDatosComponentesNuevoProducto()
       getDatosCarga();
 
       $(document).ready(function(){
@@ -318,6 +386,12 @@ if(isset($_GET["id"])){
             {"data": "proveedor"},
             {"data": "kg_x_bulto"},
             //{"data": "total_kilos"},
+            {render: function(data, type, full, meta) {
+              return formatCurrency(full.precio);
+            }},
+            {render: function(data, type, full, meta) {
+              return formatNumber2Decimal(full.total_bultos);
+            }},
             {render: function(data, type, full, meta) {
               return formatNumber2Decimal(full.total_kilos);
             }},
@@ -359,16 +433,19 @@ if(isset($_GET["id"])){
           "language": idiomaEsp,
           drawCallback: function(settings) {
             if(settings.json){
+              let suma_bultos=0;
               let suma_kilos=0;
               let suma_monto=0;
               settings.json.forEach(row => {
+                suma_bultos+=parseFloat(row.total_bultos)
                 suma_kilos+=parseFloat(row.total_kilos)
                 suma_monto+=parseFloat(row.total_monto)
               });
               // Update footer
               var api = this.api();
-              $(api.column(4).footer()).html(formatNumber2Decimal(suma_kilos));
-              $(api.column(5).footer()).html(formatCurrency(suma_monto));
+              $(api.column(5).footer()).html(formatNumber2Decimal(suma_bultos));
+              $(api.column(6).footer()).html(formatNumber2Decimal(suma_kilos));
+              $(api.column(7).footer()).html(formatCurrency(suma_monto));
               //$("#total_bultos").html(suma_bultos);
               //$("#total_kilos").html(suma_kilos);
             }
@@ -386,10 +463,10 @@ if(isset($_GET["id"])){
 
         $("#btnNuevo").click(function(){
           $("#formAdmin").trigger("reset");
-          $(".modal-header").css("background-color", "#17a2b8");
-          $(".modal-header").css("color", "white" );
-          $(".modal-title").text("Alta de productos para la carga "+<?=$id?>);
           let modal=$('#modalCRUDadmin')
+          modal.find(".modal-header").css("background-color", "#17a2b8");
+          modal.find(".modal-header").css("color", "white" );
+          modal.find(".modal-title").text("Alta de productos para la carga "+<?=$id?>);
           modal.modal('show');
           modal.on('shown.bs.modal', function (e) {
             document.getElementById("id_familia").focus();
@@ -602,6 +679,112 @@ if(isset($_GET["id"])){
           $('#headingOne .fa').removeClass('fa-angle-down').addClass('fa-angle-right');
         });
 
+        $('#id_producto').on('select2:open', function() {
+          let searchField = $('.select2-search__field');
+          let noResultsShown = false;
+
+          searchField.on('keydown', function(e) {
+            if ($('.select2-results__option').text()==select2ProductoNoResultText){
+              noResultsShown = true;
+            }
+            if (e.key === 'Enter' && noResultsShown) {
+              let searchTerm = $(this).val();
+              $("#id_producto").select2("close")
+              //$("#modalCRUDadmin").modal("hide")
+
+              let modalNuevoProducto=$("#modalNuevoProducto")
+              modalNuevoProducto.modal("show")
+              modalNuevoProducto.find("#nombre").val(searchTerm)
+              
+              let id_familia=$("#id_familia").val()
+
+              let id_familia_nuevo_producto=modalNuevoProducto.find("#id_familia_nuevo_producto")
+              id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
+
+              //alert('Buscar: ' + searchTerm);
+              noResultsShown = false; // Reset the flag after showing the alert
+            }
+          });
+        });
+
+        var originalZIndex;
+        var originalModalOverflow;
+
+        // Manejar la apertura del segundo modal
+        $('#modalNuevoProducto').on('show.bs.modal', function() {
+          // Guardar el valor original del z-index
+          originalZIndex = $(".modal-backdrop").css("z-index");
+          // Ajustar el z-index para oscurecer el primer modal
+          $(".modal-backdrop").css("z-index", "1050");
+
+          // Guardar y desactivar el scroll del modal de fondo
+          originalOverflow = $('#modalCRUDadmin').css('overflow');
+          $('#modalCRUDadmin').css('overflow', 'hidden');
+
+        });
+
+        $('#modalNuevoProducto').on('shown.bs.modal', function (e) {
+          //document.getElementById("id_familia").focus();
+          $("#nombre").focus();
+        })
+
+        // Manejar el cierre del segundo modal
+        $('#modalNuevoProducto').on('hidden.bs.modal', function() {
+          // Restaurar el valor original del z-index
+          $(".modal-backdrop").css("z-index", originalZIndex);
+
+          // Restaurar el scroll del modal de fondo
+          $('#modalCRUDadmin').css('overflow', originalOverflow);
+
+          $("body").addClass("modal-open")
+
+        });
+
+        $('#formProducto').submit(function(e){
+          e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+          //let id_producto = $.trim($('#id_producto').html());
+          let id_familia_nuevo_producto = $.trim($('#id_familia_nuevo_producto').val());
+          let nombre = $.trim($('#nombre').val());
+          let id_presentacion = $.trim($('#id_presentacion').val());
+          let id_unidad_medida = $.trim($('#id_unidad_medida').val());
+
+          $.ajax({
+            url: "models/administrar_producto.php",
+            type: "POST",
+            datatype:"json",
+            data:  {accion: "addProducto", id_producto: 0, nombre: nombre, id_presentacion: id_presentacion, id_unidad_medida: id_unidad_medida, id_familia: id_familia_nuevo_producto},
+            success: function(data) {
+              respuestaJson = JSON.parse(data);
+              if(respuestaJson.ok=="1"){
+                console.log(respuestaJson.id_producto)
+                let select_id_producto=$('#id_producto');
+                // Agregar el nuevo option al select subyacente
+                select_id_producto.append('<option value="'+respuestaJson.id_producto+'">'+nombre+'</option>');
+
+                // Disparar el evento de cambio en el select2 para que se actualice con el nuevo option
+                select_id_producto.trigger('change');
+
+                // Seleccionar el nuevo option en el select2
+                select_id_producto.val(respuestaJson.id_producto).change();
+
+                select_id_producto.focus();
+
+                $('#modalNuevoProducto').modal("hide")
+              }else{
+                swal({
+                  icon: 'error',
+                  title: 'El registro no se insertó!'
+                });
+              }
+            }
+          });
+        });
+
+        // Manejar el evento select2:select para restablecer el foco en todos los select2
+        $('.js-example-basic-single').on('select2:select', function (e) {
+          $(this).next('.select2-container').find('.select2-selection').focus(); // Restablecer el foco en el elemento select2
+        });
+
       });
 
       idiomaEsp = {
@@ -722,15 +905,27 @@ if(isset($_GET["id"])){
               //Genero los options del select familias
               productosByFamilia.forEach((producto)=>{
                 $option = document.createElement("option");
-                let optionText = document.createTextNode(producto.producto);
+                
+                let text=producto.producto;
+                if(producto.ultimo_precio){
+                  text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
+                }
+                let optionText = document.createTextNode(text);
                 $option.appendChild(optionText);
+                
                 $option.setAttribute("value", producto.id_producto);
                 if(id_producto==producto.id_producto){
                   $option.setAttribute("selected", "selected");
                 }
                 $selectProducto.appendChild($option);
               })
-              $($selectProducto).select2()
+              $($selectProducto).select2({
+                language: {
+                  noResults: function() {
+                    return select2ProductoNoResultText;
+                  }
+                }
+              })
               console.log("PRODUCTOS CARGADOS");
               if(id_producto>0){
                 $("#id_producto").val(id_producto).change();
@@ -796,7 +991,7 @@ if(isset($_GET["id"])){
 
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
-        datosIniciales.append('accion', 'traerDatosIniciales');
+        datosIniciales.append('accion', 'traerDatosInicialesCargas');
         $.ajax({
           data: datosIniciales,
           url: "./models/administrar_cargas.php",
@@ -871,6 +1066,65 @@ if(isset($_GET["id"])){
               // Agregar la fila al tbody
               tbody.appendChild(newRow);
             });
+
+          }
+        });
+      }
+
+      function cargarDatosComponentesNuevoProducto(){
+        let datosIniciales = new FormData();
+        datosIniciales.append('accion', 'traerDatosInicialesProducto');
+        $.ajax({
+          data: datosIniciales,
+          url: "./models/administrar_producto.php",
+          method: "post",
+          cache: false,
+          contentType: false,
+          processData: false,
+          beforeSed: function(){
+            //$('#addProdLocal').modal('hide');
+          },
+          success: function(respuesta){
+            /*Convierto en json la respuesta del servidor*/
+            respuestaJson = JSON.parse(respuesta);
+            /*Identifico el select de perfiles*/
+            $selectFamilia = document.getElementById("id_familia_nuevo_producto");
+            /*Genero los options del select usuarios*/
+            respuestaJson.familias.forEach((familia)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(familia.familia);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", familia.id_familia);
+              $selectFamilia.appendChild($option);
+            })
+
+            $($selectFamilia).select2({dropdownParent: $('#modalNuevoProducto')})
+
+            /*Identifico el select de presentacion*/
+            $selectPresentacion = document.getElementById("id_presentacion");
+            /*Genero los options del select Presentacion*/
+            respuestaJson.presentacion.forEach((presentacion)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(presentacion.presentacion);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", presentacion.id_presentacion);
+              $selectPresentacion.appendChild($option);
+            })
+
+            $($selectPresentacion).select2({dropdownParent: $('#modalNuevoProducto')})
+
+            /*Identifico el select de perfiles*/
+            $selectUnidadMedida = document.getElementById("id_unidad_medida");
+            /*Genero los options del select usuarios*/
+            respuestaJson.unidades_medidas.forEach((unidad_medida)=>{
+              $option = document.createElement("option");
+              let optionText = document.createTextNode(unidad_medida.unidad_medida);
+              $option.appendChild(optionText);
+              $option.setAttribute("value", unidad_medida.id_unidad_medida);
+              $selectUnidadMedida.appendChild($option);
+            })
+
+            $($selectUnidadMedida).select2({dropdownParent: $('#modalNuevoProducto')})
 
           }
         });

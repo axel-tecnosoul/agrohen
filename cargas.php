@@ -78,6 +78,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Fecha</th>
                           <th>Origen</th>
                           <th>Chofer</th>
+                          <th>Bultos</th>
                           <th>Kilos</th>
                           <th>Monto</th>
                           <!-- <th>Datos adicionales del chofer</th> -->
@@ -90,6 +91,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                       <tfoot>
                         <tr>
                           <th style="text-align:right" colspan="4">Totales</th>
+                          <th style="text-align:right">Total bultos</th>
                           <th style="text-align:right">Total kilos</th>
                           <th style="text-align:right">Total Monto</th>
                           <th class="text-center">Acciones</th>
@@ -165,7 +167,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-12">
                   <div class="form-group">
                     <label for="id_proveedor_default" class="col-form-label">Proveedor por defecto:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default" required></select>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default"></select>
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -245,7 +247,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {
               render: function(data, type, full, meta) {
                 return ()=>{
-                  let datos_adicionales_chofer
+                  let datos_adicionales_chofer=""
                   if(full.datos_adicionales_chofer!=""){
                     datos_adicionales_chofer=" ("+full.datos_adicionales_chofer+")"
                   }
@@ -255,6 +257,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             },
             //{"data": "datos_adicionales_chofer"},
             //{"data": "total_kilos"},
+            {render: function(data, type, full, meta) {
+              return formatNumber2Decimal(full.total_bultos);
+            }},
             {render: function(data, type, full, meta) {
               return formatNumber2Decimal(full.total_kilos);
             }},
@@ -298,16 +303,19 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           "language":  idiomaEsp,
           drawCallback: function(settings) {
             if(settings.json){
+              let suma_bultos=0;
               let suma_kilos=0;
               let suma_monto=0;
               settings.json.forEach(row => {
+                suma_bultos+=parseFloat(row.total_bultos)
                 suma_kilos+=parseFloat(row.total_kilos)
                 suma_monto+=parseFloat(row.total_monto)
               });
               // Update footer
               var api = this.api();
-              $(api.column(4).footer()).html(formatNumber2Decimal(suma_kilos));
-              $(api.column(5).footer()).html(formatCurrency(suma_monto));
+              $(api.column(4).footer()).html(formatNumber2Decimal(suma_bultos));
+              $(api.column(5).footer()).html(formatNumber2Decimal(suma_kilos));
+              $(api.column(6).footer()).html(formatCurrency(suma_monto));
               //$("#total_bultos").html(suma_bultos);
               //$("#total_kilos").html(suma_kilos);
             }
@@ -415,7 +423,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
-        datosIniciales.append('accion', 'traerDatosIniciales');
+        datosIniciales.append('accion', 'traerDatosInicialesCargas');
         $.ajax({
           data: datosIniciales,
           url: "./models/administrar_cargas.php",
