@@ -309,7 +309,7 @@ if(isset($_GET["id"])){
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-              <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+              <button type="submit" id="btnGuardarProducto" class="btn btn-dark">Guardar</button>
             </div>
           </form>
         </div>
@@ -526,6 +526,9 @@ if(isset($_GET["id"])){
             return false;
           }
 
+          $("#btnGuardarCargarOtro").addClass("disabled")
+          $("#btnGuardarCerrar").addClass("disabled")
+
           $.ajax({
             url: "models/administrar_cargas.php",
             type: "POST",
@@ -563,6 +566,9 @@ if(isset($_GET["id"])){
                   title: 'El registro no se insertó!'
                 });
               }
+
+              $("#btnGuardarCargarOtro").removeClass("disabled")
+              $("#btnGuardarCerrar").removeClass("disabled")
             }
           });
         });
@@ -700,6 +706,8 @@ if(isset($_GET["id"])){
 
               let id_familia_nuevo_producto=modalNuevoProducto.find("#id_familia_nuevo_producto")
               id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
+              $('#id_presentacion').val("").change();
+              $('#id_unidad_medida').val("").change();
 
               //alert('Buscar: ' + searchTerm);
               noResultsShown = false; // Reset the flag after showing the alert
@@ -748,6 +756,8 @@ if(isset($_GET["id"])){
           let id_presentacion = $.trim($('#id_presentacion').val());
           let id_unidad_medida = $.trim($('#id_unidad_medida').val());
 
+          $("#btnGuardarProducto").addClass("disabled")
+
           $.ajax({
             url: "models/administrar_producto.php",
             type: "POST",
@@ -776,6 +786,7 @@ if(isset($_GET["id"])){
                   title: 'El registro no se insertó!'
                 });
               }
+              $("#btnGuardarProducto").removeClass("disabled")
             }
           });
         });
@@ -881,7 +892,7 @@ if(isset($_GET["id"])){
 
       function getProductosByFamilia(id_familia,id_producto){
         if(bandera_buscar_producto){
-          console.log("BUSCAMOS LOS PRODUCTOS");
+          //console.log("BUSCAMOS LOS PRODUCTOS");
           let datosIniciales = new FormData();
           datosIniciales.append('accion', 'getProductosByFamilia');
           datosIniciales.append('id_familia', id_familia);
@@ -926,10 +937,10 @@ if(isset($_GET["id"])){
                   }
                 }
               })
-              console.log("PRODUCTOS CARGADOS");
+              //console.log("PRODUCTOS CARGADOS");
               if(id_producto>0){
                 $("#id_producto").val(id_producto).change();
-                console.log("PRODUCTO ASIGNADO");
+                //console.log("PRODUCTO ASIGNADO");
               }
             }
           });
