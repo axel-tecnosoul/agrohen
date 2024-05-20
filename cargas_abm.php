@@ -365,6 +365,7 @@ if(isset($_GET["id"])){
       var id_carga=$("#id_carga").val();
       var bandera_buscar_producto=true;
       var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
+      var id_proveedor_default;
 
       cargarDatosComponentes();
       cargarDatosComponentesNuevoProducto()
@@ -471,7 +472,8 @@ if(isset($_GET["id"])){
           modal.on('shown.bs.modal', function (e) {
             document.getElementById("id_familia").focus();
           })
-          $("#id_proveedor").val($("#id_proveedor_default").val()).change();
+          //=$("#id_proveedor_default").val()
+          $("#id_proveedor").val(id_proveedor_default).change();
           $('#id_familia').val("").change();
           $('#id_producto').val("").change();
           accion = "addProductoCarga";
@@ -546,11 +548,11 @@ if(isset($_GET["id"])){
                   title: 'Accion realizada correctamente'
                 }).then(function() {
                   // Esta función se ejecutará después de que el usuario presione el botón "OK"
-                  console.log('El usuario presionó OK');
+                  //console.log('El usuario presionó OK');
                   // Puedes agregar aquí la lógica que deseas ejecutar después de presionar OK
                   if (cargarOtro) {
                     $("#btnNuevo").click()
-                    $('#id_proveedor').val(id_proveedor).change();
+                    $('#id_proveedor').val(id_proveedor_default).change();
                   }
                 });
 
@@ -685,6 +687,7 @@ if(isset($_GET["id"])){
           $('#headingOne .fa').removeClass('fa-angle-down').addClass('fa-angle-right');
         });
 
+        //detectamos los tipeos en la busqueda de productos para permitir dar de alta uno nuevo
         $('#id_producto').on('select2:open', function() {
           let searchField = $('.select2-search__field');
           let noResultsShown = false;
@@ -697,8 +700,11 @@ if(isset($_GET["id"])){
               let searchTerm = $(this).val();
               $("#id_producto").select2("close")
               //$("#modalCRUDadmin").modal("hide")
-
               let modalNuevoProducto=$("#modalNuevoProducto")
+
+              console.log(searchTerm);
+              console.log(modalNuevoProducto.find("#nombre"));
+
               modalNuevoProducto.modal("show")
               modalNuevoProducto.find("#nombre").val(searchTerm)
               
@@ -1165,7 +1171,8 @@ if(isset($_GET["id"])){
 
             $("#id_chofer").val(data.id_chofer)
             $("#id_origen").val(data.id_origen)
-            $("#id_proveedor_default").val(data.id_proveedor)
+            id_proveedor_default=data.id_proveedor;
+            $("#id_proveedor_default").val(id_proveedor_default)
             $("#despachado").val(data.despachado)
             if(data.despachado=="Si"){
               $("#btnNuevo").remove();

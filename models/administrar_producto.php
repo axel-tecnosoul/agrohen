@@ -129,20 +129,20 @@ class producto{
     /*ELIMINO ALMACEN*/
     $sqldeleteProducto = "DELETE FROM productos WHERE id = $this->id_producto";
     $deleteProducto = $this->conexion->consultaSimple($sqldeleteProducto);
+    //$mensajeError=$this->conexion->conectar->error;
+    $error=$this->conexion->conectar;
+
+    $mensajeError=$error->error;
+    $respuesta=$mensajeError;
+    if($mensajeError!=""){
+      if($error->errno==1451){
+        echo "No es posible eliminar el producto ya que está siendo utilizado en otra tabla de la base de datos";
+      }else{
+        echo $respuesta."<br><br>".$sqldeleteProducto;
+        //var_dump($error);
+      }
+    }
   }
-
-  // public function cambiarEstado($id_producto, $estado){
-  //   $this->id_producto = $id_producto;
-    
-  //   /*if ($estado == 'Activo') {
-  //     $estado = 1;
-  //   }else{
-  //     $estado = 0;
-  //   }*/
-
-  //   $queryUpdateEstado = "UPDATE producto SET activo = $estado WHERE id = $this->id_producto";
-  //   $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
-  // }
 
   public function registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia ){
     $this->nombre = $nombre;
