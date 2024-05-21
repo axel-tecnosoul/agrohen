@@ -209,22 +209,20 @@ if(isset($_GET["id"])){
               <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label for="id_familia" class="col-form-label">Familia:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
+                    <label class="col-form-label">Familia:</label>
+                    <span id="lbl_familia"></span>
                   </div>
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
                     <label for="id_producto" class="col-form-label">Nombre:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
-                      <option>Seleccione una familia</option>
-                    </select>
+                    <span id="lbl_producto"></span>
                   </div>
                 </div>
                 <div class="col-lg-2">
                   <div class="form-group">
                     <label for="id_proveedor" class="col-form-label">Proveedor:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor" required></select>
+                    <span id="lbl_proveedor"></span>
                   </div>
                 </div>
                 <div class="col-lg-2">
@@ -404,6 +402,7 @@ if(isset($_GET["id"])){
                 return ()=>{
                   $buttonsGroup="<div class='text-center'><div class='btn-group'>";
                   $btnEliminar=''
+                  $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
                   $btnEditar=''
                   let despachado=$("#despachado").val();
                   if(despachado=="No"){
@@ -415,7 +414,7 @@ if(isset($_GET["id"])){
                   
                   $buttonsGroupEnd=`</div></div>`
 
-                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$buttonsGroupEnd
+                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnVer+$buttonsGroupEnd
                   
                   return $btnComplete;
                 };
@@ -606,6 +605,67 @@ if(isset($_GET["id"])){
               //$('#id_producto').val(datosInput.id_producto).change();
               bandera_buscar_producto=true
               getProductosByFamilia(datosInput.id_familia,datosInput.id_producto)
+              $('#kg_x_bulto').val(datosInput.kg_x_bulto);
+              $('#precio').val(datosInput.precio);
+              $('#id_proveedor').val(datosInput.id_proveedor).change();
+
+              let destinos=datosInput["destinos"];
+              //console.log(destinos);
+              let tableDepositosRows = $("#tableDepositos tbody tr");
+              tableDepositosRows.each(function(){
+                let fila=$(this);
+                //console.log("fila",fila);
+                let id_deposito=fila.find(".id_deposito").val()
+
+                let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
+                /*console.log(id_deposito);
+                console.log(data);*/
+                if(data!=undefined){
+                  //console.log("data",data);
+                  fila.find(".id_producto_destino").val(data.id_producto_destino)
+                  fila.find(".cantidad_bultos").val(data.cantidad_bultos)
+                  fila.find(".subtotal_kilos").val(data.subtotal)
+                  fila.find(".subtotal_monto").val(data.subtotal)
+                }
+              })
+              calcularTotales()
+            }
+          });
+
+          $('#modalCRUD').modal('show');
+        });
+
+        $(document).on("click", ".btnVer", function(){
+          $(".modal-header").css( "background-color", "#007bff");
+          $(".modal-header").css( "color", "white" );
+          $(".modal-title").text("Ver carga de producto");
+          $('#modalCRUDadmin').modal('show');
+          fila = $(this).closest("tr");
+          let id_carga_producto = fila.find('td:eq(0)').text();
+
+          $("#id_carga_producto").html(id_carga_producto);
+          let datosUpdate = new FormData();
+          datosUpdate.append('accion', 'traerProductoDestinosCarga');
+          datosUpdate.append('id_carga_producto', id_carga_producto);
+          $.ajax({
+            data: datosUpdate,
+            url: './models/administrar_cargas.php',
+            method: "post",
+            cache: false,
+            contentType: false,
+            processData: false,
+            beforeSed: function(){
+              //$('#procesando').modal('show');
+            },
+            success: function(response){
+              accion = "updateProductoCarga";
+              let datosInput = JSON.parse(response);
+              console.log(datosInput);
+
+              $('#lbl_familia').val(datosInput.id_familia);
+              $('#lbl_producto').val(datosInput.id_producto);
+              $('#lbl_proveedor').val(datosInput.id_proveedor);
+              //$('#id_producto').val(datosInput.id_producto).change();
               $('#kg_x_bulto').val(datosInput.kg_x_bulto);
               $('#precio').val(datosInput.precio);
               $('#id_proveedor').val(datosInput.id_proveedor).change();
