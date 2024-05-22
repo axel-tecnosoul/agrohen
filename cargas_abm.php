@@ -194,7 +194,6 @@ if(isset($_GET["id"])){
         </div>
       </footer>
     </div>
-
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
@@ -209,20 +208,22 @@ if(isset($_GET["id"])){
               <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label class="col-form-label">Familia:</label>
-                    <span id="lbl_familia"></span>
+                    <label for="id_familia" class="col-form-label">Familia:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
                   </div>
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
                     <label for="id_producto" class="col-form-label">Nombre:</label>
-                    <span id="lbl_producto"></span>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
+                      <option>Seleccione una familia</option>
+                    </select>
                   </div>
                 </div>
                 <div class="col-lg-2">
                   <div class="form-group">
                     <label for="id_proveedor" class="col-form-label">Proveedor:</label>
-                    <span id="lbl_proveedor"></span>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor" required></select>
                   </div>
                 </div>
                 <div class="col-lg-2">
@@ -262,6 +263,77 @@ if(isset($_GET["id"])){
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
               <button type="submit" id="btnGuardarCargarOtro" class="btn btn-success">Guardar y cargar otro</button>
               <button type="submit" id="btnGuardarCerrar" class="btn btn-dark">Guardar y cerrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!--Modal para CRUD admin-->
+    <div class="modal fade" id="modalCRUDadminVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"></h5>
+            <span id="id_carga_producto" class="d-none"></span>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form id="formAdmin" style="display: contents;">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Familia:</label>
+                    <span id="lbl_familia"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Nombre:</label>
+                    <span id="lbl_producto"></span>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Proveedor:</label>
+                    <span id="lbl_proveedor"></span>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Kg x bulto:</label>
+                    <span id="lbl_kg"></span>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Precio:</label>
+                    <span id="lbl_precio"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12">
+                  <table id="tableDepositosVer" class="table table-striped">
+                    <thead>
+                      <th style="width: 30%">Deposito</th>
+                      <th style="width: 40%">Cantidad de bultos</th>
+                      <th style="width: 15%">Kg Total</th>
+                      <th style="width: 15%">Monto Total</th>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                      <th style="text-align:right">Totales</th>
+                      <th id="total_bultos_ver">0</th>
+                      <th class="text-right" id="total_kilos_ver">0</th>
+                      <th class="text-right" id="total_monto_ver">0</th>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
             </div>
           </form>
         </div>
@@ -639,7 +711,7 @@ if(isset($_GET["id"])){
           $(".modal-header").css( "background-color", "#007bff");
           $(".modal-header").css( "color", "white" );
           $(".modal-title").text("Ver carga de producto");
-          $('#modalCRUDadmin').modal('show');
+          $('#modalCRUDadminVer').modal('show');
           fila = $(this).closest("tr");
           let id_carga_producto = fila.find('td:eq(0)').text();
 
@@ -660,36 +732,97 @@ if(isset($_GET["id"])){
             success: function(response){
               accion = "updateProductoCarga";
               let datosInput = JSON.parse(response);
-              console.log(datosInput);
+              //console.log("Datos Input: ", datosInput);
 
-              $('#lbl_familia').val(datosInput.id_familia);
-              $('#lbl_producto').val(datosInput.id_producto);
-              $('#lbl_proveedor').val(datosInput.id_proveedor);
+              $('#lbl_familia').html(datosInput.familia);
+              $('#lbl_producto').html(datosInput.producto);
+              $('#lbl_proveedor').html(datosInput.proveedor);
               //$('#id_producto').val(datosInput.id_producto).change();
-              $('#kg_x_bulto').val(datosInput.kg_x_bulto);
-              $('#precio').val(datosInput.precio);
+              $('#lbl_kg').html(datosInput.kg_x_bulto);
+              $('#lbl_precio').html(datosInput.precio);
               $('#id_proveedor').val(datosInput.id_proveedor).change();
 
               let destinos=datosInput["destinos"];
-              //console.log(destinos);
+              //console.log("Destinos: " + destinos);
               let tableDepositosRows = $("#tableDepositos tbody tr");
               tableDepositosRows.each(function(){
                 let fila=$(this);
-                //console.log("fila",fila);
+                //console.log("fila: "+ fila);
                 let id_deposito=fila.find(".id_deposito").val()
-
+                
+                //console.log("Deposito: " + id_deposito);
                 let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
-                /*console.log(id_deposito);
-                console.log(data);*/
+                //console.log("Data: " + data);
                 if(data!=undefined){
-                  //console.log("data",data);
+                  //console.log("data no undefined",data);
                   fila.find(".id_producto_destino").val(data.id_producto_destino)
                   fila.find(".cantidad_bultos").val(data.cantidad_bultos)
                   fila.find(".subtotal_kilos").val(data.subtotal)
                   fila.find(".subtotal_monto").val(data.subtotal)
                 }
               })
-              calcularTotales()
+
+              // Identifico la tabla de destinos
+              var tbody = document.querySelector('#tableDepositosVer tbody');
+              tbody.innerHTML="";
+              let cantidad_bulto_total = 0
+              let total_kilos = 0
+              let total_monto = 0
+              datosInput.destinos.forEach((destino) => {
+                //console.log(destino)
+                  // Plantilla para cada fila
+                let porcentaje_extra=destino.porcentaje_extra
+                let lbl_porcentaje_extra=""
+                if(porcentaje_extra>0){
+                  //lbl_porcentaje_extra=" (+"+porcentaje_extra+"%)"
+                }
+                
+                // Sumar cantidad de bultos
+                cantidad_bulto_total += parseFloat(destino.cantidad_bultos);
+                console.log("cantidad_bulto_total = " + cantidad_bulto_total);
+
+                // Sumar kilos
+                total_kilos += parseFloat(destino.kilos);
+                console.log("total_kilos = " + total_kilos);
+
+                // Sumar monto
+                total_monto += parseFloat(destino.monto)
+                console.log("total_monto = "+total_monto)
+
+                let contenidoFila = `
+                  <td class="align-middle">
+                    <input type='text' readonly tabindex="-1"class="form-control destino" value='${destino.destino}'>
+                    
+                  </td>
+                  <td class="align-middle">
+                    <div class="input-group">
+                      <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${destino.cantidad_bultos}" placeholder="Deje en blanco si no desea cargar este producto al destino">
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${destino.kilos}'>
+                  </td>
+                  <td class="align-middle">
+                    <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${destino.monto}'>
+                  </td>`;
+                // Crear una nueva fila
+                var newRow = document.createElement('tr');
+                // Insertar el contenido HTML en la nueva fila
+                newRow.innerHTML = contenidoFila;
+                // Agregar la fila al tbody
+                tbody.appendChild(newRow);
+              });
+
+              $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
+              //console.log("Actualizado total_bultos: " + $('#total_bultos').text());
+              $('#total_kilos_ver').text(total_kilos.toFixed(2));
+              //console.log("Actualizado total_kilos: " + $('#total_kilos').text());
+              $('#total_monto_ver').text(total_monto.toFixed(2));
+              //console.log("Actualizado total_monto: " + $('#total_monto').text());
+              //console.log($('#total_bultos_ver')); // Debe mostrar el elemento en la consola
+              //console.log($('#total_kilos_ver'));  // Debe mostrar el elemento en la consola
+
+
             }
           });
 
@@ -1111,6 +1244,7 @@ if(isset($_GET["id"])){
               if(porcentaje_extra>0){
                 //lbl_porcentaje_extra=" (+"+porcentaje_extra+"%)"
               }
+              console.log(destino)
               let contenidoFila = `
                 <td class="align-middle">
                   <input type='hidden' class="porcentaje_extra" value='${porcentaje_extra}'>
