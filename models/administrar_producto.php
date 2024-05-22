@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL); // Reportar todos los errores de PHP
+ini_set('display_errors', '1'); // Mostrar los errores en la salida
 if (session_status() == PHP_SESSION_NONE) {
   session_start();
 }
@@ -26,8 +28,8 @@ class producto{
     /*CARGO ARRAY Familias*/
     while ($row = $getFamilias->fetch_array()) {
       $arrayFamilias[]=[
-        'id_familia' => $row["id_familia"],
-        'familia' =>$row["familia"]
+        'id_familia' => utf8_encode($row["id_familia"]),
+        'familia' =>utf8_encode($row["familia"])
       ];
     }
 
@@ -41,8 +43,8 @@ class producto{
     /*CARGO ARRAY presentaciones*/
     while ($row = $getPresentaciones->fetch_array()) {
       $arrayPresentaciones[]=[
-        'id_presentacion' => $row["id_presentacion"],
-        'presentacion' =>$row["nombre"]
+        'id_presentacion' => utf8_encode($row["id_presentacion"]),
+        'presentacion' =>utf8_encode($row["nombre"])
       ];
     };
 
@@ -56,8 +58,8 @@ class producto{
     /*CARGO ARRAY UnidadMedida*/
     while ($row = $getUnidadMedida->fetch_array()) {
       $arrayUnidadMedida[]=[
-        'id_unidad_medida' => $row["id_unidad_medida"],
-        'unidad_medida' =>$row["unidad_medida"]
+        'id_unidad_medida' => utf8_encode($row["id_unidad_medida"]),
+        'unidad_medida' =>utf8_encode($row["unidad_medida"])
       ];
     };
 
@@ -72,18 +74,26 @@ class producto{
     $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, p.ultimo_precio,p.ultimo_kg_x_bulto FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
     $producto = array(); //creamos un array
-    
     while ($row = $traerProducto->fetch_array()) {
       $producto[] = array(
-        'id_producto'=>$row['id_producto'],
-        'nombre'=>$row['nombre'],
-        'familia'=>$row['familia'],
-        'presentacion'=>$row['presentacion'],
-        'unidad_medida'=>$row['unidad_medida'],
-        'ultimo_precio'=>$row['ultimo_precio'],
-        'ultimo_kg_x_bulto'=>$row['ultimo_kg_x_bulto'],
+        'id_producto'=>utf8_encode($row['id_producto']),
+        'nombre'=>utf8_encode($row['nombre']),
+        'familia'=>utf8_encode($row['familia']),
+        'presentacion'=>utf8_encode($row['presentacion']),
+        'unidad_medida'=>utf8_encode($row['unidad_medida']),
+        'ultimo_precio'=>utf8_encode($row['ultimo_precio']),
+        'ultimo_kg_x_bulto'=>utf8_encode($row['ultimo_kg_x_bulto']),
       );
     }
+    // var_dump($producto);
+    // $json = json_encode($producto);
+
+    // if ($json === false) {
+    //     echo "JSON encode error: " . json_last_error_msg();
+    // } else {
+    //   echo $json;
+    // }
+
     return json_encode($producto);
   }
 
@@ -95,11 +105,11 @@ class producto{
     $producto = array(); //creamos un array
     while ($row = $traerProducto->fetch_array()) {
       $producto = array(
-        'id_producto'=> $row['id_producto'],
-        'nombre'=> $row['nombre'],
-        'id_presentacion'=> $row['id_presentacion'],
-        'id_unidad_medida'=> $row['id_unidad_medida'],
-        'id_familia'=> $row['id_familia']
+        'id_producto'=> utf8_encode($row['id_producto']),
+        'nombre'=> utf8_encode($row['nombre']),
+        'id_presentacion'=> utf8_encode($row['id_presentacion']),
+        'id_unidad_medida'=> utf8_encode($row['id_unidad_medida']),
+        'id_familia'=> utf8_encode($row['id_familia'])
       );
     }
     return json_encode($producto);
@@ -201,10 +211,10 @@ if (isset($_POST['accion'])) {
       break;
     case 'updateProducto':
         $id_producto = $_POST['id_producto'];
-        $nombre = $_POST['nombre'];
-        $id_presentacion = $_POST['id_presentacion'];
-        $id_unidad_medida = $_POST['id_unidad_medida'];
-        $id_familia = $_POST['id_familia'];
+        $nombre = utf8_encode($_POST['nombre']);
+        $id_presentacion = utf8_encode($_POST['id_presentacion']);
+        $id_unidad_medida = utf8_encode($_POST['id_unidad_medida']);
+        $id_familia = utf8_encode($_POST['id_familia']);
         echo $producto->productoUpdate($id_producto, $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
       break;
     // case 'cambiarEstado':
@@ -225,7 +235,7 @@ if (isset($_POST['accion'])) {
       $producto->verificarCuentaExitente($email);
       break;
     case 'addProducto':
-      $nombre = $_POST['nombre'];
+      $nombre = utf8_encode($_POST['nombre']);
       $id_presentacion = $_POST['id_presentacion'];
       $id_unidad_medida = $_POST['id_unidad_medida'];
       $id_familia = $_POST['id_familia'];
