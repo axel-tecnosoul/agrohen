@@ -196,35 +196,30 @@ class cargas{
   }
 
   public function traerDatosVerDetalleCarga($id_carga) {
-    //echo "entra en la funcion";
     $datosCarga = array();
     $datosCarga = $this->getDatosCarga($id_carga); 
    
     $sqltraerProductosCarga = "
-        SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, pp.nombre AS presentacion, 
-               um.unidad_medida, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
-               cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto, u.usuario, cp.fecha_hora_alta 
-        FROM cargas_productos cp 
-        INNER JOIN productos p ON cp.id_producto=p.id 
-        INNER JOIN familias_productos fp ON p.id_familia=fp.id 
-        INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id 
-        INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id 
-        INNER JOIN proveedores pr ON cp.id_proveedor=pr.id 
-        INNER JOIN usuarios u ON cp.id_usuario=u.id 
-        WHERE cp.id_carga = " . $id_carga;
+    SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
+    cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto 
+    FROM cargas_productos cp 
+    INNER JOIN productos p ON cp.id_producto=p.id 
+    INNER JOIN familias_productos fp ON p.id_familia=fp.id 
+    INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id 
+    INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id 
+    INNER JOIN proveedores pr ON cp.id_proveedor=pr.id 
+    INNER JOIN usuarios u ON cp.id_usuario=u.id 
+    WHERE cp.id_carga = " . $id_carga;
 
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
     $productos = array();
 
     if ($traerProductosCarga) {
-      echo "pasa por el if...";
         while ($row = $traerProductosCarga->fetch_array()) {
             $productos[] = array(
                 'id_carga_producto' => utf8_encode($row['id_carga_producto']),
                 'id_producto' => utf8_encode($row['id_producto']),
                 'familia' => utf8_encode($row['familia']),
-                'presentacion' => utf8_encode($row['presentacion']),
-                'unidad_medida' => utf8_encode($row['unidad_medida']),
                 'producto' => utf8_encode($row['producto']),
                 'proveedor' => utf8_encode($row['proveedor']),
                 'kg_x_bulto' => utf8_encode($row['kg_x_bulto']),
@@ -232,14 +227,11 @@ class cargas{
                 'total_bultos' => utf8_encode($row['total_bultos']),
                 'total_kilos' => utf8_encode($row['total_kilos']),
                 'total_monto' => utf8_encode($row['total_monto']),
-                'usuario' => utf8_encode($row['usuario']),
-                'fecha_hora_alta' => utf8_encode($row['fecha_hora_alta']),
             );
         }
     }
 
     $datosCarga['productos'] = $productos;
-    //var_dump($datosCarga);
     echo json_encode($datosCarga);
   }
 
@@ -675,15 +667,16 @@ if (isset($_POST['accion'])) {
       $id_carga_producto=$_POST["id_carga_producto"];
       echo $cargas->eliminarProductoCarga($id_carga_producto,$id_carga);
     break;
+    case 'traerDatosVerDetalleCarga':
+      $id_carga=$_POST["id_carga"];
+      echo $cargas->traerDatosVerDetalleCarga($id_carga);
+    break;
   }
 }else{
   $cargas = new cargas();
   switch ($_GET['accion']) {
     case 'traerCargas':
       echo $cargas->traerCargas();
-    break;
-    case 'traerDatosVerDetalleCarga':
-      echo $cargas->traerDatosVerDetalleCarga();
     break;
     case 'traerProductosCarga':
       $id_carga=$_GET["id_carga"];
