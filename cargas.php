@@ -185,6 +185,77 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         </div>
       </div>
     </div>
+
+    <!--Modal para CRUD admin-->
+    <div class="modal fade" id="modalCRUDadminVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel"></h5>
+            <span id="id_carga_producto" class="d-none"></span>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form id="formAdmin" style="display: contents;">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Fecha Carga:</label>
+                    <span id="lbl_fecha_carga"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Origen:</label>
+                    <span id="lbl_origen"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Chofer:</label>
+                    <span id="lbl_chofer"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Datos adicionales:</label>
+                    <span id="lbl_datos_adicionales_chofer"></span>
+                  </div>
+                </div>
+                <div class="col-lg-2">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Proveedor:</label>
+                    <span id="lbl_proveedor"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12">
+                  <table id="tableProductosVer" class="table table-striped">
+                    <thead>
+                      <th style="width: 30%">Producto</th>
+                      <th style="width: 40%">Cantidad de bultos</th>
+                      <th style="width: 15%">Kg Total</th>
+                      <th style="width: 15%">Monto Total</th>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                      <th style="text-align:right">Totales</th>
+                      <th id="total_bultos_ver">0</th>
+                      <th class="text-right" id="total_kilos_ver">0</th>
+                      <th class="text-right" id="total_monto_ver">0</th>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
@@ -275,17 +346,19 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   $btnEditar=''
                   $btnGestionarCarga=''
                   $btnDespachar=''
+                  $btnVer=''
                   if(full.despachado=="No"){
                     $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                     $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
-                    $btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
+                    //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
+                    $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
                   }
 
                   $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                   
                   $buttonsGroupEnd=`</div></div>`
 
-                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnDespachar+$buttonsGroupEnd
+                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnVer+$buttonsGroupEnd
                   
                   return $btnComplete;
                 };
@@ -562,6 +635,143 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
         $('#modalCRUD').modal('show');
       });
+
+      // $(document).on("click", ".btnVer", function(){
+      //   $(".modal-header").css( "background-color", "#007bff");
+      //   $(".modal-header").css( "color", "white" );
+      //   $(".modal-title").text("Ver Carga");
+      //   $('#modalCRUDadmin').modal('show');
+      //   fila = $(this).closest("tr");
+      //   let id_carga = fila.find('td:eq(0)').text();
+
+      //   let datosVer = new FormData();
+      //   datosVer.append('accion', 'getDatosCarga');
+      //   datosVer.append('id_carga', id_carga);
+      //   $.ajax({
+      //     data: datosVer,
+      //     url: './models/administrar_cargas.php',
+      //     method: "post",
+      //     cache: false,
+      //     contentType: false,
+      //     processData: false,
+      //     beforeSed: function(){
+      //       //$('#procesando').modal('show');
+      //     },
+      //     success: function(response){
+      //       let datosInput = JSON.parse(response);
+      //       console.log(datosInput);
+      //       $("#fecha_carga").html(datosInput.fecha);
+      //       $("#id_origen").html(datosInput.id_origen);
+      //       $("#id_chofer").html(datosInput.id_chofer);
+      //       $('#datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
+      //       $('#id_proveedor_default').html(datosInput.id_proveedor)
+      //       $('#id_carga').html(id_carga)
+
+      //       accion = "verCarga";
+      //     }
+      //   });
+
+      //   $('#modalCRUD').modal('show');
+      // });
+
+      $(document).on("click", ".btnVer", function() {
+        $(".modal-header").css("background-color", "#007bff");
+        $(".modal-header").css("color", "white");
+        $(".modal-title").text("Ver Carga");
+        $('#modalCRUDadminVer').modal('show');
+        fila = $(this).closest("tr");
+        let id_carga = fila.find('td:eq(0)').text();
+
+        let datosVer = new FormData();
+        datosVer.append('accion', 'traerDatosVerDetalleCarga');
+        datosVer.append('id_carga', id_carga);
+        $.ajax({
+            data: datosVer,
+            url: './models/administrar_cargas.php',
+            method: "post",
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+              try {
+                let datosInput = JSON.parse(response);
+                console.log(datosInput);
+                if (!datosInput || !datosInput.productos) {
+                    console.error('Respuesta JSON no válida:', response);
+                    alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+                    return;
+                }
+
+                $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+                $("#lbl_origen").html(datosInput.origen);
+                $("#lbl_proveedor").html(datosInput.proveedor);
+                $("#lbl_chofer").html(datosInput.chofer);
+                $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
+                $('#lbl_proveedor_default').html(datosInput.proveedor)
+                $('#id_carga').html(id_carga)
+
+                accion = "verCarga";
+
+                // Identifico la tabla de productos
+                var tbody = document.querySelector('#tableProductosVer tbody');
+                tbody.innerHTML = "";
+                let cantidad_bulto_total = 0
+                let total_kilos = 0
+                let total_monto = 0
+                datosInput.productos.forEach((producto) => {
+                  // Sumar cantidad de bultos
+                  cantidad_bulto_total += parseFloat(producto.total_bultos);
+                  console.log("cantidad_bulto_total = " + cantidad_bulto_total);
+
+                  // Sumar kilos
+                  total_kilos += parseFloat(producto.total_kilos);
+                  console.log("total_kilos = " + total_kilos);
+
+                  // Sumar monto
+                  total_monto += parseFloat(producto.total_monto)
+                  console.log("total_monto = " + total_monto)
+
+                  let contenidoFila = `
+                    <td class="align-middle">
+                        <input type='text' readonly tabindex="-1"class="form-control producto" value='${producto.producto}'>
+                    </td>
+                    <td class="align-middle">
+                        <div class="input-group">
+                            <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${producto.total_bultos}" placeholder="Deje en blanco si no desea cargar este producto al producto">
+                        </div>
+                    </td>
+                    <td class="align-middle">
+                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${producto.total_kilos}'>
+                    </td>
+                    <td class="align-middle">
+                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${producto.total_monto}'>
+                  </td>`;
+
+                  // Crear una nueva fila
+                  var newRow = document.createElement('tr');
+                  // Insertar el contenido HTML en la nueva fila
+                  newRow.innerHTML = contenidoFila;
+                  // Agregar la fila al tbody
+                  tbody.appendChild(newRow);
+                });
+
+                $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
+                $('#total_kilos_ver').text(total_kilos.toFixed(2));
+                $('#total_monto_ver').text(total_monto.toFixed(2));
+              } catch (e) {
+                console.error('Error al analizar JSON:', e, 'Respuesta:', response);
+                alert('Error al procesar los datos de la carga. Por favor, inténtelo de nuevo.');
+              }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+                alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+            }
+        });
+
+        $('#modalCRUD').modal('show');
+      });
+
 
       $(document).on("click", ".btnGestionar", function(){
         fila = $(this).closest("tr");
