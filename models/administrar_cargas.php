@@ -163,7 +163,7 @@ class cargas{
       'usuario' =>utf8_encode($rowCarga['usuario']),
     ];
 
-    echo json_encode($datosCarga);
+    return json_encode($datosCarga);
   }
 
   public function traerCargas(){
@@ -196,9 +196,20 @@ class cargas{
   }
 
   public function traerDatosVerDetalleCarga($id_carga) {
-    $datosCarga = array();
-    $datosCarga = $this->getDatosCarga($id_carga); 
-   
+    $datosCargaJson = $this->getDatosCarga($id_carga); 
+
+    // Decodificar el JSON devuelto por getDatosCarga
+    $datosCargaArray = json_decode($datosCargaJson, true);
+
+    // Filtrar los datos necesarios
+    $datosNecesarios = [
+        'fecha_formatted' => $datosCargaArray['fecha_formatted'],
+        'origen' => $datosCargaArray['origen'],
+        'chofer' => $datosCargaArray['chofer'],
+        'datos_adicionales_chofer' => $datosCargaArray['datos_adicionales_chofer'],
+        'proveedor' => $datosCargaArray['proveedor']
+    ];
+
     $sqltraerProductosCarga = "
     SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
     cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto 
@@ -231,10 +242,12 @@ class cargas{
         }
     }
 
-    $datosCarga['productos'] = $productos;
-    echo json_encode($datosCarga);
-  }
+    // Agregar los productos al array de datos necesarios
+    $datosNecesarios['productos'] = $productos;
 
+    // Codificar todo el array en JSON y enviarlo como respuesta
+    echo json_encode($datosNecesarios);
+  }
 
   public function traerProductosCarga($id_carga){
     $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
