@@ -242,7 +242,7 @@ if (isset($_POST['accion'])) {
       echo $producto->registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
       break;
   }
-}else{
+}elseif(isset($_GET['accion'])){
   $producto = new producto();
   switch ($_GET['accion']) {
     case 'traerProducto':

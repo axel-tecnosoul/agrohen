@@ -202,6 +202,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha Carga:</label>
                     <span id="lbl_fecha_carga"></span>
+                    <span id="lbl_id_carga" type="hidden"></span>
                   </div>
                 </div>
                 <div class="col-lg-3">
@@ -250,6 +251,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               </div>
             </div>
             <div class="modal-footer">
+              <button type="submit" id="btnImprimirConPrecio" class="btn btn-success">Imprimir con precio</button>
+              <button type="submit" id="btnImprimirSinPrecio" class="btn btn-dark">Imprimir sin precio</button>
+              <button type="submit" id="btnDespachar" class="btn btn-primary">Despachar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
             </div>
           </form>
@@ -345,7 +349,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   $btnEliminar=''
                   $btnEditar=''
                   $btnGestionarCarga=''
-                  $btnDespachar=''
+                  //$btnDespachar=''
                   $btnVer=''
                   if(full.despachado=="No"){
                     $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
@@ -703,6 +707,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 }
 
                 $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+                $("#lbl_id_carga").html(datosInput.id_carga);
                 $("#lbl_origen").html(datosInput.origen);
                 $("#lbl_proveedor").html(datosInput.proveedor);
                 $("#lbl_chofer").html(datosInput.chofer);
@@ -779,9 +784,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         window.location.href="cargas_abm.php?id="+id_carga
       });
 
-      $(document).on("click", ".btnDespachar", function(){
-        fila = $(this);
-        id_carga = parseInt($(this).closest('tr').find('td:eq(0)').text());       
+      $(document).on("click", "#btnDespachar", function(event){
+        event.preventDefault();
+        let id_carga =  $("#lbl_id_carga").html();
+        console.log(id_carga);    
         swal({
           title: "Estas seguro?",
           text: "Una vez despachada esta carga, no podras modificarla",
@@ -804,6 +810,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   icon: 'success',
                   title: 'Carga despachada correctamente'
                 })
+                setTimeout(() => {
+                  location.reload();
+                }, 3000);
+                
               }
             });
           } else {
@@ -811,6 +821,34 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           }
         })
       });
+
+      //Imprimir con o sin precio
+      $(document).on("click", "#btnImprimirConPrecio", function(event){
+        event.preventDefault();
+        let id_carga =  $("#lbl_id_carga").html();
+        let cp = 1;
+
+        datosEnviar = JSON.stringify(id_carga);
+
+        const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
+        win = window.open(url, '_blank', 'toolbar=no,status=no, menubar=no');
+        // Cambiar el foco al nuevo tab (punto opcional)
+        win.focus();
+      })
+
+      $(document).on("click", "#btnImprimirSinPrecio", function(event){
+        event.preventDefault();
+        let id_carga =  $("#lbl_id_carga").html();
+        let cp = 0;
+
+        datosEnviar = JSON.stringify(id_carga);
+
+        const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
+        win = window.open(url, '_blank', 'toolbar=no,status=no, menubar=no');
+        // Cambiar el foco al nuevo tab (punto opcional)
+        win.focus();
+      })
+
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
