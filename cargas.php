@@ -202,7 +202,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha Carga:</label>
                     <span id="lbl_fecha_carga"></span>
-                    <span id="lbl_id_carga" type="hidden"></span>
+                    <input id="lbl_id_carga" type="hidden"></input>
                   </div>
                 </div>
                 <div class="col-lg-3">
@@ -681,7 +681,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       $(document).on("click", ".btnVer", function() {
         $(".modal-header").css("background-color", "#007bff");
         $(".modal-header").css("color", "white");
-        $(".modal-title").text("Ver Carga");
+        $(".modal-title").text("Ver Carga ID: ");
         $('#modalCRUDadminVer').modal('show');
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();
@@ -705,7 +705,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
                     return;
                 }
-
+                $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
                 $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
                 $("#lbl_id_carga").html(datosInput.id_carga);
                 $("#lbl_origen").html(datosInput.origen);
