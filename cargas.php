@@ -202,7 +202,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha Carga:</label>
                     <span id="lbl_fecha_carga"></span>
-                    <input id="lbl_id_carga" type="hidden"></input>
                   </div>
                 </div>
                 <div class="col-lg-3">
@@ -253,7 +252,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <div class="modal-footer">
               <button type="submit" id="btnImprimirConPrecio" class="btn btn-success">Imprimir con precio</button>
               <button type="submit" id="btnImprimirSinPrecio" class="btn btn-dark">Imprimir sin precio</button>
-              <button type="submit" id="btnDespachar" class="btn btn-primary">Despachar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
             </div>
           </form>
@@ -355,8 +353,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                     $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
                     //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
-                    $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
-                  }
+                    }
+                  $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
 
                   $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                   
@@ -678,18 +676,129 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       //   $('#modalCRUD').modal('show');
       // });
 
-      $(document).on("click", ".btnVer", function() {
-        $(".modal-header").css("background-color", "#007bff");
-        $(".modal-header").css("color", "white");
-        $(".modal-title").text("Ver Carga ID: ");
-        $('#modalCRUDadminVer').modal('show');
-        fila = $(this).closest("tr");
-        let id_carga = fila.find('td:eq(0)').text();
+      // $(document).on("click", ".btnVer", function() {
+      //   $(".modal-header").css("background-color", "#007bff");
+      //   $(".modal-header").css("color", "white");
+      //   $(".modal-title").text("Ver Carga ID: ");
+      //   $('#modalCRUDadminVer').modal('show');
+      //   fila = $(this).closest("tr");
+      //   let id_carga = fila.find('td:eq(0)').text();
 
-        let datosVer = new FormData();
-        datosVer.append('accion', 'traerDatosVerDetalleCarga');
-        datosVer.append('id_carga', id_carga);
-        $.ajax({
+      //   let datosVer = new FormData();
+      //   datosVer.append('accion', 'traerDatosVerDetalleCarga');
+      //   datosVer.append('id_carga', id_carga);
+      //   $.ajax({
+      //       data: datosVer,
+      //       url: './models/administrar_cargas.php',
+      //       method: "post",
+      //       cache: false,
+      //       contentType: false,
+      //       processData: false,
+      //       success: function(response) {
+      //         try {
+      //           let datosInput = JSON.parse(response);
+      //           console.log(datosInput);
+      //           if (!datosInput || !datosInput.productos) {
+      //               console.error('Respuesta JSON no válida:', response);
+      //               alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+      //               return;
+      //           }
+      //           $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
+      //           $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+      //           $("#lbl_id_carga").html(datosInput.id_carga);
+      //           $("#lbl_origen").html(datosInput.origen);
+      //           $("#lbl_proveedor").html(datosInput.proveedor);
+      //           $("#lbl_chofer").html(datosInput.chofer);
+      //           $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
+      //           $('#lbl_proveedor_default').html(datosInput.proveedor)
+      //           $('#id_carga').html(id_carga)
+
+      //           accion = "verCarga";
+
+      //           // Identifico la tabla de productos
+      //           var tbody = document.querySelector('#tableProductosVer tbody');
+      //           tbody.innerHTML = "";
+      //           let cantidad_bulto_total = 0
+      //           let total_kilos = 0
+      //           let total_monto = 0
+      //           datosInput.productos.forEach((producto) => {
+      //             // Sumar cantidad de bultos
+      //             cantidad_bulto_total += parseFloat(producto.total_bultos);
+      //             //console.log("cantidad_bulto_total = " + cantidad_bulto_total);
+
+      //             // Sumar kilos
+      //             total_kilos += parseFloat(producto.total_kilos);
+      //             //console.log("total_kilos = " + total_kilos);
+
+      //             // Sumar monto
+      //             total_monto += parseFloat(producto.total_monto)
+      //             //console.log("total_monto = " + total_monto)
+
+      //             let contenidoFila = `
+      //               <td class="align-middle">
+      //                   <input type='text' readonly tabindex="-1"class="form-control producto" value='${producto.producto}'>
+      //               </td>
+      //               <td class="align-middle">
+      //                   <div class="input-group">
+      //                       <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${producto.total_bultos}" placeholder="Deje en blanco si no desea cargar este producto al producto">
+      //                   </div>
+      //               </td>
+      //               <td class="align-middle">
+      //                 <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${producto.total_kilos}'>
+      //               </td>
+      //               <td class="align-middle">
+      //                 <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${producto.total_monto}'>
+      //             </td>`;
+
+      //             // Crear una nueva fila
+      //             var newRow = document.createElement('tr');
+      //             // Insertar el contenido HTML en la nueva fila
+      //             newRow.innerHTML = contenidoFila;
+      //             // Agregar la fila al tbody
+      //             tbody.appendChild(newRow);
+      //           });
+
+      //           $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
+      //           $('#total_kilos_ver').text(total_kilos.toFixed(2));
+      //           $('#total_monto_ver').text(total_monto.toFixed(2));
+
+      //           // Eliminar el botón de despachar si existe
+      //           $("#btnDespachar").remove();
+
+      //           // Agregar botón de despachar si no ha sido despachada
+      //           if (datosInput.despacho === 0) {
+      //             // Si existe el boton que no lo cree de forma infinita
+      //             if ($(".modal-footer #btnDespachar").length === 0) {
+      //               $(".modal-footer").append('<button type="submit" id="btnDespachar" class="btn btn-primary">Despachar</button>');
+      //             }
+      //           }else{
+      //             //Si 
+      //             $("#btnDespachar").remove();
+      //           }
+
+      //         } catch (e) {
+      //           console.error('Error al analizar JSON:', e, 'Respuesta:', response);
+      //           alert('Error al procesar los datos de la carga. Por favor, inténtelo de nuevo.');
+      //         }
+      //       },
+      //       error: function(jqXHR, textStatus, errorThrown) {
+      //           console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+      //           alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+      //       }
+      //   });
+
+      //   $('#modalCRUD').modal('show');
+      // });
+
+      // Función para cargar datos y mostrar modal
+      function cargarDatosYMostrarModal(id_carga) {
+        return new Promise(function(resolve, reject) {
+          // Realizar la solicitud AJAX para obtener datos
+          let datosVer = new FormData();
+          datosVer.append('accion', 'traerDatosVerDetalleCarga');
+          datosVer.append('id_carga', id_carga);
+
+          $.ajax({
             data: datosVer,
             url: './models/administrar_cargas.php',
             method: "post",
@@ -701,80 +810,174 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 let datosInput = JSON.parse(response);
                 console.log(datosInput);
                 if (!datosInput || !datosInput.productos) {
-                    console.error('Respuesta JSON no válida:', response);
-                    alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
-                    return;
+                  console.error('Respuesta JSON no válida:', response);
+                  reject('Error al obtener los datos de la carga.');
+                  return;
                 }
+                // Actualizar elementos en el modal con los datos obtenidos
+                $(".modal-header").css("background-color", "#007bff");
+                $(".modal-header").css("color", "white");
+                $(".modal-title").text("Ver Carga ID: ");
                 $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
                 $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
-                $("#lbl_id_carga").html(datosInput.id_carga);
                 $("#lbl_origen").html(datosInput.origen);
                 $("#lbl_proveedor").html(datosInput.proveedor);
                 $("#lbl_chofer").html(datosInput.chofer);
-                $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
-                $('#lbl_proveedor_default').html(datosInput.proveedor)
-                $('#id_carga').html(id_carga)
+                $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer);
+                $('#lbl_proveedor_default').html(datosInput.proveedor);
+                $('#id_carga').html(id_carga);
 
                 accion = "verCarga";
 
-                // Identifico la tabla de productos
+                // Identificar la tabla de productos
                 var tbody = document.querySelector('#tableProductosVer tbody');
                 tbody.innerHTML = "";
-                let cantidad_bulto_total = 0
-                let total_kilos = 0
-                let total_monto = 0
+                let cantidad_bulto_total = 0;
+                let total_monto = 0;
+                let total_kilos = 0;
                 datosInput.productos.forEach((producto) => {
                   // Sumar cantidad de bultos
                   cantidad_bulto_total += parseFloat(producto.total_bultos);
-                  console.log("cantidad_bulto_total = " + cantidad_bulto_total);
-
+                    
                   // Sumar kilos
                   total_kilos += parseFloat(producto.total_kilos);
-                  console.log("total_kilos = " + total_kilos);
 
                   // Sumar monto
-                  total_monto += parseFloat(producto.total_monto)
-                  console.log("total_monto = " + total_monto)
+                  total_monto += parseFloat(producto.total_monto);
 
                   let contenidoFila = `
-                    <td class="align-middle">
-                        <input type='text' readonly tabindex="-1"class="form-control producto" value='${producto.producto}'>
-                    </td>
-                    <td class="align-middle">
-                        <div class="input-group">
-                            <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${producto.total_bultos}" placeholder="Deje en blanco si no desea cargar este producto al producto">
-                        </div>
-                    </td>
-                    <td class="align-middle">
-                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${producto.total_kilos}'>
-                    </td>
-                    <td class="align-middle">
-                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${producto.total_monto}'>
-                  </td>`;
+                      <td class="align-middle">
+                        <input type='text' readonly tabindex="-1" class="form-control producto" value='${producto.producto}'>
+                      </td>
+                      <td class="align-middle">
+                          <div class="input-group">
+                              <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${producto.total_bultos}" placeholder="Deje en blanco si no desea cargar este producto al producto">
+                          </div>
+                      </td>
+                      <td class="align-middle">
+                          <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${producto.total_kilos}'>
+                      </td>
+                      <td class="align-middle">
+                          <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${producto.total_monto}'>
+                      </td>`;
 
-                  // Crear una nueva fila
-                  var newRow = document.createElement('tr');
-                  // Insertar el contenido HTML en la nueva fila
-                  newRow.innerHTML = contenidoFila;
-                  // Agregar la fila al tbody
-                  tbody.appendChild(newRow);
+                    // Crear una nueva fila
+                    var newRow = document.createElement('tr');
+                    // Insertar el contenido HTML en la nueva fila
+                    newRow.innerHTML = contenidoFila;
+                    // Agregar la fila al tbody
+                    tbody.appendChild(newRow);
                 });
 
                 $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
                 $('#total_kilos_ver').text(total_kilos.toFixed(2));
                 $('#total_monto_ver').text(total_monto.toFixed(2));
+
+                // Eliminar el botón de despachar si existe
+                $("#btnDespachar").remove();
+
+                // Agregar botón de despachar si no ha sido despachada
+                if (datosInput.despacho === 0) {
+                  // Si no existe el botón, agregarlo
+                  if ($(".modal-footer #btnDespachar").length === 0) {
+                    $(".modal-footer").append('<button type="submit" id="btnDespachar" class="btn btn-primary">Despachar</button>');
+                  }
+                } else {
+                  // Si la carga fue despachada, eliminar el botón
+                  $("#btnDespachar").remove();
+                }
+
+                // Mostrar el modal después de actualizar
+                $('#modalCRUDadminVer').modal('show');
+
+                // Resolver la Promesa después de cargar y mostrar el modal
+                resolve();
               } catch (e) {
                 console.error('Error al analizar JSON:', e, 'Respuesta:', response);
-                alert('Error al procesar los datos de la carga. Por favor, inténtelo de nuevo.');
+                reject('Error al procesar los datos de la carga en cargarDatosYMostrarModal');
               }
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-                alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+              console.error('Error en la solicitud AJAX 1:', textStatus, errorThrown);
+              alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+              reject('Error al obtener los datos de la carga.');
             }
+          });
         });
+      }
 
-        $('#modalCRUD').modal('show');
+      // Evento click para el botón .btnVer
+      $(document).on("click", ".btnVer", function() {
+        // Configurar el modal y cargar los datos al hacer clic en .btnVer
+        $(".modal-header").css("background-color", "#007bff");
+        $(".modal-header").css("color", "white");
+        $(".modal-title").text("Ver Carga ID: ");
+        $('#modalCRUDadminVer').modal('show');
+        var fila = $(this).closest("tr");
+        var id_carga = fila.find('td:eq(0)').text();
+        console.log('id carga: ' + id_carga);
+        // Llamar a la función para cargar datos y mostrar modal
+        cargarDatosYMostrarModal(id_carga)
+          .then(function() {
+            // Configurar evento click para el botón #btnDespachar después de cargar y mostrar modal
+            $(document).on("click", "#btnDespachar", function(event) {
+              event.preventDefault();
+              console.log(id_carga);
+
+              // Realizar confirmación y AJAX para despachar carga
+              swal({
+                title: "¿Estás seguro?",
+                text: "Una vez despachada esta carga, no podrás modificarla.",
+                icon: "info",
+                buttons: true,
+                dangerMode: true,
+              })
+                .then((willDelete) => {
+                  if (willDelete) {
+                    let accion = "despacharCarga";
+                    console.log("accion: " + accion + " ," + "id_carga: " + id_carga );
+                    $.ajax({
+                      url: "models/administrar_cargas.php",
+                      type: "POST",
+                      dataType: "json",
+                      data: { accion: "despacharCarga", id_carga: id_carga },
+                      success: function(response) {
+                        console.log("respuesta: " + response.success);
+                        if (response.success) {
+                          // Actualizar tabla de cargas u otras acciones necesarias
+                          tablaCargas.ajax.reload(null, false);
+                          swal({
+                            icon: 'success',
+                            title: 'Carga despachada correctamente'
+                          });
+                          setTimeout(() => {
+                            location.reload(); // Recargar la página después de cierto tiempo
+                          }, 3000);
+                        } else {
+                          // Mostrar mensaje de error si la carga no pudo ser despachada
+                          swal({
+                            icon: 'error',
+                            title: 'Error al despachar la carga',
+                            text: response.message
+                          });
+                        }
+                      },
+                      error: function(jqXHR, textStatus, errorThrown) {
+                          console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+                          alert('Error al despachar la carga. Por favor, inténtelo de nuevo.');
+                      }
+                  });
+
+                  } else {
+                    swal("La carga no se despachó.");
+                  }
+                });
+              });
+            })
+          .catch(function(error) {
+          console.error('Error:', error);
+          alert('Error al cargar los datos de la carga. Por favor, inténtelo de nuevo.');
+        });
       });
 
 
@@ -784,48 +987,48 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         window.location.href="cargas_abm.php?id="+id_carga
       });
 
-      $(document).on("click", "#btnDespachar", function(event){
-        event.preventDefault();
-        let id_carga =  $("#lbl_id_carga").html();
-        console.log(id_carga);    
-        swal({
-          title: "Estas seguro?",
-          text: "Una vez despachada esta carga, no podras modificarla",
-          icon: "info",
-          buttons: true,
-          dangerMode: true,
-        })
-        .then((willDelete) => {
-          if (willDelete) {
-            accion = "despacharCarga";
-            $.ajax({
-              url: "models/administrar_cargas.php",
-              type: "POST",
-              datatype:"json",
-              data:  {accion:accion, id_carga:id_carga},
-              success: function() {
-                //tablaCargas.row(fila.parents('tr')).remove().draw();
-                tablaCargas.ajax.reload(null, false);
-                swal({
-                  icon: 'success',
-                  title: 'Carga despachada correctamente'
-                })
-                setTimeout(() => {
-                  location.reload();
-                }, 3000);
+      // $(document).on("click", "#btnDespachar", function(event){
+      //   event.preventDefault();
+      //   let id_carga =  $("#lbl_id_carga").html();
+      //   console.log(id_carga);    
+      //   swal({
+      //     title: "Estas seguro?",
+      //     text: "Una vez despachada esta carga, no podras modificarla",
+      //     icon: "info",
+      //     buttons: true,
+      //     dangerMode: true,
+      //   })
+      //   .then((willDelete) => {
+      //     if (willDelete) {
+      //       accion = "despacharCarga";
+      //       $.ajax({
+      //         url: "models/administrar_cargas.php",
+      //         type: "POST",
+      //         datatype:"json",
+      //         data:  {accion:accion, id_carga:id_carga},
+      //         success: function() {
+      //           //tablaCargas.row(fila.parents('tr')).remove().draw();
+      //           tablaCargas.ajax.reload(null, false);
+      //           swal({
+      //             icon: 'success',
+      //             title: 'Carga despachada correctamente'
+      //           })
+      //           setTimeout(() => {
+      //             location.reload();
+      //           }, 3000);
                 
-              }
-            });
-          } else {
-            swal("La carga no se despachó!");
-          }
-        })
-      });
+      //         }
+      //       });
+      //     } else {
+      //       swal("La carga no se despachó!");
+      //     }
+      //   })
+      // });
 
       //Imprimir con o sin precio
       $(document).on("click", "#btnImprimirConPrecio", function(event){
         event.preventDefault();
-        let id_carga =  $("#lbl_id_carga").html();
+        let id_carga =  $('#id_carga').html();
         let cp = 1;
 
         datosEnviar = JSON.stringify(id_carga);
@@ -838,7 +1041,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $(document).on("click", "#btnImprimirSinPrecio", function(event){
         event.preventDefault();
-        let id_carga =  $("#lbl_id_carga").html();
+        let id_carga =  $('#id_carga').html();
         let cp = 0;
 
         datosEnviar = JSON.stringify(id_carga);

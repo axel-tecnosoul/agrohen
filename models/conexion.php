@@ -22,6 +22,15 @@ class Conexion{
     $this->conectar->query($sql);
   }
 
+  public function consultaSimpleM($sql){
+    $resultado = $this->conectar->query($sql);
+    if (!$resultado) {
+        error_log('Error en consulta SQL: ' . $this->conectar->error);
+        return false; // Retorna false si la consulta falla
+    }
+    return true; // Retorna true si la consulta se ejecutó correctamente
+  }
+
   public function consultaRetorno($sql){
     $datos = $this->conectar->query($sql);
     return $datos;

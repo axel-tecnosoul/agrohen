@@ -140,7 +140,6 @@ class cargas{
     $datosCarga = array();
 
     $queryCarga = "SELECT c.id AS id_carga, id_proveedor_default as id_proveedor, pr.nombre as proveedor, fecha, id_origen, o.nombre AS origen, id_chofer, datos_adicionales_chofer, ch.nombre AS chofer,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario FROM cargas c INNER JOIN origenes o ON c.id_origen=o.id LEFT JOIN proveedores pr ON c.id_proveedor_default = pr.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE c.id = $id_carga";
-    //echo $queryCarga;
     $getCarga = $this->conexion->consultaRetorno($queryCarga);
     $rowCarga = $getCarga->fetch_array();
     $mensajeError=$this->conexion->conectar->error;
@@ -148,9 +147,11 @@ class cargas{
       echo $mensajeError;
     }
 
+    $despacho = 0;
     $fecha_hora_despacho="(La carga aún no fue despachada)";
     if($rowCarga['fecha_hora_despacho']){
       $fecha_hora_despacho=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_despacho']));
+      $despacho = 1;
     }
 
     $datosCarga=[
@@ -167,6 +168,7 @@ class cargas{
       'despachado' =>utf8_encode($rowCarga['despachado']),
       'fecha_hora_despacho' =>$fecha_hora_despacho,
       'usuario' =>utf8_encode($rowCarga['usuario']),
+      'despacho' => $despacho,
     ];
 
     return json_encode($datosCarga);
@@ -185,7 +187,9 @@ class cargas{
       'origen' => $datosCargaArray['origen'],
       'chofer' => $datosCargaArray['chofer'],
       'datos_adicionales_chofer' => $datosCargaArray['datos_adicionales_chofer'],
-      'proveedor' => $datosCargaArray['proveedor']
+      'proveedor' => $datosCargaArray['proveedor'],
+      'fecha_hora_despacho' => $datosCargaArray['fecha_hora_despacho'],
+      'despacho' => $datosCargaArray['despacho'],
     ];
         
     $sqltraerProductosCarga = "
@@ -226,7 +230,7 @@ class cargas{
     // Codificar todo el array en JSON y enviarlo como respuesta
     return json_encode($datosNecesarios);
   }
-
+              
   public function traerCargas(){
     $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
@@ -429,9 +433,16 @@ class cargas{
   }
 
   public function despacharCarga($id_carga){
-
     $queryUpdateEstado = "UPDATE cargas SET fecha_hora_despacho = NOW() WHERE id = $id_carga";
-    $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
+    // Verificar si la actualización fue exitosa
+    $updateEstado = $this->conexion->consultaSimpleM($queryUpdateEstado);
+    if ($updateEstado) {
+        $response = array('success' => true, 'message' => 'Carga despachada correctamente');
+    } else {
+        $response = array('success' => false, 'message' => 'Error al despachar la carga');
+    }
+    
+    echo json_encode($response);
   }
 
   public function registrarCarga($fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default){
