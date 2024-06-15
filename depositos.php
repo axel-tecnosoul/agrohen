@@ -76,7 +76,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th class="text-center">#ID</th>
                           <th>Nombre</th>
                           <th>Responsable</th>
-                          <th>Porcentaje Extra</th>
+                          <th>Tipo de Aumento</th>
+                          <th>Valor</th>
                           <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
@@ -133,8 +134,21 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="porcentaje_extra" class="col-form-label">Porcentaje extra:</label>
-                    <input type="number" class="form-control" id="porcentaje_extra">
+                    <label class="col-form-label">Tipo de Aumento:</label>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="porcentaje_extra" name="opcion" value="porcentaje_extra">
+                      <label for="porcentaje_extra" class="form-check-label">Porcentaje extra</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" id="precio_fijo" name="opcion" value="precio_fijo">
+                      <label for="precio_fijo" class="form-check-label">Precio fijo</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label for="valor" class="col-form-label">Valor:</label>
+                    <input type="number" class="form-control" id="valor" required>
                   </div>
                 </div>
               </div>
@@ -184,7 +198,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {data: "id_deposito"},
             {data: "nombre"},
             {data: "responsable"},
-            {data: "porcentaje_extra"},
+            {data: "tipo_aumento_extra"},
+            {data: "valor_extra"},
             {
               render: function(data, type, full, meta) {
                 const estados = {
@@ -353,7 +368,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           document.getElementById("nombre").focus();
         })
         $('#id_responsable').val("").change();
-        accion = "adddeposito";
+        accion = "addDeposito";
       });
 
       $('#formAdmin').submit(function(e){
@@ -361,13 +376,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let id_deposito = $.trim($('#id_deposito').html());
         let nombre = $.trim($('#nombre').val());
         let id_responsable = $.trim($('#id_responsable').val());
-        let porcentaje_extra = $.trim($('#porcentaje_extra').val());
+        let opcion = $('input[name="opcion"]:checked').val();
+        let valor = $.trim($('#valor').val());
 
         $.ajax({
           url: "models/administrar_deposito.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, porcentaje_extra: porcentaje_extra},
+          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, opcion: opcion, valor: valor},
           success: function(data) {
             if(data=="1"){
               tablaDeposito.ajax.reload(null, false);
@@ -413,7 +429,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $('#id_deposito').html(datosInput.id_deposito);
             $("#nombre").val(datosInput.nombre);
             $('#id_responsable').val(datosInput.id_responsable).change();
-            $("#porcentaje_extra").val(datosInput.porcentaje_extra);
+            // Selecciona el radio button correcto
+            if (datosInput.tipo_aumento_extra === "Porcentaje Extra") {
+                $("#porcentaje_extra").prop("checked", true);
+            } else if (datosInput.tipo_aumento_extra === "Precio Fijo") {
+                $("#precio_fijo").prop("checked", true);
+            }
+            $("#valor").val(datosInput.valor_extra);
             
             //$('#usuario').val(datosInput.usuario)
             //$('#id_usuario').html(datosInput.id_usuario)

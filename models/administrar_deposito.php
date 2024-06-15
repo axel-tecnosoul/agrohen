@@ -37,7 +37,7 @@ class depositos{
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.porcentaje_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.tipo_aumento_extra, valor_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     
@@ -46,7 +46,8 @@ class depositos{
         'id_deposito'=>$row['id_deposito'],
         'nombre'=>$row['nombre'],
         'responsable'=>$row['responsable'],
-        'porcentaje_extra'=>$row['porcentaje_extra'],
+        'tipo_aumento_extra'=>$row['tipo_aumento_extra'],
+        'valor_extra'=>$row['valor_extra'],
         'activo'=>$row['activo'],
       );
     }
@@ -55,7 +56,7 @@ class depositos{
 
   public function traerDepositoUpdate($id_deposito){
     $this->id_deposito = $id_deposito;
-    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, porcentaje_extra, activo FROM destinos WHERE id = $this->id_deposito";
+    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo FROM destinos WHERE id = $this->id_deposito";
     $traerdeposito = $this->conexion->consultaRetorno($sqlTraerdeposito);
 
     $depositos = array(); //creamos un array
@@ -64,20 +65,28 @@ class depositos{
         'id_deposito'=> $row['id_deposito'],
         'nombre'=> $row['nombre'],
         'id_responsable'=> $row['id_responsable'],
-        'porcentaje_extra'=> $row['porcentaje_extra'],
+        'tipo_aumento_extra'=> $row['tipo_aumento_extra'],
+        'valor_extra'=> $row['valor_extra'],
       );
     }
     return json_encode($depositos);
   }
 
-  public function depositoUpdate($id_deposito, $nombre, $id_responsable, $porcentaje_extra){
+  public function depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion, $valor){
 
     $this->id_deposito = $id_deposito;
     $this->nombre = $nombre;
     $this->id_responsable = $id_responsable;
-    $this->porcentaje_extra = $porcentaje_extra;
+    $this->opcion = $opcion;
+    $this->valor = $valor;
 
-    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  porcentaje_extra ='$this->porcentaje_extra' WHERE id = $this->id_deposito";
+    if($opcion == "porcentaje_extra"){
+      $opcion = "Porcentaje Extra";
+    }elseif($opcion == "precio_fijo"){
+      $opcion = "Precio Fijo";
+    }
+
+    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  tipo_aumento_extra ='$opcion', valor_extra ='$this->valor' WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -112,13 +121,20 @@ class depositos{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrardeposito($nombre,$id_responsable,$porcentaje_extra){
+  public function registrardeposito($nombre,$id_responsable,$opcion, $valor){
     $this->nombre = $nombre;
     $this->id_responsable = $id_responsable;
-    $this->porcentaje_extra = $porcentaje_extra;
+    $this->opcion = $opcion;
+    $this->valor = $valor;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, porcentaje_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$this->porcentaje_extra', 1)";
+    if($opcion == "porcentaje_extra"){
+      $opcion = "Porcentaje Extra";
+    }elseif($opcion == "precio_fijo"){
+      $opcion = "Precio Fijo";
+    }
+
+    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$opcion','$this->valor', 1)";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -148,11 +164,9 @@ if (isset($_POST['accion'])) {
       $id_deposito = $_POST['id_deposito'];
       $nombre = $_POST['nombre'];
       $id_responsable = $_POST['id_responsable'];
-      $porcentaje_extra = $_POST['porcentaje_extra'];
-      if(empty($porcentaje_extra)){
-        $porcentaje_extra=0;
-      }
-      echo $depositos->depositoUpdate($id_deposito, $nombre, $id_responsable, $porcentaje_extra);
+      $opcion = $_POST['opcion'];
+      $valor = $_POST['valor'];
+      echo $depositos->depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion, $valor);
       break;
     case 'cambiarEstado':
       $id_deposito = $_POST['id_deposito'];
@@ -170,14 +184,12 @@ if (isset($_POST['accion'])) {
       $email = $_POST['email'];
       $depositos->verificarCuentaExitente($email);
       break;
-    case 'adddeposito':
+    case 'addDeposito':
       $nombre = $_POST['nombre'];
       $id_responsable = $_POST['id_responsable'];
-      $porcentaje_extra = $_POST['porcentaje_extra'];
-      if(empty($porcentaje_extra)){
-        $porcentaje_extra=0;
-      }
-      echo $depositos->registrardeposito($nombre,$id_responsable,$porcentaje_extra);
+      $opcion = $_POST['opcion'];
+      $valor = $_POST['valor'];
+      echo $depositos->registrardeposito($nombre,$id_responsable,$opcion, $valor);
       break;
   }
 }else{
