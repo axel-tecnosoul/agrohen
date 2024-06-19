@@ -79,14 +79,15 @@ class cargas{
     }
 
     /*Destino*/
-    $queryDestinos = "SELECT id as id_destino, nombre, porcentaje_extra FROM destinos";
+    $queryDestinos = "SELECT id as id_destino, nombre, tipo_aumento_extra, valor_extra FROM destinos";
     $getDestinos = $this->conexion->consultaRetorno($queryDestinos);
     /*CARGO ARRAY Destinos*/
     while ($row = $getDestinos->fetch_array()) {
       $arrayDestinos[]=[
         'id_destino' => utf8_encode($row["id_destino"]),
         'destino' =>utf8_encode($row["nombre"]),
-        'porcentaje_extra' =>utf8_encode($row["porcentaje_extra"]),
+        'tipo_aumento_extra' =>utf8_encode($row["tipo_aumento_extra"]),
+        'valor_extra' =>utf8_encode($row["valor_extra"]),
       ];
     }
 
@@ -650,6 +651,8 @@ if (isset($_POST['accion'])) {
       echo $cargas->updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$datosDepositos);
     break;
     case 'despacharCarga':
+      // var_dump($_POST);
+      // die;
       $id_carga = $_POST['id_carga'];
       $cargas->despacharCarga($id_carga);
     break;
@@ -669,7 +672,6 @@ if (isset($_POST['accion'])) {
       if(empty($id_proveedor_default)){
         $id_proveedor_default="NULL";
       }
-
       echo $cargas->registrarCarga($fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default);
     break;
     case 'getProductosByFamilia':
