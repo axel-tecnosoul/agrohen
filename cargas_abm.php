@@ -575,7 +575,8 @@ if(isset($_GET["id"])){
             let fila=$(this);
             
             let id_producto_destino=fila.find(".id_producto_destino").val()
-            let porcentaje_extra=fila.find(".porcentaje_extra").val()
+            let tipo_aumento_extra=fila.find(".tipo_aumento_extra").val()
+            let valor_extra=fila.find(".valor_extra").val()
             let cantidad_bultos=fila.find(".cantidad_bultos").val()
             let id_deposito=fila.find(".id_deposito").val()
             let subtotal_kilos=fila.find(".subtotal_kilos").val()
@@ -583,7 +584,8 @@ if(isset($_GET["id"])){
 
             datosDepositos.push({
               id_producto_destino: id_producto_destino,
-              porcentaje_extra: porcentaje_extra,
+              tipo_aumento_extra: tipo_aumento_extra,
+              valor_extra: valor_extra,
               cantidad_bultos: cantidad_bultos,
               id_deposito: id_deposito,
               subtotal_kilos: subtotal_kilos
@@ -773,10 +775,11 @@ if(isset($_GET["id"])){
               datosInput.destinos.forEach((destino) => {
                 //console.log(destino)
                   // Plantilla para cada fila
-                let porcentaje_extra=destino.porcentaje_extra
-                let lbl_porcentaje_extra=""
-                if(porcentaje_extra>0){
-                  //lbl_porcentaje_extra=" (+"+porcentaje_extra+"%)"
+                let tipo_aumento_extra=destino.tipo_aumento_extra
+                let valor_extra=destino.valor_extra
+                let lbl_tipo_aumento_extra=""
+                if(tipo_aumento_extra>0){
+                  //lbl_tipo_aumento_extra=" (+"+tipo_aumento_extra+"%)"
                 }
                 
                 // Sumar cantidad de bultos
@@ -1245,17 +1248,19 @@ if(isset($_GET["id"])){
             tbody.innerHTML="";
             respuestaJson.destinos.forEach((destino) => {
                 // Plantilla para cada fila
-              let porcentaje_extra=destino.porcentaje_extra
-              let lbl_porcentaje_extra=""
-              if(porcentaje_extra>0){
-                //lbl_porcentaje_extra=" (+"+porcentaje_extra+"%)"
+              let tipo_aumento_extra=destino.tipo_aumento_extra
+              let valor_extra=destino.valor_extra
+              let lbl_aumento_extra=""
+              if(tipo_aumento_extra>0){
+                //lbl_aumento_extra=" (+"+tipo_aumento_extra+"%)"
               }
               console.log(destino)
               let contenidoFila = `
                 <td class="align-middle">
-                  <input type='hidden' class="porcentaje_extra" value='${porcentaje_extra}'>
+                  <input type='hidden' class="tipo_aumento_extra" value='${tipo_aumento_extra}'>
+                  <input type='hidden' class="valor_extra" value='${valor_extra}'>
                   <input type='hidden' class="id_producto_destino" value=''>
-                  <input type='hidden' class="id_deposito" value='${destino.id_destino}'>${destino.destino+lbl_porcentaje_extra}
+                  <input type='hidden' class="id_deposito" value='${destino.id_destino}'>${destino.destino+lbl_aumento_extra}
                 </td>
                 <td class="align-middle">
                   <div class="input-group">

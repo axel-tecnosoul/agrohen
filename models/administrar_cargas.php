@@ -8,7 +8,8 @@ class cargas{
   private $id_deposito;
   private $nombre;
   private $id_responsable;
-  private $porcentaje_extra;
+  private $tipo_aumento_extra;
+  private $valor_extra;
   
   public function __construct(){
       $this->conexion = new Conexion();
@@ -210,6 +211,26 @@ class cargas{
         
     if ($traerProductosCarga) {
       while ($row = $traerProductosCarga->fetch_array()) {
+
+        $sqltraerDestinosProductosCarga = "
+          SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
+          cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto 
+          FROM cargas_productos cp 
+          INNER JOIN productos p ON cp.id_producto=p.id 
+          INNER JOIN familias_productos fp ON p.id_familia=fp.id 
+          INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id 
+          INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id 
+          INNER JOIN proveedores pr ON cp.id_proveedor=pr.id 
+          INNER JOIN usuarios u ON cp.id_usuario=u.id 
+          WHERE cp.id_carga = " . $id_carga;
+            
+        $traerDestinosProductosCarga = $this->conexion->consultaRetorno($sqltraerDestinosProductosCarga);
+        $productos = array();
+            
+        if ($traerDestinosProductosCarga) {
+          while ($row = $traerDestinosProductosCarga->fetch_array()) {
+          }
+        }
         $productos[] = array(
           'id_carga_producto' => utf8_encode($row['id_carga_producto']),
           'id_producto' => utf8_encode($row['id_producto']),
@@ -347,18 +368,19 @@ class cargas{
       $id_producto_destino=utf8_encode($row["id_producto_destino"]);
       $cantidad_bultos=utf8_encode($row["cantidad_bultos"]);
       $id_deposito=utf8_encode($row["id_deposito"]);
-      $porcentaje_extra=utf8_encode($row["porcentaje_extra"]);
+      $tipo_aumento_extra=utf8_encode($row["tipo_aumento_extra"]);
+      $valor_extra=utf8_encode($row["valor_extra"]);
       $subtotal_kilos=utf8_encode($row["subtotal_kilos"]);
 
       $mensajeError="";
       if($cantidad_bultos>0){
         $monto=$cantidad_bultos*$precio;
         if($id_producto_destino>0){
-          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, porcentaje_extra = $porcentaje_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
+          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
           $mensajeError=$this->conexion->conectar->error;
         }else{
-          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $subtotal_kilos, $id_usuario)";
+          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $subtotal_kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
         }
@@ -493,7 +515,8 @@ class cargas{
         $cantidad_bultos=utf8_encode($row["cantidad_bultos"]);
         $id_deposito=utf8_encode($row["id_deposito"]);
         $kilos=utf8_encode($row["subtotal_kilos"]);
-        $porcentaje_extra=utf8_encode($row["porcentaje_extra"]);
+        $tipo_aumento_extra=utf8_encode($row["tipo_aumento_extra"]);
+        $valor_extra=utf8_encode($row["valor_extra"]);
 
         if($cantidad_bultos>0){
           $monto=$cantidad_bultos*$precio;
@@ -502,7 +525,7 @@ class cargas{
           $sumaKilos+=$kilos;
           $sumaBultos+=$cantidad_bultos;
 
-          $queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, porcentaje_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $porcentaje_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
+          $queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
           
