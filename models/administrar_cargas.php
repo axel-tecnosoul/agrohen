@@ -331,7 +331,7 @@ class cargas{
       'total_monto'=> utf8_encode($row['total_monto']),
     ];
 
-    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
+    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
     //var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoDestinosCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $productoDestinosCarga=[];
@@ -340,6 +340,8 @@ class cargas{
         'id_producto_destino'=> utf8_encode($row['id_producto_destino']),
         'id_destino'=> utf8_encode($row['id_destino']),
         'destino'=> utf8_encode($row['destino']),
+        'tipo_aumento_extra'=> utf8_encode($row['tipo_aumento_extra']),
+        'valor_extra'=> utf8_encode($row['valor_extra']),
         'cantidad_bultos'=> utf8_encode($row['cantidad_bultos']),
         'monto'=> utf8_encode($row['monto']),
         'kilos'=> utf8_encode($row['kilos']),
@@ -369,12 +371,18 @@ class cargas{
       $cantidad_bultos=utf8_encode($row["cantidad_bultos"]);
       $id_deposito=utf8_encode($row["id_deposito"]);
       $tipo_aumento_extra=utf8_encode($row["tipo_aumento_extra"]);
+      if(empty($tipo_aumento_extra)){
+        $tipo_aumento_extra="NULL";
+      }else{
+        $tipo_aumento_extra="'$tipo_aumento_extra'";
+      }
       $valor_extra=utf8_encode($row["valor_extra"]);
       $subtotal_kilos=utf8_encode($row["subtotal_kilos"]);
 
       $mensajeError="";
       if($cantidad_bultos>0){
         $monto=$cantidad_bultos*$precio;
+        //var_dump($tipo_aumento_extra);
         if($id_producto_destino>0){
           $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
