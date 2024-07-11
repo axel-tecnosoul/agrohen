@@ -128,12 +128,6 @@ class depositos{
     $this->valor = $valor;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    if($opcion == "porcentaje_extra"){
-      $opcion = "Porcentaje Extra";
-    }elseif($opcion == "precio_fijo"){
-      $opcion = "Precio Fijo";
-    }
-
     $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$opcion','$this->valor', 1)";
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;

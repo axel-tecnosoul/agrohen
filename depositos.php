@@ -135,14 +135,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="col-form-label">Tipo de Aumento:</label>
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="porcentaje_extra" name="opcion" value="porcentaje_extra">
-                      <label for="porcentaje_extra" class="form-check-label">Porcentaje extra</label>
-                    </div>
-                    <div class="form-check">
-                      <input type="radio" class="form-check-input" id="precio_fijo" name="opcion" value="precio_fijo">
-                      <label for="precio_fijo" class="form-check-label">Precio fijo</label>
-                    </div>
+                    <label class="d-block" for="porcentaje_extra">
+                      <input type="radio" class="radio_animated" id="porcentaje_extra" name="opcion" value="Porcentaje Extra" required checked> Porcentaje Extra
+                    </label>
+                    <label class="d-block" for="precio_fijo">
+                      <input type="radio" class="radio_animated" id="precio_fijo" name="opcion" value="Precio Fijo" required> Precio Fijo
+                    </label>
                   </div>
                 </div>
                 <div class="col-lg-6">
