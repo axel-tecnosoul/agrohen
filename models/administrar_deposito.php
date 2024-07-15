@@ -80,12 +80,6 @@ class depositos{
     $this->opcion = $opcion;
     $this->valor = $valor;
 
-    if($opcion == "porcentaje_extra"){
-      $opcion = "Porcentaje Extra";
-    }elseif($opcion == "precio_fijo"){
-      $opcion = "Precio Fijo";
-    }
-
     $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  tipo_aumento_extra ='$opcion', valor_extra ='$this->valor' WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
