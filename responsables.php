@@ -30,11 +30,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       <!-- Page Sidebar Ends-->
       <div class="page-body">
         <div class="container-fluid">
-          <div class="page-header">
+          <div class="page-header py-3">
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
-                  <h3>responsables</h3>
+                  <h3>Responsables</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
                     <li class="breadcrumb-item active">Responsables de depositos</li>
@@ -50,13 +50,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
               <div class="card">
-                <div class="card-header">
-                  <h5>Administrar Responsables de deposito</h5>
-                    <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
+                <div class="card-header py-3">
+                  <h5 style="display: inline-block;vertical-align: middle;">Administrar Responsables de deposito</h5>
+                    <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
                 </div>
-                <div class="card-body">
+                <div class="card-body py-1">
                   <div class="table-responsive">
-                    <table class="table table-hover" id="tablaResponsables">
+                    <table class="table table-hover display" id="tablaResponsables">
                       <thead class="text-center">
                         <tr>
                           <th class="text-center">#ID</th>
