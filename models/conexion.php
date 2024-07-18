@@ -9,13 +9,18 @@ class Conexion{
 
   //PRODUCCION
   /*private $host = "localhost";
-  private $user = "root";
+  private $user = "agrohen";
   private $pass = "TqCStQMYhPj2qgm";
   private $db = "agrohen";*/
+
   public $conectar;
 
   public function __construct(){
     $this->conectar = new mysqli($this->host, $this->user, $this->pass, $this->db);
+    if ($this->conectar->connect_error) {
+        die("Connection failed: " . $this->conectar->connect_error);
+    }
+    $this->conectar->set_charset("utf8"); // Aquí configuras el charset a UTF-8
   }
 
   public function consultaSimple($sql){
@@ -33,6 +38,9 @@ class Conexion{
 
   public function consultaRetorno($sql){
     $datos = $this->conectar->query($sql);
+    if ($this->conectar->error) {
+      die("Error en la consulta: " . $this->conectar->error);
+    }
     return $datos;
   }
 }

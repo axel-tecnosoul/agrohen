@@ -1,6 +1,7 @@
 <?php 
 session_start();
 include_once('models/conexion.php');
+include_once("models/administrar_cargas.php");
 date_default_timezone_set("America/Buenos_Aires");
 $hora = date('Hi');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
@@ -9,7 +10,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 $id=0;
 if(isset($_GET["id"])){
   $id=$_GET["id"];
-}?>
+}
+
+$cargas = new cargas();
+
+$datosCarga=$cargas->getDatosCarga($id);
+$datosCarga=json_decode($datosCarga,true);
+//var_dump($datosCarga);
+$mostrarMotivo=0;
+$anchoColMotivo=0;
+if($datosCarga["despachado"]=="Si"){
+  $mostrarMotivo=1;
+  $anchoColMotivo=0;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -28,32 +42,29 @@ if(isset($_GET["id"])){
           box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
       }
 
-      
-
       #tableDepositos tbody td{
         padding: 0.3rem;
       }
 
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-}
+      .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+      }
 
-.modal-header, .modal-footer {
-  flex-shrink: 0;
-}
+      .modal-header, .modal-footer {
+        flex-shrink: 0;
+      }
 
-.modal-body {
-  overflow-y: auto;
-  flex-grow: 1;
-  padding: 20px;
-}
+      .modal-body {
+        overflow-y: auto;
+        flex-grow: 1;
+        padding: 20px;
+      }
 
-.select2-container {
-    z-index: 2000 !important; /* Ajusta según sea necesario */
-}
-
+      .select2-container {
+        z-index: 2000 !important; /* Ajusta según sea necesario */
+      }
     </style>
   </head>
   <body>
@@ -75,14 +86,15 @@ if(isset($_GET["id"])){
       <!-- Page Sidebar Ends-->
       <div class="page-body">
         <div class="container-fluid">
-          <div class="page-header">
+          <div class="page-header py-3">
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
                   <h3>Cargas</h3>
                   <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
-                    <li class="breadcrumb-item active">Cargas</li>
+                    <li class="breadcrumb-item"><a href="cargas.php">Cargas</a></li>
+                    <li class="breadcrumb-item active">Gestionar carga</li>
                   </ol>
                 </div>
               </div>
@@ -95,12 +107,14 @@ if(isset($_GET["id"])){
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
               <div class="card">
-                <div class="card-header">
-                  <h5>Gestionar Carga N° <?=$_GET["id"]?></h5>
-                  <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar producto</button>
+                <div class="card-header py-3">
+                  <h5 style="display: inline-block;vertical-align: middle;">Gestionar Carga N° <?=$_GET["id"]?></h5><?php
+                  if($datosCarga["despacho"]==0){?>
+                    <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar producto</button><?php
+                  }?>
+                  <span id="id_perfil" class="d-none"><?=$_SESSION["rowUsers"]["id_perfil"]?></span>
                 </div>
-
-                <div class="card-body pt-0">
+                <div class="card-body py-1">
                   <!-- Acordion de Bootstrap -->
                   <div id="accordion" class="mb-1">
                     <div class="card border-top-1 border-end-1 border-bottom-1 border-dark">
@@ -114,27 +128,27 @@ if(isset($_GET["id"])){
                         <div class="card-body p-2">
                           <div class="row">
                             <div class="col-sm-2 text-right"><strong>Fecha:</strong></div>
-                            <div class="col-sm-2" id="fecha_carga"></div>
+                            <div class="col-sm-2" id="fecha_carga"><?=$datosCarga["fecha_formatted"]?></div>
                             <div class="col-sm-3 text-right"><strong>Chofer:</strong></div>
-                            <div class="col-sm-5" id="chofer_carga"></div>
+                            <div class="col-sm-5" id="chofer_carga"><?=$datosCarga["chofer"]?></div>
                           </div>
                           <div class="row">
                             <div class="col-sm-2 text-right"><strong>Origen:</strong></div>
-                            <div class="col-sm-2" id="origen_carga"></div>
+                            <div class="col-sm-2" id="origen_carga"><?=$datosCarga["origen"]?></div>
                             <div class="col-sm-3 text-right"><strong>Datos adicionales chofer:</strong></div>
-                            <div class="col-sm-5" id="datos_adicionales_chofer_carga"></div>
+                            <div class="col-sm-5" id="datos_adicionales_chofer_carga"><?=$datosCarga["datos_adicionales_chofer"]?></div>
                           </div>
                           <div class="row">
                             <div class="col-sm-2 text-right"><strong>Usuario:</strong></div>
-                            <div class="col-sm-2" id="usuario"></div>
+                            <div class="col-sm-2" id="usuario"><?=$datosCarga["usuario"]?></div>
                             <div class="col-sm-3 text-right"><strong>Fecha y hora despacho:</strong></div>
-                            <div class="col-sm-5" id="fecha_hora_despacho"></div>
+                            <div class="col-sm-5" id="fecha_hora_despacho"><?=$datosCarga["fecha_hora_despacho"]?></div>
                           </div>
                           <input type="hidden" id="id_carga" value="<?=$id?>">
-                          <input type="hidden" id="id_chofer">
-                          <input type="hidden" id="id_origen">
-                          <input type="hidden" id="id_proveedor_default">
-                          <input type="hidden" id="despachado">
+                          <input type="hidden" id="id_chofer" value="<?=$datosCarga["id_chofer"]?>">
+                          <input type="hidden" id="id_origen" value="<?=$datosCarga["id_origen"]?>">
+                          <input type="hidden" id="id_proveedor_default" value="<?=$datosCarga["id_proveedor"]?>">
+                          <input type="hidden" id="despachado" value="<?=$datosCarga["despachado"]?>">
                         </div>
                       </div>
                     </div>
@@ -195,7 +209,7 @@ if(isset($_GET["id"])){
       </footer>
     </div>
     <!--Modal para CRUD admin-->
-    <div class="modal fade" id="modalCRUDadmin" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCRUD" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
         <div class="modal-content">
           <div class="modal-header">
@@ -206,13 +220,13 @@ if(isset($_GET["id"])){
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="id_familia" class="col-form-label">Familia:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="id_producto" class="col-form-label">Nombre:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
@@ -220,13 +234,13 @@ if(isset($_GET["id"])){
                     </select>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="id_proveedor" class="col-form-label">Proveedor:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor" required></select>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <!-- <div class="col-lg-2">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label">Kg x bulto:</label>
                     <input type="number" class="form-control" id="kg_x_bulto" step="0.1" min="0" required>
@@ -237,6 +251,27 @@ if(isset($_GET["id"])){
                     <label for="kg_x_bulto" class="col-form-label">Precio:</label>
                     <input type="number" class="form-control" id="precio" step="0.1" min="0" required>
                   </div>
+                </div> -->
+              </div>
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label">Kg x bulto:</label>
+                    <input type="number" class="form-control" id="kg_x_bulto" step="0.1" min="0" required>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label">Precio:</label>
+                    <input type="number" class="form-control" id="precio" step="0.1" min="0" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group" id="motivo_group">
+                    <label for="kg_x_bulto" class="col-form-label">Motivo de la modificacion del precio:</label>
+                    <input type="text" class="form-control" id="motivo_precio">
+                    <input type="hidden" class="form-control" id="precio_aux">
+                  </div>
                 </div>
               </div>
               <div class="row">
@@ -244,16 +279,22 @@ if(isset($_GET["id"])){
                   <table id="tableDepositos" class="table table-striped">
                     <thead>
                       <th style="width: 30%">Deposito</th>
-                      <th style="width: 40%">Cantidad de bultos</th>
+                      <th style="width: 20%">Cantidad de bultos</th>
                       <th style="width: 15%">Kg Total</th>
-                      <th style="width: 15%">Monto Total</th>
+                      <th style="width: 15%">Monto Total</th><?php
+                      if($mostrarMotivo==1){?>
+                        <th style="width: 20%">Motivo</th><?php
+                      }?>
                     </thead>
                     <tbody></tbody>
                     <tfoot>
                       <th style="text-align:right">Totales</th>
                       <th id="total_bultos">0</th>
                       <th class="text-right" id="total_kilos">0</th>
-                      <th class="text-right" id="total_monto">0</th>
+                      <th class="text-right" id="total_monto">0</th><?php
+                      if($mostrarMotivo==1){?>
+                        <th style="width: 20%"></th><?php
+                      }?>
                     </tfoot>
                   </table>
                 </div>
@@ -270,7 +311,7 @@ if(isset($_GET["id"])){
     </div>
 
     <!--Modal para CRUD admin-->
-    <div class="modal fade" id="modalCRUDadminVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
         <div class="modal-content">
           <div class="modal-header">
@@ -432,14 +473,15 @@ if(isset($_GET["id"])){
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
+      var id_perfil=$("#id_perfil").html()
       var id_carga=$("#id_carga").val();
+      var despachado = $("#despachado").val()
       var bandera_buscar_producto=true;
       var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
-      var id_proveedor_default;
 
       cargarDatosComponentes();
       cargarDatosComponentesNuevoProducto()
-      getDatosCarga();
+      //getDatosCarga();
 
       $(document).ready(function(){
 
@@ -474,15 +516,18 @@ if(isset($_GET["id"])){
               render: function(data, type, full, meta) {
                 return ()=>{
                   $buttonsGroup="<div class='text-center'><div class='btn-group'>";
-                  $btnEliminar=''
-                  $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
-                  $btnEditar=''
-                  let despachado=$("#despachado").val();
-                  if(despachado=="No"){
-                    $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
-                    $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
-                  }else{
 
+                  $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
+                  $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
+                  $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                  
+                  if(despachado=="Si"){
+                    $btnEliminar=''
+                  }
+
+                  if(id_perfil==2){
+                    $btnEditar=''
+                    $btnEliminar=''
                   }
                   
                   $buttonsGroupEnd=`</div></div>`
@@ -535,7 +580,7 @@ if(isset($_GET["id"])){
 
         $("#btnNuevo").click(function(){
           $("#formAdmin").trigger("reset");
-          let modal=$('#modalCRUDadmin')
+          let modal=$('#modalCRUD')
           modal.find(".modal-header").css("background-color", "#17a2b8");
           modal.find(".modal-header").css("color", "white" );
           modal.find(".modal-title").text("Alta de productos para la carga "+<?=$id?>);
@@ -543,15 +588,28 @@ if(isset($_GET["id"])){
           modal.on('shown.bs.modal', function (e) {
             document.getElementById("id_familia").focus();
           })
-          //=$("#id_proveedor_default").val()
+          
+          $("#btnGuardarCargarOtro").removeClass("d-none")
+          $("#btnGuardarCerrar").text("Guardar y cerrar")
+
+          let id_proveedor_default=$("#id_proveedor_default").val()
+          //console.log(id_proveedor_default);
           $("#id_proveedor").val(id_proveedor_default).change();
           $('#id_familia').val("").change();
           $('#id_producto').val("").change();
+
+          $("#motivo_group").addClass("d-none");
+          $('#id_familia').attr("disabled",false)
+          $('#kg_x_bulto').attr("disabled",false)
+          $('#id_proveedor').attr("disabled",false)
+
           accion = "addProductoCarga";
         });
 
         $('#formAdmin').submit(function(e){
           e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+
+          throw new Error("my error message");
 
           let cargarOtro=false;
           if ($('#btnGuardarCargarOtro').is(':focus')) {// Verificar si se presionó el botón "btnGuardarCargarOtro"
@@ -633,7 +691,7 @@ if(isset($_GET["id"])){
                   $(this).reset();
                   $('#id_proveedor').val(id_proveedor).change();
                 }else{*/
-                  $('#modalCRUDadmin').modal('hide');
+                  $('#modalCRUD').modal('hide');
                 //}
               }else{
                 swal({
@@ -653,10 +711,13 @@ if(isset($_GET["id"])){
           $(".modal-header").css( "background-color", "#22af47");
           $(".modal-header").css( "color", "white" );
           $(".modal-title").text("Editar carga de producto");
-          $('#modalCRUDadmin').modal('show');
+          $('#modalCRUD').modal('show');
           $("#formAdmin").trigger("reset");
           fila = $(this).closest("tr");
           let id_carga_producto = fila.find('td:eq(0)').text();
+
+          $("#btnGuardarCargarOtro").addClass("d-none")
+          $("#btnGuardarCerrar").text("Guardar")
 
           $("#id_carga_producto").html(id_carga_producto);
           let datosUpdate = new FormData();
@@ -683,7 +744,16 @@ if(isset($_GET["id"])){
               getProductosByFamilia(datosInput.id_familia,datosInput.id_producto)
               $('#kg_x_bulto').val(datosInput.kg_x_bulto);
               $('#precio').val(datosInput.precio);
+              $('#precio_aux').val(datosInput.precio);
               $('#id_proveedor').val(datosInput.id_proveedor).change();
+
+              $("#motivo_group").addClass("d-none");
+              if(despachado=="Si"){
+                $('#id_familia').attr("disabled",true)
+                $('#kg_x_bulto').attr("disabled",true)
+                $('#id_proveedor').attr("disabled",true)
+                $("#motivo_group").removeClass("d-none");
+              }
 
               let destinos=datosInput["destinos"];
               //console.log(destinos);
@@ -700,6 +770,7 @@ if(isset($_GET["id"])){
                   //console.log("data",data);
                   fila.find(".id_producto_destino").val(data.id_producto_destino)
                   fila.find(".cantidad_bultos").val(data.cantidad_bultos)
+                  fila.find(".cantidad_bultos_aux").val(data.cantidad_bultos)
                   fila.find(".subtotal_kilos").val(data.subtotal)
                   fila.find(".subtotal_monto").val(data.subtotal)
                 }
@@ -715,7 +786,7 @@ if(isset($_GET["id"])){
           $(".modal-header").css( "background-color", "#007bff");
           $(".modal-header").css( "color", "white" );
           $(".modal-title").text("Ver carga de producto");
-          $('#modalCRUDadminVer').modal('show');
+          $('#modalVer').modal('show');
           fila = $(this).closest("tr");
           let id_carga_producto = fila.find('td:eq(0)').text();
 
@@ -831,7 +902,7 @@ if(isset($_GET["id"])){
             }
           });
 
-          $('#modalCRUD').modal('show');
+          //$('#modalCRUD').modal('show');
         });
 
         //Borrar
@@ -895,7 +966,7 @@ if(isset($_GET["id"])){
             if (e.key === 'Enter' && noResultsShown) {
               let searchTerm = $(this).val();
               $("#id_producto").select2("close")
-              //$("#modalCRUDadmin").modal("hide")
+              //$("#modalCRUD").modal("hide")
               let modalNuevoProducto=$("#modalNuevoProducto")
 
               console.log(searchTerm);
@@ -928,8 +999,8 @@ if(isset($_GET["id"])){
           $(".modal-backdrop").css("z-index", "1050");
 
           // Guardar y desactivar el scroll del modal de fondo
-          originalOverflow = $('#modalCRUDadmin').css('overflow');
-          $('#modalCRUDadmin').css('overflow', 'hidden');
+          originalOverflow = $('#modalCRUD').css('overflow');
+          $('#modalCRUD').css('overflow', 'hidden');
 
         });
 
@@ -944,7 +1015,7 @@ if(isset($_GET["id"])){
           $(".modal-backdrop").css("z-index", originalZIndex);
 
           // Restaurar el scroll del modal de fondo
-          $('#modalCRUDadmin').css('overflow', originalOverflow);
+          $('#modalCRUD').css('overflow', originalOverflow);
 
           $("body").addClass("modal-open")
 
@@ -1120,7 +1191,7 @@ if(isset($_GET["id"])){
                 $option = document.createElement("option");
                 
                 let text=producto.producto;
-                if(producto.ultimo_precio){
+                if(producto.ultimo_precio && despachado=="No"){
                   text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
                 }
                 let optionText = document.createTextNode(text);
@@ -1139,6 +1210,10 @@ if(isset($_GET["id"])){
                   }
                 }
               })
+              console.log($selectProducto);
+              if(despachado=="Si"){
+                $selectProducto.disabled=true
+              }
               //console.log("PRODUCTOS CARGADOS");
               if(id_producto>0){
                 $("#id_producto").val(id_producto).change();
@@ -1152,6 +1227,18 @@ if(isset($_GET["id"])){
       function calcularTotales(){
         let kg_x_bulto = $("#kg_x_bulto").val();
         let precio = $("#precio").val();
+
+        console.log(despachado);
+        //si la carga está despachada verificamos si hay cambios en la cantidad de bultos y pedimos que sea obligatorio el motivo
+        if(despachado=="Si"){
+          let precio_aux=$("#precio_aux").val()
+          console.log(precio_aux);
+          console.log(precio);
+          if(precio_aux!=undefined && precio_aux!=precio){
+            $("#motivo_precio").attr("required",true)
+          }
+        }
+
         let tableDepositosRows = $("#tableDepositos tbody tr");
         let sumaBultos=0;
         let sumaKilos=0;
@@ -1194,6 +1281,14 @@ if(isset($_GET["id"])){
           }
           fila.find(".subtotal_monto").val(subtotal_monto)
           fila.find(".subtotal_monto_formatted").val(subtotal_monto_mostrar)
+
+          //si la carga está despachada verificamos si hay cambios en la cantidad de bultos y pedimos que sea obligatorio el motivo
+          if(despachado=="Si"){
+            let cantidad_bultos_aux=fila.find(".cantidad_bultos_aux").val()
+            if(cantidad_bultos_aux!=undefined && cantidad_bultos_aux!=cantidad_bultos){
+              fila.find(".motivo").attr("required",true)
+            }
+          }
 
         })
 
@@ -1251,7 +1346,8 @@ if(isset($_GET["id"])){
               let tipo_aumento_extra=destino.tipo_aumento_extra
               let valor_extra=destino.valor_extra
               let lbl_aumento_extra=""
-              if(tipo_aumento_extra>0){
+              if(tipo_aumento_extra==null){
+                tipo_aumento_extra="";
                 //lbl_aumento_extra=" (+"+tipo_aumento_extra+"%)"
               }
               console.log(destino)
@@ -1264,7 +1360,7 @@ if(isset($_GET["id"])){
                 </td>
                 <td class="align-middle">
                   <div class="input-group">
-                    <input type="number" class="form-control cantidad_bultos" value="" placeholder="Deje en blanco si no desea cargar este producto al destino">
+                    <input type="number" class="form-control cantidad_bultos" value="" title="Deje en blanco si no desea cargar este producto al destino">
                   </div>
                 </td>
                 <td class="align-middle">
@@ -1275,6 +1371,13 @@ if(isset($_GET["id"])){
                   <input type="hidden" name="subtotal_monto" class="subtotal_monto">
                   <input type="text" disabled tabindex="-1" class="form-control text-right subtotal_monto_formatted">
                 </td>`;
+                if(despachado=="Si"){
+                  contenidoFila+=`
+                  <td class="align-middle">
+                    <input type="hidden" name="cantidad_bultos_aux" class="cantidad_bultos_aux">
+                    <input type="text" class="form-control motivo">
+                  </td>`
+                }
               // Crear una nueva fila
               var newRow = document.createElement('tr');
               // Insertar el contenido HTML en la nueva fila
@@ -1346,40 +1449,6 @@ if(isset($_GET["id"])){
         });
       }
 
-      function getDatosCarga(){
-        let datosIniciales = new FormData();
-        datosIniciales.append('accion', 'getDatosCarga');
-        datosIniciales.append('id_carga', '<?=$id?>');
-        $.ajax({
-          data: datosIniciales,
-          url: "./models/administrar_cargas.php",
-          method: "post",
-          cache: false,
-          contentType: false,
-          processData: false,
-          success: function(respuesta){
-            /*Convierto en json la respuesta del servidor*/
-            data = JSON.parse(respuesta);
-            console.log(data);
-            $("#fecha_carga").html(data.fecha_formatted)
-            $("#origen_carga").html(data.origen)
-            $("#chofer_carga").html(data.chofer)
-            $("#datos_adicionales_chofer_carga").html(data.datos_adicionales_chofer)
-            $("#fecha_hora_despacho").html(data.fecha_hora_despacho)
-            $("#usuario").html(data.usuario)
-
-            $("#id_chofer").val(data.id_chofer)
-            $("#id_origen").val(data.id_origen)
-            id_proveedor_default=data.id_proveedor;
-            $("#id_proveedor_default").val(id_proveedor_default)
-            $("#despachado").val(data.despachado)
-            if(data.despachado=="Si"){
-              $("#btnNuevo").remove();
-              $("#modalCRUDadmin").remove();
-            }
-          }
-        });
-      }
     </script>
   </body>
 </html>

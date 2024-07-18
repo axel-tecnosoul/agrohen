@@ -24,6 +24,90 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           border-color: #80bdff !important; /* Puedes ajustar el color de resaltado del borde al tener foco */
           box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
       }
+
+      .tablaDetalleCarga-container {
+        position: relative;
+        overflow: auto;
+        max-height: 400px; /* Ajusta esto según tus necesidades */
+      }
+
+      .tablaDetalleCarga thead th {
+        position: sticky;
+        top: 0;
+        background: burlywood;
+        z-index: 10;
+      }
+
+      .tablaDetalleCarga tbody td,
+      .tablaDetalleCarga tfoot td,
+      .tablaDetalleCarga thead th {
+        white-space: nowrap;
+        border: solid 1px black;
+      }
+
+      .tablaDetalleCarga .fixed-column {
+        position: sticky;
+        left: 0;
+        background: burlywood;
+        z-index: 20;
+      }
+
+      .tablaDetalleCarga .fixed-column-2 {
+        position: sticky;
+        left: 282px; /* Ajusta esto según el ancho de tus columnas */
+        background: burlywood;
+        z-index: 20;
+      }
+
+      .tablaDetalleCarga .fixed-column-3 {
+        position: sticky;
+        left: 282px; /* Ajusta esto según el ancho de tus columnas */
+        background: burlywood;
+        z-index: 20;
+      }
+
+      .tablaDetalleCarga .fixed-column-4 {
+        position: sticky;
+        left: 282px; /* Ajusta esto según el ancho de tus columnas */
+        background: burlywood;
+        z-index: 20;
+      }
+
+      .tablaDetalleCarga .fixed-column-header {
+        position: sticky;
+        top: 0;
+        background: burlywood;
+        z-index: 30; /* Más alto para asegurar que está sobre las celdas fijas */
+      }
+
+      /*OPCION 1: bordes */
+      .tablaDetalleCarga .destino-start {
+        /*border-left: 3px solid black;*/
+        background-color: #d0cece;
+      }
+
+      .tablaDetalleCarga .destino-end {
+        /*border-right: 3px solid black;*/
+        background-color: #d0cece;
+      }
+
+      .tablaDetalleCarga tfoot {
+        background: burlywood;
+      }
+
+      /*OPCION 2: color de fondo */
+      /*.tablaDetalleCarga .destino-group:nth-child(odd) {
+        background-color: #f9f9f9;
+      }
+
+      .tablaDetalleCarga .destino-group:nth-child(even) {
+        background-color: #e9e9e9;
+      }*/
+
+      /*OPCION 3: sombras */
+      .tablaDetalleCarga .destino-group {
+        /*box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);*/
+      }
     </style>
   </head>
   <body>
@@ -45,7 +129,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       <!-- Page Sidebar Ends-->
       <div class="page-body">
         <div class="container-fluid">
-          <div class="page-header">
+          <div class="page-header py-3">
             <div class="row">
               <div class="col">
                 <div class="page-header-left">
@@ -65,11 +149,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             <!-- Ajax Generated content for a column start-->
             <div class="col-sm-12">
               <div class="card">
-                <div class="card-header">
-                  <h5>Administrar Cargas</h5>
-                    <button id="btnNuevo" type="button" class="btn btn-warning mt-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
+                <div class="card-header py-3">
+                  <h5 style="display: inline-block;vertical-align: middle;">Administrar Cargas</h5>
+                  <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
+                  <span id="id_perfil" class="d-none"><?=$_SESSION["rowUsers"]["id_perfil"]?></span>
                 </div>
-                <div class="card-body">
+                <div class="card-body py-1">
                   <div class="dt-ext table-responsive">
                     <table class="table table-hover display" id="tablaCargas">
                       <thead class="text-center">
@@ -188,7 +273,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadminVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
+      <div class="modal-dialog modal-lg" role="document" style="max-width: 1200px;margin: 1rem auto;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -198,7 +283,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-3">
+                <div class="col-lg-2">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha Carga:</label>
                     <span id="lbl_fecha_carga"></span>
@@ -223,14 +308,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <span id="lbl_datos_adicionales_chofer"></span>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <!-- <div class="col-lg-2">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Proveedor:</label>
                     <span id="lbl_proveedor"></span>
                   </div>
-                </div>
+                </div> -->
               </div>
-              <div class="row">
+              <!-- <div class="row">
                 <div class="col-lg-12">
                   <table id="tableProductosVer" class="table table-striped">
                     <thead>
@@ -248,13 +333,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     </tfoot>
                   </table>
                 </div>
+              </div> -->
+              <div class="row">
+                <div class="col-lg-12 table-container tablaDetalleCarga" id="tableProductosVer" style="overflow-x: auto; overflow-y: auto; max-height: 350px;padding-left: 0;">
+                </div>
               </div>
             </div>
             <div class="modal-footer">
               <button type="submit" id="btnImprimirConPrecio" class="btn btn-success">Imprimir con precio</button>
               <button type="submit" id="btnImprimirSinPrecio" class="btn btn-dark">Imprimir sin precio</button>
               <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
-              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
           </form>
         </div>
@@ -307,6 +396,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
+      var id_perfil=$("#id_perfil").html()
       $(document).ready(function(){
         tablaCargas= $('#tablaCargas').DataTable({
           "ajax": {
@@ -346,17 +436,31 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               render: function(data, type, full, meta) {
                 return ()=>{
                   $buttonsGroup="<div class='text-center'><div class='btn-group'>";
-                  $btnEliminar=''
-                  $btnEditar=''
+                  
+                  $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
+                  $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                  
                   $btnGestionarCarga=''
-                  //$btnDespachar=''
-                  $btnVer=''
-                  if(full.despachado=="No"){
-                    $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
-                    $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                  
+                  //console.log(full);
+                  let despachado=0;
+                  if(full.despachado=="Si"){
+                    despachado=1;
+                    $btnEliminar=''
+                    $btnEditar=''
                     //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
-                    }
-                  $btnVer=`<button class='btn btn-primary btnVer'><i class='fa fa-eye'></i></button>`
+                  }
+
+                  if(id_perfil==2){
+                    $btnEliminar=''
+                    $btnEditar=''
+                  }
+
+                  $btnVer=`<button class='btn btn-primary btnVer' data-despachado='${despachado}'><i class='fa fa-eye'></i></button>`
+
+                  if(full.total_bultos=="0.00" && full.total_kilos=="0.00" && full.total_monto=="0.00"){
+                    $btnVer=''
+                  }
 
                   $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                   
@@ -640,44 +744,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         $('#modalCRUD').modal('show');
       });
 
-      // $(document).on("click", ".btnVer", function(){
-      //   $(".modal-header").css( "background-color", "#007bff");
-      //   $(".modal-header").css( "color", "white" );
-      //   $(".modal-title").text("Ver Carga");
-      //   $('#modalCRUDadmin').modal('show');
-      //   fila = $(this).closest("tr");
-      //   let id_carga = fila.find('td:eq(0)').text();
-
-      //   let datosVer = new FormData();
-      //   datosVer.append('accion', 'getDatosCarga');
-      //   datosVer.append('id_carga', id_carga);
-      //   $.ajax({
-      //     data: datosVer,
-      //     url: './models/administrar_cargas.php',
-      //     method: "post",
-      //     cache: false,
-      //     contentType: false,
-      //     processData: false,
-      //     beforeSed: function(){
-      //       //$('#procesando').modal('show');
-      //     },
-      //     success: function(response){
-      //       let datosInput = JSON.parse(response);
-      //       console.log(datosInput);
-      //       $("#fecha_carga").html(datosInput.fecha);
-      //       $("#id_origen").html(datosInput.id_origen);
-      //       $("#id_chofer").html(datosInput.id_chofer);
-      //       $('#datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
-      //       $('#id_proveedor_default').html(datosInput.id_proveedor)
-      //       $('#id_carga').html(id_carga)
-
-      //       accion = "verCarga";
-      //     }
-      //   });
-
-      //   $('#modalCRUD').modal('show');
-      // });
-
       $(document).on("click", ".btnVer", function() {
         $(".modal-header").css("background-color", "#007bff");
         $(".modal-header").css("color", "white");
@@ -686,93 +752,66 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();
 
+        let despachado=$(this).data("despachado");
+
+        if(despachado==1){
+          $("#btnDespachar").addClass("disbaled d-none")
+        }else{
+          $("#btnDespachar").removeClass("disbaled d-none")
+        }
+
+        if(id_perfil==2){
+          $("#btnImprimirConPrecio").addClass("disbaled d-none")
+          $("#btnImprimirSinPrecio").addClass("disbaled d-none")
+        }else{
+          $("#btnImprimirConPrecio").removeClass("disbaled d-none")
+          $("#btnImprimirSinPrecio").removeClass("disbaled d-none")
+        }
+
         let datosVer = new FormData();
         datosVer.append('accion', 'traerDatosVerDetalleCarga');
         datosVer.append('id_carga', id_carga);
         $.ajax({
-            data: datosVer,
-            url: './models/administrar_cargas.php',
-            method: "post",
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-              try {
-                let datosInput = JSON.parse(response);
-                console.log(datosInput);
-                if (!datosInput || !datosInput.productos) {
-                    console.error('Respuesta JSON no válida:', response);
-                    alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
-                    return;
-                }
-                $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
-                $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
-                $("#lbl_id_carga").val(datosInput.id_carga);
-                $("#lbl_origen").html(datosInput.origen);
-                $("#lbl_proveedor").html(datosInput.proveedor);
-                $("#lbl_chofer").html(datosInput.chofer);
-                $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
-                $('#lbl_proveedor_default').html(datosInput.proveedor)
-                $('#id_carga').html(id_carga)
+          data: datosVer,
+          url: './models/administrar_cargas.php',
+          method: "post",
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(response) {
+            //console.log(response);
+            response=response.split("%%")
+            
+            let datosInput = JSON.parse(response[1]);
+            console.log(datosInput);
+            $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
+            $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+            $("#lbl_id_carga").val(datosInput.id_carga);
+            $("#lbl_origen").html(datosInput.origen);
+            $("#lbl_proveedor").html(datosInput.proveedor);
+            $("#lbl_chofer").html(datosInput.chofer);
+            $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
+            //$('#lbl_proveedor_default').html(datosInput.proveedor)
+            $('#id_carga').html(id_carga)
 
-                accion = "verCarga";
+            accion = "verCarga";
 
-                // Identifico la tabla de productos
-                var tbody = document.querySelector('#tableProductosVer tbody');
-                tbody.innerHTML = "";
-                let cantidad_bulto_total = 0
-                let total_kilos = 0
-                let total_monto = 0
-                datosInput.productos.forEach((producto) => {
-                  // Sumar cantidad de bultos
-                  cantidad_bulto_total += parseFloat(producto.total_bultos);
-                  //console.log("cantidad_bulto_total = " + cantidad_bulto_total);
+            let tableProductosVer=$("#tableProductosVer")
+            tableProductosVer.html(response[0]);
 
-                  // Sumar kilos
-                  total_kilos += parseFloat(producto.total_kilos);
-                  //console.log("total_kilos = " + total_kilos);
+            let ancho1=parseFloat(tableProductosVer.find("th.fixed-column").css("width"))
+            let ancho2=parseFloat(tableProductosVer.find("th.fixed-column-2").css("width"))
+            let ancho3=parseFloat(tableProductosVer.find("th.fixed-column-3").css("width"))
 
-                  // Sumar monto
-                  total_monto += parseFloat(producto.total_monto)
-                  //console.log("total_monto = " + total_monto)
-
-                  let contenidoFila = `
-                    <td class="align-middle">
-                        <input type='text' readonly tabindex="-1"class="form-control producto" value='${producto.producto}'>
-                    </td>
-                    <td class="align-middle">
-                        <div class="input-group">
-                            <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${producto.total_bultos}" placeholder="Deje en blanco si no desea cargar este producto al producto">
-                        </div>
-                    </td>
-                    <td class="align-middle">
-                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${producto.total_kilos}'>
-                    </td>
-                    <td class="align-middle">
-                      <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${producto.total_monto}'>
-                  </td>`;
-
-                  // Crear una nueva fila
-                  var newRow = document.createElement('tr');
-                  // Insertar el contenido HTML en la nueva fila
-                  newRow.innerHTML = contenidoFila;
-                  // Agregar la fila al tbody
-                  tbody.appendChild(newRow);
-                });
-
-                $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
-                $('#total_kilos_ver').text(total_kilos.toFixed(2));
-                $('#total_monto_ver').text(total_monto.toFixed(2));
-
-              } catch (e) {
-                console.error('Error al analizar JSON:', e, 'Respuesta:', response);
-                alert('Error al procesar los datos de la carga. Por favor, inténtelo de nuevo.');
-              }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-                alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
-            }
+            tableProductosVer.find(".fixed-column-2").css("left",ancho1)
+            tableProductosVer.find(".fixed-column-3").css("left",ancho1+ancho2)
+            tableProductosVer.find(".fixed-column-4").css("left",ancho1+ancho2+ancho3)
+            //alert(ancho1)
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+            alert('Error al obtener los datos de la carga. Por favor, inténtelo de nuevo.');
+          }
         });
 
         $('#modalCRUD').modal('show');
@@ -804,7 +843,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   icon: 'success',
                   title: 'Carga despachada correctamente'
                 }).then(() => {
-                  $("#btnDespachar").addClass("invisible");
+                  tablaCargas.ajax.reload(null, false);
+                  $('#modalCRUDadminVer').modal('hide');
+                  //$("#btnDespachar").addClass("invisible");
                 });
                 // setTimeout(() => {
                 //   location.reload();
@@ -816,15 +857,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           }
         })
       });
-           
-
 
       $(document).on("click", ".btnGestionar", function(){
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();
         window.location.href="cargas_abm.php?id="+id_carga
       });
-
 
       //Imprimir con o sin precio
       $(document).on("click", "#btnImprimirConPrecio", function(event){
@@ -852,7 +890,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
       })
-
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){

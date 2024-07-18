@@ -17,10 +17,11 @@ class validateUsers{
     $this->password = $password;
 
     /*Buscar usuario*/
-    $queryGetUser = "SELECT u.id AS id_usuario, u.usuario, u.email, u.password, u.activo, u.id_perfil FROM usuarios u WHERE usuario = '$this->usuario'";
+    $queryGetUser = "SELECT u.id AS id_usuario, u.usuario, u.email, u.password, u.activo, u.id_perfil, u.id_deposito FROM usuarios u WHERE usuario = '$this->usuario'";
+    //echo $queryGetUser;
     $getUser = $this->conexion->consultaRetorno($queryGetUser);
     //var_dump($getUser);
-
+    
     if($getUser->num_rows == 0){
       echo "El usuario no existe";
     }else{

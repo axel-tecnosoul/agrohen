@@ -371,17 +371,21 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           document.getElementById("usuario").focus();
         })
         accion = "addUsuario";
+        checkIdPerfil()
       });
 
-      $(document).on("change","#id_perfil",function(){
-        if(this.value==2){
+      $(document).on("change","#id_perfil",checkIdPerfil)
+
+      function checkIdPerfil(){
+        let id_perfil=$("#id_perfil").val()
+        if(id_perfil==2){
           $("#colIdDeposito").removeClass("d-none");
           $("#id_deposito").attr("required",true)
         }else{
           $("#colIdDeposito").addClass("d-none");
           $("#id_deposito").attr("required",false)
         }
-      })
+      }
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
@@ -442,6 +446,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $("#email").val(datosInput.email);
             $("#clave").val(datosInput.password);
             $("#id_perfil").val(datosInput.id_perfil);
+            checkIdPerfil()
+            $("#id_deposito").val(datosInput.id_deposito);
             $('#usuario').val(datosInput.usuario)
             $('#id_usuario').html(datosInput.id_usuario)
 

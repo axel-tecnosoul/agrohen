@@ -29,8 +29,8 @@ class cargas{
     /*CARGO ARRAY choferes*/
     while ($rowChoferes = $getChoferes->fetch_array()) {
       $arrayChoferes[]= array(
-        'id_chofer' =>utf8_encode($rowChoferes['id_chofer']),
-        'chofer' =>utf8_encode($rowChoferes['nombre']),
+        'id_chofer' =>$rowChoferes['id_chofer'],
+        'chofer' =>$rowChoferes['nombre'],
       );
     }
 
@@ -44,8 +44,8 @@ class cargas{
     /*CARGO ARRAY origenes*/
     while ($rowOrigenes = $getOrigenes->fetch_array()) {
       $arrayOrigenes[]= array(
-        'id_origen' =>utf8_encode($rowOrigenes['id_origen']),
-        'origen' =>utf8_encode($rowOrigenes['nombre']),
+        'id_origen' =>$rowOrigenes['id_origen'],
+        'origen' =>$rowOrigenes['nombre'],
       );
     }
 
@@ -59,8 +59,8 @@ class cargas{
     /*CARGO ARRAY proveedores*/
     while ($rowProveedres = $getProveedres->fetch_array()) {
       $arrayProveedres[]= array(
-        'id_proveedor' =>utf8_encode($rowProveedres['id_proveedor']),
-        'proveedor' =>utf8_encode($rowProveedres['nombre']),
+        'id_proveedor' =>$rowProveedres['id_proveedor'],
+        'proveedor' =>$rowProveedres['nombre'],
       );
     }
 
@@ -74,8 +74,8 @@ class cargas{
     /*CARGO ARRAY Familias*/
     while ($row = $getFamilias->fetch_array()) {
       $arrayFamilias[]=[
-        'id_familia' => utf8_encode($row["id_familia"]),
-        'familia' =>utf8_encode($row["familia"])
+        'id_familia' => $row["id_familia"],
+        'familia' =>$row["familia"]
       ];
     }
 
@@ -85,10 +85,10 @@ class cargas{
     /*CARGO ARRAY Destinos*/
     while ($row = $getDestinos->fetch_array()) {
       $arrayDestinos[]=[
-        'id_destino' => utf8_encode($row["id_destino"]),
-        'destino' =>utf8_encode($row["nombre"]),
-        'tipo_aumento_extra' =>utf8_encode($row["tipo_aumento_extra"]),
-        'valor_extra' =>utf8_encode($row["valor_extra"]),
+        'id_destino' => $row["id_destino"],
+        'destino' =>$row["nombre"],
+        'tipo_aumento_extra' =>$row["tipo_aumento_extra"],
+        'valor_extra' =>$row["valor_extra"],
       ];
     }
 
@@ -116,10 +116,10 @@ class cargas{
         /*CARGO ARRAY productos*/
         while ($rowProductos = $getProductos->fetch_array()) {
           $productosByFamilia[]= array(
-            'id_producto' =>utf8_encode($rowProductos['id_producto']),
-            'producto' =>utf8_encode($rowProductos['nombre']),
-            'ultimo_precio' =>utf8_encode($rowProductos['ultimo_precio']),
-            'ultimo_kg_x_bulto' =>utf8_encode($rowProductos['ultimo_kg_x_bulto']),
+            'id_producto' =>$rowProductos['id_producto'],
+            'producto' =>$rowProductos['nombre'],
+            'ultimo_precio' =>$rowProductos['ultimo_precio'],
+            'ultimo_kg_x_bulto' =>$rowProductos['ultimo_kg_x_bulto'],
           );
         }
       }else{
@@ -157,19 +157,19 @@ class cargas{
     }
 
     $datosCarga=[
-      'id_carga'=>utf8_encode($rowCarga['id_carga']),
-      'id_proveedor' =>utf8_encode($rowCarga['id_proveedor']),
-      'proveedor' =>utf8_encode($rowCarga['proveedor']),
-      'fecha' =>$fecha=utf8_encode($rowCarga['fecha']),
+      'id_carga'=>$rowCarga['id_carga'],
+      'id_proveedor' =>$rowCarga['id_proveedor'],
+      'proveedor' =>$rowCarga['proveedor'],
+      'fecha' =>$fecha=$rowCarga['fecha'],
       'fecha_formatted' =>date("d-m-Y",strtotime($fecha)),
-      'id_origen' =>utf8_encode($rowCarga['id_origen']),
-      'origen' =>utf8_encode($rowCarga['origen']),
-      'id_chofer' =>utf8_encode($rowCarga['id_chofer']),
-      'datos_adicionales_chofer' =>utf8_encode($rowCarga['datos_adicionales_chofer']),
-      'chofer' =>utf8_encode($rowCarga['chofer']),
-      'despachado' =>utf8_encode($rowCarga['despachado']),
+      'id_origen' =>$rowCarga['id_origen'],
+      'origen' =>$rowCarga['origen'],
+      'id_chofer' =>$rowCarga['id_chofer'],
+      'datos_adicionales_chofer' =>$rowCarga['datos_adicionales_chofer'],
+      'chofer' =>$rowCarga['chofer'],
+      'despachado' =>$rowCarga['despachado'],
       'fecha_hora_despacho' =>$fecha_hora_despacho,
-      'usuario' =>utf8_encode($rowCarga['usuario']),
+      'usuario' =>$rowCarga['usuario'],
       'despacho' => $despacho,
     ];
 
@@ -207,52 +207,121 @@ class cargas{
       WHERE cp.id_carga = " . $id_carga;
         
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
-    $productos = array();
+    $aProductosDestinos = array();
         
     if ($traerProductosCarga) {
       while ($row = $traerProductosCarga->fetch_array()) {
 
-        $sqltraerDestinosProductosCarga = "
-          SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
-          cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto 
-          FROM cargas_productos cp 
-          INNER JOIN productos p ON cp.id_producto=p.id 
-          INNER JOIN familias_productos fp ON p.id_familia=fp.id 
-          INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id 
-          INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id 
-          INNER JOIN proveedores pr ON cp.id_proveedor=pr.id 
-          INNER JOIN usuarios u ON cp.id_usuario=u.id 
-          WHERE cp.id_carga = " . $id_carga;
-            
-        $traerDestinosProductosCarga = $this->conexion->consultaRetorno($sqltraerDestinosProductosCarga);
-        $productos = array();
-            
-        if ($traerDestinosProductosCarga) {
-          while ($row = $traerDestinosProductosCarga->fetch_array()) {
-          }
-        }
-        $productos[] = array(
-          'id_carga_producto' => utf8_encode($row['id_carga_producto']),
-          'id_producto' => utf8_encode($row['id_producto']),
-          'familia' => utf8_encode($row['familia']),
-          'producto' => utf8_encode($row['producto']),
-          'proveedor' => utf8_encode($row['proveedor']),
-          'kg_x_bulto' => utf8_encode($row['kg_x_bulto']),
-          'precio' => utf8_encode($row['precio']),
-          'total_bultos' => utf8_encode($row['total_bultos']),
-          'total_kilos' => utf8_encode($row['total_kilos']),
-          'total_monto' => utf8_encode($row['total_monto']),
-        );
+        $id_carga_producto=$row['id_carga_producto'];
+
+        $json_destinos=$this->traerProductoDestinosCarga($id_carga_producto);
+        $destinos=json_decode($json_destinos,true);
+
+        $aProductosDestinos[]=$destinos;
+
       }
     }
-              
-    // Agregar los productos al array de datos necesarios
-    $datosNecesarios['productos'] = $productos;
-              
+
+    $this->ordenarInfoProductosDestinos($aProductosDestinos);
+    echo "%%";
     // Codificar todo el array en JSON y enviarlo como respuesta
     return json_encode($datosNecesarios);
   }
+
+  public function ordenarInfoProductosDestinos($aProductosDestinos){
+    // Identificar todos los destinos únicos
+    $destinos_unicos = [];
+    foreach ($aProductosDestinos as $product) {
+      foreach ($product['destinos'] as $key => $destino) {
+        if (!in_array($destino['destino'], $destinos_unicos)) {
+          $destinos_unicos[] = $destino['destino'];
+        }
+      }
+    }
+
+    // Generar la tabla?>
+    <table class="table table-striped">
+      <thead style="text-align: center;">
+        <tr>
+          <th rowspan="2" class="fixed-column fixed-column-header" style="align-content: center;">Producto</th>
+          <th rowspan="2" class="fixed-column-2 fixed-column-header" style="align-content: center;">Proveedor</th>
+          <th rowspan="2" class="fixed-column-3 fixed-column-header" style="align-content: center;">Precio</th>
+          <th rowspan="2" class="fixed-column-4 fixed-column-header" style="align-content: center;">Kg x bulto</th><?php
+          foreach ($destinos_unicos as $destino) {?>
+            <th colspan="3" class="destino-group"><?=$destino?></th><?php
+          }?>
+          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Bultos</th>
+          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Kilos</th>
+          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Monto</th>
+        </tr>
+        <tr><?php
+          foreach ($destinos_unicos as $destino) {?>
+            <th style="top:46px" class="destino-group">Bultos</th>
+            <th style="top:46px" class="destino-group">Kilos</th>
+            <th style="top:46px" class="destino-group">Monto</th><?php
+          }?>
+        </tr>
+      </thead>
+      <tbody><?php
+        $totals = [];
+        foreach ($aProductosDestinos as $product) {
+          //var_dump($product);
+          ?>
+          <tr>
+            <td class="fixed-column"><?=$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")"?></td>
+            <td class="fixed-column-2"><?=$product['proveedor']?></td>
+            <td class="fixed-column-3 text-right">$ <?=number_format($product['precio'],2,",",".")?></td>
+            <td class="fixed-column-4 text-right"><?=$product['kg_x_bulto']?></td><?php
+
+            $destinos_actuales = [];
+            foreach ($product['destinos'] as $destino) {
+              $destinos_actuales[$destino['destino']] = $destino;
+            }
+
+            foreach ($destinos_unicos as $destino) {
+              $cantidad_bultos=0;
+              $kilos=0;
+              $monto=0;
+              if (isset($destinos_actuales[$destino])) {
+                $cantidad_bultos=$destinos_actuales[$destino]['cantidad_bultos'];
+                $kilos=$destinos_actuales[$destino]['kilos'];
+                $monto=$destinos_actuales[$destino]['monto'];
+              }
               
+              if (!isset($totals[$destino])) {
+                $totals[$destino] = ['bultos' => 0, 'kilos' => 0, 'monto' => 0];
+              }
+              $totals[$destino]['bultos'] += $cantidad_bultos;
+              $totals[$destino]['kilos'] += $kilos;
+              $totals[$destino]['monto'] += $monto;?>
+
+              <td class="text-right destino-group destino-start"><?=number_format($cantidad_bultos,0,",",".")?></td>
+              <td class="text-right destino-group"><?=number_format($kilos,2,",",".")?></td>
+              <td class="text-right destino-group destino-end">$ <?=number_format($monto,2,",",".")?></td><?php
+            }?>
+            <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_bultos'],0,",",".")?></td>
+            <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_kilos'],2,",",".")?></td>
+            <td class="text-right fixed-column font-weight-bold">$ <?=number_format($product['total_monto'],2,",",".")?></td>
+          </tr><?php
+        }?>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="text-right fixed-column" style="background: burlywood;">Totales</td><?php
+          foreach ($destinos_unicos as $destino) { ?>
+            <td class="text-right destino-group"><?=number_format($totals[$destino]['bultos'], 0, ",", ".")?></td>
+            <td class="text-right destino-group"><?=number_format($totals[$destino]['kilos'], 2, ",", ".")?></td>
+            <td class="text-right destino-group">$ <?=number_format($totals[$destino]['monto'], 2, ",", ".")?></td><?php
+          } ?>
+          <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_bultos')),0,",",".")?></td>
+          <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_kilos')),2,",",".")?></td>
+          <td class="text-right fixed-column font-weight-bold">$ <?=number_format(array_sum(array_column($aProductosDestinos,'total_monto')),2,",",".")?></td>
+          <!-- <td colspan="3" class="text-right fixed-column font-weight-bold"></td> -->
+        </tr>
+      </tfoot>
+    </table><?php
+  }
+
   public function traerCargas(){
     $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
@@ -260,22 +329,22 @@ class cargas{
                 
     while ($row = $traerCargas->fetch_array()) {
       $cargas[] = array(
-        'id_carga'=>utf8_encode($row['id_carga']),
-        'fecha'=>$fecha=utf8_encode($row['fecha']),
+        'id_carga'=>$row['id_carga'],
+        'fecha'=>$fecha=$row['fecha'],
         'fecha_formatted'=>date("d-m-Y",strtotime($fecha)),
-        'id_origen'=>utf8_encode($row['id_origen']),
-        'origen'=>utf8_encode($row['origen']),
-        'id_chofer'=>utf8_encode($row['id_chofer']),
-        'chofer'=>utf8_encode($row['chofer']),
-        'datos_adicionales_chofer'=>utf8_encode($row['datos_adicionales_chofer']),
-        'total_bultos'=>utf8_encode($row['total_bultos']),
-        'total_kilos'=>utf8_encode($row['total_kilos']),
-        'total_monto'=>utf8_encode($row['total_monto']),
+        'id_origen'=>$row['id_origen'],
+        'origen'=>$row['origen'],
+        'id_chofer'=>$row['id_chofer'],
+        'chofer'=>$row['chofer'],
+        'datos_adicionales_chofer'=>$row['datos_adicionales_chofer'],
+        'total_bultos'=>$row['total_bultos'],
+        'total_kilos'=>$row['total_kilos'],
+        'total_monto'=>$row['total_monto'],
         'fecha_hora_despacho'=>date("d-m-Y H:i",strtotime($row['fecha_hora_despacho'])),
-        'despachado'=>utf8_encode($row['despachado']),
-        'id_usuario'=>utf8_encode($row['id_usuario']),
-        'usuario'=>utf8_encode($row['usuario']),
-        'anulado'=>utf8_encode($row['anulado']),
+        'despachado'=>$row['despachado'],
+        'id_usuario'=>$row['id_usuario'],
+        'usuario'=>$row['usuario'],
+        'anulado'=>$row['anulado'],
       );
     }
             
@@ -283,7 +352,7 @@ class cargas{
   }
 
   public function traerProductosCarga($id_carga){
-    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,pr.nombre AS proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
+    $sqltraerProductosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto,p.id_familia,fp.familia,pp.nombre AS presentacion,um.unidad_medida,p.nombre AS producto,cp.id_proveedor,pr.nombre AS proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto,u.usuario,cp.fecha_hora_alta FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON cp.id_proveedor=pr.id INNER JOIN usuarios u ON cp.id_usuario=u.id WHERE cp.id_carga = ".$id_carga." ";//GROUP BY cp.id_producto, cp.id_proveedor, cp.kg_x_bulto
     //echo $sqltraerProductosCarga;
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
     
@@ -291,20 +360,22 @@ class cargas{
     if($traerProductosCarga){
       while ($row = $traerProductosCarga->fetch_array()) {
         $cargas[] = array(
-          'id_carga_producto'=>utf8_encode($row['id_carga_producto']),
-          'id_producto'=>utf8_encode($row['id_producto']),
-          'familia'=>utf8_encode($row['familia']),
-          'presentacion'=>utf8_encode($row['presentacion']),
-          'unidad_medida'=>utf8_encode($row['unidad_medida']),
-          'producto'=>utf8_encode($row['producto']),
-          'proveedor'=>utf8_encode($row['proveedor']),
-          'kg_x_bulto'=>utf8_encode($row['kg_x_bulto']),
-          'precio'=>utf8_encode($row['precio']),
-          'total_bultos'=>utf8_encode($row['total_bultos']),
-          'total_kilos'=>utf8_encode($row['total_kilos']),
-          'total_monto'=>utf8_encode($row['total_monto']),
-          'usuario'=>utf8_encode($row['usuario']),
-          'fecha_hora_alta'=>utf8_encode($row['fecha_hora_alta']),
+          'id_carga_producto'=>$row['id_carga_producto'],
+          'id_producto'=>$row['id_producto'],
+          'producto'=>$row['producto'],
+          'id_familia'=>$row['id_familia'],
+          'familia'=>$row['familia'],
+          'presentacion'=>$row['presentacion'],
+          'unidad_medida'=>$row['unidad_medida'],
+          'id_proveedor'=>$row['id_proveedor'],
+          'proveedor'=>$row['proveedor'],
+          'kg_x_bulto'=>$row['kg_x_bulto'],
+          'precio'=>$row['precio'],
+          'total_bultos'=>$row['total_bultos'],
+          'total_kilos'=>$row['total_kilos'],
+          'total_monto'=>$row['total_monto'],
+          'usuario'=>$row['usuario'],
+          'fecha_hora_alta'=>$row['fecha_hora_alta'],
         );
       }
     }
@@ -313,22 +384,25 @@ class cargas{
   }
 
   public function traerProductoDestinosCarga($id_carga_producto){
-    $sqlTraerProductoDestinosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto, p.nombre as producto, p.id_familia, fp.familia, cp.id_proveedor, pr.nombre as proveedor,cp.kg_x_bulto,cp.precio,cp.total_kilos,cp.total_monto FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON fp.id = p.id_familia INNER JOIN proveedores pr ON pr.id = cp.id_proveedor WHERE cp.id = $id_carga_producto";
+    $sqlTraerProductoDestinosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto, p.nombre as producto, p.id_familia, fp.familia, pp.nombre AS presentacion, um.unidad_medida, cp.id_proveedor, pr.nombre as proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON fp.id = p.id_familia INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON pr.id = cp.id_proveedor WHERE cp.id = $id_carga_producto";
     //var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $row = $traerProductoCarga->fetch_array();
     $productoCarga = [
-      'id_carga_producto'=> utf8_encode($row['id_carga_producto']),
-      'id_familia'=> utf8_encode($row['id_familia']),
-      'familia'=> utf8_encode($row['familia']),
-      'id_producto'=> utf8_encode($row['id_producto']),
-      'producto'=> utf8_encode($row['producto']),
-      'id_proveedor'=> utf8_encode($row['id_proveedor']),
-      'proveedor'=> utf8_encode($row['proveedor']),
-      'kg_x_bulto'=> utf8_encode($row['kg_x_bulto']),
-      'precio'=> utf8_encode($row['precio']),
-      'total_kilos'=> utf8_encode($row['total_kilos']),
-      'total_monto'=> utf8_encode($row['total_monto']),
+      'id_carga_producto'=> $row['id_carga_producto'],
+      'id_producto'=> $row['id_producto'],
+      'producto'=> $row['producto'],
+      'id_familia'=> $row['id_familia'],
+      'familia'=> $row['familia'],
+      'presentacion'=>$row['presentacion'],
+      'unidad_medida'=>$row['unidad_medida'],
+      'id_proveedor'=> $row['id_proveedor'],
+      'proveedor'=> $row['proveedor'],
+      'kg_x_bulto'=> $row['kg_x_bulto'],
+      'precio'=> $row['precio'],
+      'total_bultos'=> $row['total_bultos'],
+      'total_kilos'=> $row['total_kilos'],
+      'total_monto'=> $row['total_monto'],
     ];
 
     $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
@@ -337,14 +411,14 @@ class cargas{
     $productoDestinosCarga=[];
     while ($row = $traerProductoDestinosCarga->fetch_array()) {
       $productoDestinosCarga[] = [
-        'id_producto_destino'=> utf8_encode($row['id_producto_destino']),
-        'id_destino'=> utf8_encode($row['id_destino']),
-        'destino'=> utf8_encode($row['destino']),
-        'tipo_aumento_extra'=> utf8_encode($row['tipo_aumento_extra']),
-        'valor_extra'=> utf8_encode($row['valor_extra']),
-        'cantidad_bultos'=> utf8_encode($row['cantidad_bultos']),
-        'monto'=> utf8_encode($row['monto']),
-        'kilos'=> utf8_encode($row['kilos']),
+        'id_producto_destino'=> $row['id_producto_destino'],
+        'id_destino'=> $row['id_destino'],
+        'destino'=> $row['destino'],
+        'tipo_aumento_extra'=> $row['tipo_aumento_extra'],
+        'valor_extra'=> $row['valor_extra'],
+        'cantidad_bultos'=> $row['cantidad_bultos'],
+        'monto'=> $row['monto'],
+        'kilos'=> $row['kilos'],
       ];
     }
     $productoCarga["destinos"]=$productoDestinosCarga;
@@ -367,28 +441,27 @@ class cargas{
     foreach ($datosDepositos as $row) {
       $cantDatos++;
       //var_dump($row);
-      $id_producto_destino=utf8_encode($row["id_producto_destino"]);
-      $cantidad_bultos=utf8_encode($row["cantidad_bultos"]);
-      $id_deposito=utf8_encode($row["id_deposito"]);
-      $tipo_aumento_extra=utf8_encode($row["tipo_aumento_extra"]);
-      if(empty($tipo_aumento_extra)){
-        $tipo_aumento_extra="NULL";
-      }else{
-        $tipo_aumento_extra="'$tipo_aumento_extra'";
-      }
-      $valor_extra=utf8_encode($row["valor_extra"]);
-      $subtotal_kilos=utf8_encode($row["subtotal_kilos"]);
+      $id_producto_destino=$row["id_producto_destino"];
+      $cantidad_bultos=$row["cantidad_bultos"];
+      $id_deposito=$row["id_deposito"];
+      $tipo_aumento_extra=$row["tipo_aumento_extra"];
+
+      $valor_extra=$row["valor_extra"];
+      $subtotal_kilos=$row["subtotal_kilos"];
 
       $mensajeError="";
       if($cantidad_bultos>0){
         $monto=$cantidad_bultos*$precio;
+
+        list($tipo_aumento_extra,$monto_valor_extra)=$this->calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos);
+      
         //var_dump($tipo_aumento_extra);
         if($id_producto_destino>0){
-          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
+          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, monto_valor_extra = $monto_valor_extra, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
           $mensajeError=$this->conexion->conectar->error;
         }else{
-          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $subtotal_kilos, $id_usuario)";
+          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, monto_valor_extra, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $monto_valor_extra, $subtotal_kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
         }
@@ -440,6 +513,35 @@ class cargas{
     }
     
     return $respuesta;
+  }
+
+  private function calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos){
+    //var_dump("tipo_aumento_extra",$tipo_aumento_extra,"valor_extra",$valor_extra,"monto",$monto,"cantidad_bultos",$cantidad_bultos);
+    
+    // Inicializar la variable para el monto valor extra
+    $monto_valor_extra = 0;
+
+    if(empty($tipo_aumento_extra)){
+      $tipo_aumento_extra="NULL";
+      //$monto_valor_extra="NULL";
+    }else{
+      
+      if ($tipo_aumento_extra == "Porcentaje Extra") {
+        // Calcula el monto extra basado en un porcentaje
+        $monto_valor_extra = $monto * ($valor_extra / 100);
+      } elseif ($tipo_aumento_extra == "Precio Fijo") {
+        // Calcula el monto extra basado en un precio fijo por bulto
+        $monto_valor_extra = $valor_extra * $cantidad_bultos;
+      }
+
+      $tipo_aumento_extra="'$tipo_aumento_extra'";
+    }
+
+    // Calcula el monto total con el valor extra si es que posee
+    $monto_valor_extra+=$monto;
+    //var_dump("tipo_aumento_extra",$tipo_aumento_extra,"monto_valor_extra",$monto_valor_extra);
+
+    return [$tipo_aumento_extra,$monto_valor_extra];
   }
 
   public function eliminarCarga($id_carga){
@@ -520,20 +622,22 @@ class cargas{
       foreach ($datosDepositos as $row) {
         $cantDatos++;
         //var_dump($row);
-        $cantidad_bultos=utf8_encode($row["cantidad_bultos"]);
-        $id_deposito=utf8_encode($row["id_deposito"]);
-        $kilos=utf8_encode($row["subtotal_kilos"]);
-        $tipo_aumento_extra=utf8_encode($row["tipo_aumento_extra"]);
-        $valor_extra=utf8_encode($row["valor_extra"]);
+        $cantidad_bultos=$row["cantidad_bultos"];
+        $id_deposito=$row["id_deposito"];
+        $kilos=$row["subtotal_kilos"];
+        $tipo_aumento_extra=$row["tipo_aumento_extra"];
+        $valor_extra=$row["valor_extra"];
 
         if($cantidad_bultos>0){
           $monto=$cantidad_bultos*$precio;
+
+          list($tipo_aumento_extra,$monto_valor_extra)=$this->calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos);
 
           $sumaMonto+=$monto;
           $sumaKilos+=$kilos;
           $sumaBultos+=$cantidad_bultos;
 
-          $queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $kilos, $id_usuario)";
+          $queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, monto_valor_extra, kilos,id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $monto_valor_extra, $kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
           

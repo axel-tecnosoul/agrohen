@@ -7,4 +7,10 @@ $id_carga=$_GET["id_carga"];
 
 $detalleCargas=$cargas->traerDatosVerDetalleCarga($id_carga);
 
-var_dump(json_decode($detalleCargas,true));
+$detalleCargas=json_decode($detalleCargas,true);
+
+/*$aProductosDestinos=$detalleCargas["productos"];
+
+var_dump($aProductosDestinos);*/
+
+//$cargas->ordenarInfoProductosDestinos($aProductosDestinos);

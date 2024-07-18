@@ -70,7 +70,7 @@ class Usuarios{
 
   public function traerUsuarioUpdate($id_usuario){
     $this->id_usuario = $id_usuario;
-    $sqlTraerUsuario = "SELECT id as id_usuario, usuario, email, password, activo, id_perfil FROM usuarios WHERE id = $this->id_usuario";
+    $sqlTraerUsuario = "SELECT id as id_usuario, usuario, email, password, activo, id_perfil, id_deposito FROM usuarios WHERE id = $this->id_usuario";
     $traerUsuario = $this->conexion->consultaRetorno($sqlTraerUsuario);
 
     $usuarios = array(); //creamos un array
@@ -81,7 +81,8 @@ class Usuarios{
         'email'=>$row['email'],
         'password'=> $row['password'],
         'activo'=> $row['activo'],
-        'id_perfil'=>$row['id_perfil']
+        'id_perfil'=>$row['id_perfil'],
+        'id_deposito'=>$row['id_deposito'],
       );
     }
     return json_encode($usuarios);
