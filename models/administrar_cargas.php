@@ -221,14 +221,12 @@ class cargas{
 
       }
     }
-
-    $this->ordenarInfoProductosDestinos($aProductosDestinos);
-    echo "%%";
     // Codificar todo el array en JSON y enviarlo como respuesta
-    return json_encode($datosNecesarios);
+    //return json_encode($datosNecesarios,$aProductosDestinos);
+    return [$datosNecesarios,$aProductosDestinos];
   }
 
-  public function ordenarInfoProductosDestinos($aProductosDestinos){
+  public function getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos){
     // Identificar todos los destinos únicos
     $destinos_unicos = [];
     foreach ($aProductosDestinos as $product) {
@@ -238,6 +236,11 @@ class cargas{
         }
       }
     }
+    return $destinos_unicos;
+  }
+
+  public function ordenarInfoProductosDestinos($aProductosDestinos){
+    $destinos_unicos=$this->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
     // Generar la tabla?>
     <table class="table table-striped">
@@ -837,7 +840,11 @@ if (isset($_POST['accion'])) {
     break;
     case 'traerDatosVerDetalleCarga':
       $id_carga=$_POST["id_carga"];
-      echo $cargas->traerDatosVerDetalleCarga($id_carga);
+      list($datosNecesarios,$aProductosDestinos)=$cargas->traerDatosVerDetalleCarga($id_carga);
+
+      $cargas->ordenarInfoProductosDestinos($aProductosDestinos);
+      echo "%%";
+      echo json_encode($datosNecesarios);
     break;
   }
 }elseif(isset($_GET['accion'])){

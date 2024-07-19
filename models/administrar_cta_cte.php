@@ -92,17 +92,17 @@ class ctacte{
 
       $filtroDesde="";
       if(!empty($desde)){
-        $filtroDesde=" AND c.fecha>='$desde'";
+        $filtroDesde=" AND DATE(c.fecha_hora_despacho)>='$desde'";
       }
       $filtroHasta="";
       if(!empty($hasta)){
-        $filtroHasta=" AND c.fecha<='$hasta'";
+        $filtroHasta=" AND DATE(c.fecha_hora_despacho)<='$hasta'";
       }
 
       if($id_cuenta=="undefined"){
         $id_cuenta=$id_deposito;//cuando el perfil del usuario es de tipo deposito, mostramos el monto con valor extra
       }
-      
+
       $depositos=$id_cuenta;
       $columna_utilizar="cpd.monto_valor_extra";
       if($tipo=="responsable"){
@@ -118,7 +118,7 @@ class ctacte{
         }
       }
 
-      $query = "SELECT SUM($columna_utilizar) AS debe_saldo_anterior FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id WHERE c.fecha_hora_despacho IS NOT NULL AND c.anulado=0 AND cpd.id_destino IN ($depositos) AND c.fecha<'$desde'";
+      $query = "SELECT SUM($columna_utilizar) AS debe_saldo_anterior FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id WHERE c.fecha_hora_despacho IS NOT NULL AND c.anulado=0 AND cpd.id_destino IN ($depositos) AND c.fecha_hora_despacho<'$desde'";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
@@ -129,7 +129,7 @@ class ctacte{
       }
 
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
-      $query = "SELECT SUM(IF(tipo_movimiento='haber',monto,(monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte WHERE anulado=0 AND id_destino IN ($depositos) AND fecha<'$desde'";
+      $query = "SELECT SUM(IF(tipo_movimiento='haber',monto,(monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte WHERE anulado=0 AND id_destino IN ($depositos) AND fecha_hora<'$desde'";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
@@ -142,8 +142,8 @@ class ctacte{
       $saldo_anterior=$debe_saldo_anterior-$haber_saldo_anterior;
 
       $aSaldoInicial[]= array(
-        'fecha' => $desde,
-        'fecha_formatted' => date("d M Y",strtotime($desde)),
+        'fecha_hora' => $desde,
+        'fecha_hora_formatted' => date("d M Y H:i",strtotime($desde)),
         'deposito' => '',
         'origen' => '',
         'descripcion' => "Saldo inicial",
@@ -155,7 +155,7 @@ class ctacte{
 
       //$query = "SELECT c.fecha,c.id AS id_carga,SUM(cpd.monto) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT('+ $',FORMAT(cpd.monto, 2, 'de_DE'),' | ',fp.familia,' ',p.nombre,' (',pp.nombre,' - ',um.unidad_medida,')' SEPARATOR '<br>') AS detalle_productos,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE id_destino IN ($depositos) GROUP BY c.id";
 
-      $query = "SELECT c.fecha,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT(
+      $query = "SELECT c.fecha_hora_despacho AS fecha_hora,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT(
         '<div class=\"detalle-producto\">',
         '<span class=\"simbolo\">+</span>',
         '<span class=\"precio\">$', FORMAT($columna_utilizar, 2, 'de_DE'), '</span>',
@@ -167,8 +167,8 @@ class ctacte{
       //$get->num_rows;
       while ($row = $get->fetch_array()) {
         $ctacte[]= array(
-          'fecha' =>$fecha=$row['fecha'],
-          'fecha_formatted' =>date("d M Y",strtotime($fecha)),
+          'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
+          'fecha_hora_formatted' =>date("d M Y H:i",strtotime($fecha_hora)),
           'id_carga' =>$row['id_carga'],
           'monto' =>$row['monto'],
           //'monto_valor_extra' =>$row['monto_valor_extra'],
@@ -189,16 +189,16 @@ class ctacte{
 
 
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
-      $filtroDesde=str_replace("c.","mcc.",$filtroDesde);
-      $filtroHasta=str_replace("c.","mcc.",$filtroHasta);
-      $query = "SELECT mcc.id AS id_movimiento,mcc.fecha,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,u.usuario FROM movimientos_cta_cte mcc INNER JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios u ON mcc.id_usuario=u.id WHERE mcc.anulado=0 AND mcc.id_destino IN ($depositos) $filtroDesde $filtroHasta";
+      $filtroDesde=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroDesde);
+      $filtroHasta=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroHasta);
+      $query = "SELECT mcc.id AS id_movimiento,mcc.fecha_hora,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,u.usuario FROM movimientos_cta_cte mcc INNER JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios u ON mcc.id_usuario=u.id WHERE mcc.anulado=0 AND mcc.id_destino IN ($depositos) $filtroDesde $filtroHasta";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
       while ($row = $get->fetch_array()) {
         $ctacte[]= array(
-          'fecha' =>$fecha=$row['fecha'],
-          'fecha_formatted' =>date("d M Y",strtotime($fecha)),
+          'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
+          'fecha_hora_formatted' =>date("d M Y H:i",strtotime($fecha_hora)),
           'id_movimiento' =>$row['id_movimiento'],
           'monto' =>$row['monto'],
           'id_destino' =>$row['id_destino'],
@@ -211,8 +211,8 @@ class ctacte{
       }
 
       function date_compare($a, $b){
-        $t1 = strtotime($a['fecha']);
-        $t2 = strtotime($b['fecha']);
+        $t1 = strtotime($a['fecha_hora']);
+        $t2 = strtotime($b['fecha_hora']);
         return $t1 - $t2;
       }
     
@@ -258,11 +258,11 @@ class ctacte{
     echo json_encode($ctacte);
   }
 
-  public function registrarMovimiento($fecha,$deposito,$tipo_movimiento,$monto,$descripcion){
+  public function registrarMovimiento($fecha_hora,$deposito,$tipo_movimiento,$monto,$descripcion){
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertCarga = "INSERT INTO movimientos_cta_cte (fecha, id_destino, tipo_movimiento, monto, descripcion, id_usuario) VALUES('$fecha', $deposito, '$tipo_movimiento', $monto, '$descripcion', $id_usuario)";
+    $queryInsertCarga = "INSERT INTO movimientos_cta_cte (fecha_hora, id_destino, tipo_movimiento, monto, descripcion, id_usuario) VALUES('$fecha_hora', $deposito, '$tipo_movimiento', $monto, '$descripcion', $id_usuario)";
     $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
     $mensajeError = $this->conexion->conectar->error;
     $id_movimiento = $this->conexion->conectar->insert_id;
@@ -306,11 +306,11 @@ class ctacte{
     return json_encode($cargas);
   }
 
-  public function updateMovimiento($id_movimiento,$fecha,$deposito,$tipo_movimiento,$monto,$descripcion){
+  public function updateMovimiento($id_movimiento,$fecha_hora,$deposito,$tipo_movimiento,$monto,$descripcion){
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryUpdateMovimiento = "UPDATE movimientos_cta_cte SET fecha='$fecha', id_destino=$deposito, tipo_movimiento='$tipo_movimiento', monto=$monto, descripcion='$descripcion', id_usuario=$id_usuario WHERE id = $id_movimiento";
+    $queryUpdateMovimiento = "UPDATE movimientos_cta_cte SET fecha_hora='$fecha_hora', id_destino=$deposito, tipo_movimiento='$tipo_movimiento', monto=$monto, descripcion='$descripcion', id_usuario=$id_usuario WHERE id = $id_movimiento";
     $insertCarga = $this->conexion->consultaSimple($queryUpdateMovimiento);
     $mensajeError=$this->conexion->conectar->error;
 
@@ -352,12 +352,12 @@ if (isset($_POST['accion'])) {
       $ctacte->traerDatosIniciales();
     break;
     case 'addMovimiento':
-      $fecha=$_POST["fecha"];
+      $fecha_hora=$_POST["fecha_hora"];
       $deposito=$_POST["deposito"];
       $tipo_movimiento=$_POST["tipo_movimiento"];
       $monto=$_POST["monto"];
       $descripcion=$_POST["descripcion"];
-      echo $ctacte->registrarMovimiento($fecha,$deposito,$tipo_movimiento,$monto,$descripcion);
+      echo $ctacte->registrarMovimiento($fecha_hora,$deposito,$tipo_movimiento,$monto,$descripcion);
     break;
     case 'traerDatosMovimientoCtaCte':
       $id_movimiento=$_POST["id_movimiento"];
@@ -365,12 +365,12 @@ if (isset($_POST['accion'])) {
     break;
     case 'updateMovimiento':
       $id_movimiento = $_POST['id_movimiento'];
-      $fecha=$_POST["fecha"];
+      $fecha_hora=$_POST["fecha_hora"];
       $deposito=$_POST["deposito"];
       $tipo_movimiento=$_POST["tipo_movimiento"];
       $monto=$_POST["monto"];
       $descripcion=$_POST["descripcion"];
-      echo $ctacte->updateMovimiento($id_movimiento,$fecha,$deposito,$tipo_movimiento,$monto,$descripcion);
+      echo $ctacte->updateMovimiento($id_movimiento,$fecha_hora,$deposito,$tipo_movimiento,$monto,$descripcion);
     break;
     case 'eliminarMovimiento':
       $id_movimiento = $_POST['id_movimiento'];

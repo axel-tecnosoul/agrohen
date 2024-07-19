@@ -3,7 +3,7 @@ session_start();
 include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 $hora = date('Hi');
-$hoy = date('Y-m-d');
+$ahora = date('Y-m-d H:i');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
   header("location:./models/redireccionar.php");
 }
@@ -133,14 +133,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     <table class="table table-hover display" id="tablaCtaCte">
                       <thead class="text-center">
                         <tr>
-                          <th>Fecha</th>
+                          <th>Fecha y hora</th>
                           <th>Descripcion</th>
                           <th>Debe</th>
                           <th>Haber</th>
                           <th>Saldo</th>
-                          <th class="none">Origen: </th>
+                          <!-- <th class="none">Origen: </th>
                           <th class="none">Chofer: </th>
-                          <th class="none"></th>
+                          <th class="none"></th> -->
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -150,7 +150,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                           <th style="text-align:right">Total debe</th>
                           <th style="text-align:right">Total haber</th>
                           <th style="text-align:right"></th>
-                          <th style="text-align:right" colspan="3"></th>
+                          <!-- <th style="text-align:right" colspan="3"></th> -->
                         </tr>
                       </tfoot>
                     </table>
@@ -192,8 +192,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="fecha" class="col-form-label">Fecha:</label>
-                    <input type="date" class="form-control" id="fecha" value="<?=$hoy?>" required>
+                    <label for="fecha_hora" class="col-form-label">Fecha:</label>
+                    <input type="datetime-local" class="form-control" id="fecha_hora" value="<?=$ahora?>" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -475,8 +475,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
             /*Identifico el select de choferes*/
             selectCuenta = document.getElementById("cuenta");
-            console.log(selectCuenta);
-            console.log(selectCuenta.type);
+            
             //Genero los options del select choferes
             if(selectCuenta.type=="select-one"){
               respuestaJson.cuentas.forEach((cuenta)=>{
@@ -568,7 +567,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               "paginate": false,
               "responsive": true,
               "columns":[
-                {"data": "fecha_formatted",className: "dt-body-right"},
+                {"data": "fecha_hora_formatted",className: "dt-body-right"},
                 //{"data": "id_carga"},
                 {render: function(data, type, full, meta) {
                   if(full.id_carga!=undefined){
@@ -606,7 +605,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   //return formatCurrency(full.saldo);
                 }},
                 //{"data": "origen"},
-                {render: function(data, type, full, meta) {
+                /*{render: function(data, type, full, meta) {
                   if(full.origen==undefined){
                     return "";
                   }else{
@@ -627,13 +626,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       }
                     };
                   }
-                },
+                },*/
                 //{"data":"detalle_productos"}
-                {"data":"descripcion"}
+                //{"data":"descripcion"}
               ],
               "columnDefs": [
                 {
-                  "targets": [1,4,5],
+                  //"targets": [1,4,5],
+                  "targets": [1,3,4],
                   "className": 'text-right'
                 }
               ],
@@ -676,6 +676,43 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         }
       }
 
+      // Add event listener for opening and closing details
+      $(document).on('click', '#tablaCtaCte tbody tr', function() {
+        //var tr = $(this).closest('tr');
+        var tr = $(this);
+        //console.log(tablaCtaCte);
+        var row = tablaCtaCte.DataTable().row(tr);
+
+        if (row.child.isShown()) {
+          // This row is already open - close it
+          row.child.hide();
+          tr.removeClass('shown');
+        } else {
+          // Open this row
+          row.child(format(row.data())).show();
+          tr.addClass('shown');
+        }
+      });
+
+      function format(d) {
+        // `d` is the original data object for the row
+        console.log(d);
+        return `<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
+          <tr>
+            <td>Origen:</td>
+            <td>${d.origen ? d.origen : ''}</td>
+          </tr>
+          <tr>
+            <td>Chofer:</td>
+            <td>${d.chofer ? d.chofer : ''}</td>
+          </tr>
+          <tr>
+            <td>Detalle:</td>
+            <td>${d.descripcion}</td>
+          </tr>
+        </table>`;
+      }
+
       $("#btnNuevo").click(function(){
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
@@ -684,7 +721,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
-          document.getElementById("fecha").focus();
+          document.getElementById("fecha_hora").focus();
         })
         accion = "addMovimiento";
       });
@@ -693,7 +730,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
         let id_movimiento = $.trim($('#id_movimiento').html());
 
-        let fecha = $.trim($('#fecha').val());
+        let fecha_hora = $.trim($('#fecha_hora').val());
         let deposito = $.trim($('#deposito').val());
         let tipo_movimiento = $.trim($('#tipo_movimiento').val());
         let monto = $.trim($('#monto').val());
@@ -703,7 +740,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           url: "models/administrar_cta_cte.php",
           type: "POST",
           datatype:"json",
-          data:  {accion:accion, fecha:fecha, deposito:deposito, tipo_movimiento:tipo_movimiento, monto:monto, descripcion:descripcion, id_movimiento:id_movimiento},
+          data:  {accion:accion, fecha_hora:fecha_hora, deposito:deposito, tipo_movimiento:tipo_movimiento, monto:monto, descripcion:descripcion, id_movimiento:id_movimiento},
           success: function(respuesta) {
             respuestaJson = JSON.parse(respuesta);
             if(respuestaJson.ok=="1"){
@@ -748,7 +785,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           success: function(response){
             let datosInput = JSON.parse(response);
             console.log(datosInput);
-            $("#fecha").val(datosInput.fecha);
+            $("#fecha_hora").val(datosInput.fecha_hora);
             $("#deposito").val(datosInput.id_destino).change();
             $("#tipo_movimiento").val(datosInput.tipo_movimiento).change();
             $('#monto').val(datosInput.monto)
