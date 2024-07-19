@@ -4,8 +4,6 @@ require_once('models/fpdf/fpdf.php');
 include_once('models/conexion.php');
 date_default_timezone_set("America/Buenos_Aires");
 
-ob_start(); // Inicia la captura de salida
-
 $hora = date('Hi');
 $hoy = date('Y-m-d');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
@@ -21,123 +19,103 @@ $id_carga = intval($data);
 
 if ($id_carga > 0) {
     $cargas = new Cargas($id_carga);
-    $detalles = $cargas->traerDatosVerDetalleCarga($id_carga);
-    echo '<pre>';
-    echo 'Detalles obtenidos de la base de datos:';
-    var_dump($detalles);
-    echo '</pre>';
-    $cargasArray = json_decode($detalles, true);
-    // Depurar el resultado de json_decode
-    echo '<pre>';
-    echo 'Array decodificado de detalles:';
-    var_dump($cargasArray);
-    echo '</pre>';
+    list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
 
-    if (json_last_error() === JSON_ERROR_NONE && is_array($cargasArray)) {
-        $productos = $cargasArray['productos'] ?? [];
-        echo '<pre>';
-        echo 'Array de productos:';
-        var_dump($productos);
-        echo '</pre>';
-        die;
-    } else {
-        $productos = [];
-        echo '<p>Error al decodificar los datos de carga.</p>';
-        echo '<pre>' . htmlspecialchars($detalles) . '</pre>';
-        var_dump($productos);
-        die;
-        exit;
-    }
-    
-    // Inicio de maquetar Factura con FPDF
-    class Factura extends FPDF {
+    $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
+
+    class PDF extends FPDF {
+        // Encabezado
         function Header() {
-            // Logotipo
-            // $this->Image('assets/images/logo.jpg', 10, 10, 30); 
-
-            // Encabezado
-            $this->SetFont('Arial', 'B', 15);
-            $this->Cell(0, 10, 'Ver Carga ID: ' . $_GET['id_carga'], 0, 0, 'C');
-            $this->Ln(20);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(0, 10, 'Reporte de Carga ID: ' . $_GET['id_carga'], 0, 1, 'C');
+            $this->Ln(5);
         }
 
+        // Pie de página
         function Footer() {
-            // Pie de página
             $this->SetY(-15);
             $this->SetFont('Arial', 'I', 8);
             $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/{nb}', 0, 0, 'C');
         }
 
-        function CargaDetalles($fechaCarga, $origen, $chofer, $datosAdicionales) {
-            $this->SetFont('Arial', '', 12);
-            $this->Cell(50, 10, 'Fecha Carga: ' . $fechaCarga, 0, 0, 'L');
-            $this->Cell(50, 10, 'Origen: ' . $origen, 0, 0, 'L');
-            $this->Cell(50, 10, 'Chofer: ' . $chofer, 0, 0, 'L');
-            $this->Cell(50, 10, 'Datos adicionales: ' . $datosAdicionales, 0, 1, 'L');
-            $this->Ln(10);
+        // Método para cortar texto
+        function cortarTexto($texto, $longitudMaxima) {
+            if (strlen($texto) > $longitudMaxima) {
+                return substr($texto, 0, $longitudMaxima) . '...';
+            } else {
+                return $texto;
+            }
         }
 
-        function TablaProductos($productos) {
-            $this->SetFont('Arial', 'B', 12);
+        // Tabla con los productos y destinos
+        function TablaProductos($aProductosDestinos, $destinos_unicos, $con_precio) {
             // Encabezado de la tabla
-            $this->Cell(40, 10, 'Producto', 1, 0, 'C');
-            $this->Cell(40, 10, 'Proveedor', 1, 0, 'C');
-            $this->Cell(25, 10, 'Precio', 1, 0, 'C');
-            $this->Cell(25, 10, 'Kg x bulto', 1, 0, 'C');
-            $this->Cell(25, 10, 'Bultos PR', 1, 0, 'C');
-            $this->Cell(25, 10, 'Kilos PR', 1, 0, 'C');
-            $this->Cell(25, 10, 'Monto PR', 1, 0, 'C');
-            $this->Cell(25, 10, 'Bultos Pos', 1, 0, 'C');
-            $this->Cell(25, 10, 'Kilos Pos', 1, 0, 'C');
-            $this->Cell(25, 10, 'Monto Pos', 1, 1, 'C');
+            $this->SetFont('Arial', 'B', 8);
+            $this->SetFillColor(143, 143, 143); // Color de fondo gris
 
-            $this->SetFont('Arial', '', 12);
-            foreach ($productos as $producto) {
-                $this->Cell(40, 10, $producto['nombre'], 1);
-                $this->Cell(40, 10, $producto['proveedor'], 1);
-                $this->Cell(25, 10, '$' . number_format($producto['precio'], 2), 1, 0, 'R');
-                $this->Cell(25, 10, number_format($producto['kg_bulto'], 2), 1, 0, 'R');
-                $this->Cell(25, 10, $producto['bultos_pr'], 1, 0, 'R');
-                $this->Cell(25, 10, number_format($producto['kilos_pr'], 2), 1, 0, 'R');
-                $this->Cell(25, 10, '$' . number_format($producto['monto_pr'], 2), 1, 0, 'R');
-                $this->Cell(25, 10, $producto['bultos_pos'], 1, 0, 'R');
-                $this->Cell(25, 10, number_format($producto['kilos_pos'], 2), 1, 0, 'R');
-                $this->Cell(25, 10, '$' . number_format($producto['monto_pos'], 2), 1, 1, 'R');
+            $this->Cell(60, 6, 'Producto', 1, 0, 'C', true);
+            if ($con_precio) {
+                $this->Cell(20, 6, 'Precio', 1, 0, 'C', true);
+            }
+
+            foreach ($destinos_unicos as $destino) {
+                $this->Cell(20, 6, $this->cortarTexto($destino, 10), 1, 0, 'C', true);
+            }
+
+            $this->Cell(20, 6, 'Total Bultos', 1, 1, 'C', true);
+            $this->SetFont('Arial', '', 8);
+
+            // Datos de la tabla
+            $totals = [];
+            $total_precio = 0;
+            foreach ($aProductosDestinos as $product) {
+                $this->Cell(60, 6, $product['familia'] . " " . $product['producto'] . " (" . $product['presentacion'] . " - " . $product['unidad_medida'] . ")", 1);
+                if ($con_precio) {
+                    $precio = $product['precio'];
+                    $total_precio += $precio;
+                    $this->Cell(20, 6, '$ ' . number_format($precio, 2, ",", "."), 1, 0, 'R');
+                }
+
+                $destinos_actuales = [];
+                foreach ($product['destinos'] as $destino) {
+                    $destinos_actuales[$destino['destino']] = $destino;
+                }
+
+                foreach ($destinos_unicos as $destino) {
+                    $cantidad_bultos = 0;
+                    if (isset($destinos_actuales[$destino])) {
+                        $cantidad_bultos = $destinos_actuales[$destino]['cantidad_bultos'];
+                    }
+
+                    if (!isset($totals[$destino])) {
+                        $totals[$destino] = ['bultos' => 0];
+                    }
+                    $totals[$destino]['bultos'] += $cantidad_bultos;
+
+                    $this->Cell(20, 6, number_format($cantidad_bultos, 0, ",", "."), 1, 0, 'R');
+                }
+
+                $this->Cell(20, 6, number_format($product['total_bultos'], 0, ",", "."), 1, 1, 'R');
             }
 
             // Totales
-            $this->SetFont('Arial', 'B', 12);
-            $this->Cell(40, 10, 'Totales', 1);
-            $this->Cell(40, 10, '', 1);
-            $this->Cell(25, 10, '', 1);
-            $this->Cell(25, 10, '', 1);
-            $this->Cell(25, 10, array_sum(array_column($productos, 'bultos_pr')), 1, 0, 'R');
-            $this->Cell(25, 10, number_format(array_sum(array_column($productos, 'kilos_pr')), 2), 1, 0, 'R');
-            $this->Cell(25, 10, '$' . number_format(array_sum(array_column($productos, 'monto_pr')), 2), 1, 0, 'R');
-            $this->Cell(25, 10, array_sum(array_column($productos, 'bultos_pos')), 1, 0, 'R');
-            $this->Cell(25, 10, number_format(array_sum(array_column($productos, 'kilos_pos')), 2), 1, 0, 'R');
-            $this->Cell(25, 10, '$' . number_format(array_sum(array_column($productos, 'monto_pos')), 2), 1, 1, 'R');
+            $this->SetFont('Arial', 'B', 8);
+            $this->Cell(60, 6, 'Totales', 1, 0, 'C');
+            if ($con_precio) {
+                $this->Cell(20, 6, '$ ' . number_format($total_precio, 2, ",", "."), 1, 0, 'R');
+            }
+            foreach ($destinos_unicos as $destino) {
+                $this->Cell(20, 6, number_format($totals[$destino]['bultos'], 0, ",", "."), 1, 0, 'R');
+            }
+            $this->Cell(20, 6, number_format(array_sum(array_column($aProductosDestinos, 'total_bultos')), 0, ",", "."), 1, 1, 'R');
         }
     }
 
-    // Datos de ejemplo para los detalles de la carga
-    $fechaCarga = "14-05-2024";
-    $origen = "San Juan";
-    $chofer = "Jose Perez";
-    $datosAdicionales = "asd";
-    $proveedor = "Pepinito SA";
-
     // Creación del PDF
-    $pdf = new Factura();
+    $pdf = new PDF();
     $pdf->AliasNbPages();
     $pdf->AddPage();
-    $pdf->CargaDetalles($fechaCarga, $origen, $chofer, $datosAdicionales);
-    $pdf->TablaProductos($productos);
-
-    // Captura cualquier salida pendiente y limpia el buffer
-    ob_end_clean();
-
-    // Salida del PDF
+    $pdf->TablaProductos($aProductosDestinos, $destinos_unicos, $con_precio);
     $pdf->Output();
     exit;
 } else {

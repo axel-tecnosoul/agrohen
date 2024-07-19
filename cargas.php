@@ -873,7 +873,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosEnviar = JSON.stringify(id_carga);
 
         const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
-        win = window.open(url, '_blank', 'toolbar=no,status=no, menubar=no');
+        win = window.open(url, 'toolbar=no,status=no, menubar=no');
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
       })
@@ -886,7 +886,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         datosEnviar = JSON.stringify(id_carga);
 
         const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
-        win = window.open(url, '_blank', 'toolbar=no,status=no, menubar=no');
+        win = window.open(url, 'toolbar=no,status=no, menubar=no');
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
       })
