@@ -15,7 +15,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 $con_precio = $_GET['cp'];
 $data = $_GET['id_carga'];
 $destinos = $_GET['destinos'];
-$aDestinos=explode(",",$destinos);
 
 include_once('models/administrar_cargas.php');
 $id_carga = intval($data);
@@ -27,12 +26,15 @@ if ($id_carga > 0) {
     list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
 
     $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
-    /*var_dump($destinos_unicos);
-    var_dump($aDestinos);*/
+    //var_dump($destinos_unicos);
 
-    $destinos_unicos = array_filter($destinos_unicos, function($destino) use ($aDestinos) {
-      return in_array($destino['id_destino'], $aDestinos);
-    });
+    if($destinos!=''){
+      $aDestinos=explode(",",$destinos);
+      //var_dump($aDestinos);
+      $destinos_unicos = array_filter($destinos_unicos, function($destino) use ($aDestinos) {
+        return in_array($destino['id_destino'], $aDestinos);
+      });
+    }
 
     //var_dump($destinos_unicos);
 
