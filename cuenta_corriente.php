@@ -31,8 +31,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       #tableFiltros td{
         /*width: auto;*/
       }
-      td.child {
-        background-color: beige;
+      tr.child {
+        background-color: beige !important;
+      }
+      table.dataTable tbody tr {
+        background-color: inherit;
+      }
+      table.child td{
+        padding: .25rem !important;
       }
       .detalle-producto {
         display: flex;
@@ -198,8 +204,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
-                    <label for="deposito" class="col-form-label">Deposito:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="deposito"></select>
+                    <label for="cuenta_registrar" class="col-form-label">Cuenta:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="cuenta_registrar"></select>
                   </div>
                 </div>
               </div>
@@ -304,6 +310,11 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       
       });
 
+      /*$(document).on('mouseenter','.select2-selection__choice',function () {
+        console.log(this);
+        $(this).removeAttr('data-original-title');
+      });*/
+
       idiomaEsp = {
         "autoFill": {
           "cancel": "Cancelar",
@@ -404,7 +415,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           $(".depositoCells").removeClass("invisible")
 
           // Obtén el valor del id_responsable del select #cuenta
-          var id_responsable = selectedOption.value;
+          var id_responsable = selectedOption.dataset.id;
 
           /*Identifico el select de destinos*/
           $selectDestino = document.getElementById("id_deposito");
@@ -425,29 +436,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             placeholder: "Seleccione...",
             //allowClear: true
           })
-
-          /*// Obtén el valor del id_responsable del select #cuenta
-          var id_responsable = selectedOption.value;
-
-          // Guarda todas las opciones inicialmente
-          var $id_deposito = $('#id_deposito');
-
-          // Filtra las opciones que coinciden con el id_responsable
-          var filteredOptions = allOptionsSelectDestino.filter(function() {
-              return $(this).data('id_responsable') == id_responsable;
-          });
-
-          // Remueve todas las opciones
-          $id_deposito.empty();
-
-          // Agrega las opciones filtradas
-          $id_deposito.append(filteredOptions).trigger('change');*/
-
-          // Forzar la actualización de select2
-          /*$id_deposito.select2({
-            placeholder: "Seleccione...",
-            //allowClear: true
-          });*/
 
         }else{
           $(".depositoCells").addClass("invisible")
@@ -475,25 +463,32 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
             /*Identifico el select de choferes*/
             selectCuenta = document.getElementById("cuenta");
+            $selectCuentaRegistrarNuevoMovimiento = document.getElementById("cuenta_registrar");
             
             //Genero los options del select choferes
             if(selectCuenta.type=="select-one"){
               respuestaJson.cuentas.forEach((cuenta)=>{
-                $option = document.createElement("option");
+                
+                let $option1 = document.createElement("option");
                 let optionText = document.createTextNode(cuenta.cuenta);
-                $option.appendChild(optionText);
-                $option.setAttribute("value", cuenta.id);
-                $option.setAttribute("data-tipo", cuenta.tipo);
-                $option.setAttribute("data-tipo_aumento_extra", cuenta.tipo_aumento_extra);
-                $option.setAttribute("data-valor_extra", cuenta.valor_extra);
-                selectCuenta.appendChild($option);
+                $option1.appendChild(optionText);
+                $option1.setAttribute("value", cuenta.tipo+"-"+cuenta.id);
+                $option1.setAttribute("data-id", cuenta.id);
+                $option1.setAttribute("data-tipo", cuenta.tipo);
+                $option1.setAttribute("data-tipo_aumento_extra", cuenta.tipo_aumento_extra);
+                $option1.setAttribute("data-valor_extra", cuenta.valor_extra);
+                selectCuenta.appendChild($option1);
+
+                // Crear opción para el select de nuevo movimiento
+                const $option2 = $option1.cloneNode(true); // Clona el nodo de la opción completa
+                $selectCuentaRegistrarNuevoMovimiento.appendChild($option2);
               })
               $(selectCuenta).select2()
             }
 
             /*Identifico el select de destinos*/
             $selectDestino = document.getElementById("id_deposito");
-            $selectDestinoNuevoMovimiento = document.getElementById("deposito");
+            
             //Genero los options del select destinos
             allOptionsSelectDestino=respuestaJson.destinos;
             allOptionsSelectDestino.forEach((destino)=>{
@@ -503,18 +498,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               $option.setAttribute("value", destino.id_destino);
               $option.setAttribute("data-id_responsable", destino.id_responsable);
               $selectDestino.appendChild($option);
-              $selectDestinoNuevoMovimiento.appendChild($option);*/
+              $selectCuentaRegistrarNuevoMovimiento.appendChild($option);*/
 
-              const $option1 = document.createElement("option");
+              const $option = document.createElement("option");
               const optionText1 = document.createTextNode(destino.destino);
-              $option1.appendChild(optionText1);
-              $option1.setAttribute("value", destino.id_destino);
-              $option1.setAttribute("data-id_responsable", destino.id_responsable);
-              $selectDestino.appendChild($option1);
-
-              // Crear opción para el select de nuevo movimiento
-              const $option2 = $option1.cloneNode(true); // Clona el nodo de la opción completa
-              $selectDestinoNuevoMovimiento.appendChild($option2);
+              $option.appendChild(optionText1);
+              $option.setAttribute("value", destino.id_destino);
+              $option.setAttribute("data-id_responsable", destino.id_responsable);
+              $selectDestino.appendChild($option);
             })
             
             $($selectDestino).select2({
@@ -539,7 +530,9 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           var selectedIndex = $selectCuenta.prop('selectedIndex');
           var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
 
-          var id_cuenta=$selectCuenta.val()
+          //var id_cuenta=$selectCuenta.val()
+
+          var id_cuenta=selectedOption.data("id")
           var tipo=selectedOption.data("tipo")
           var tipo_aumento_extra=selectedOption.data("tipo_aumento_extra")
           var valor_extra=selectedOption.data("valor_extra")
@@ -578,8 +571,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     $btnEditar=""
                     $btnEliminar=""
                     if(id_perfil==1){
-                      $btnEditar=` <span class='btn btn-sm btn-success btnEditar px-2 py-1' data-id='${id_movimiento}'><i class='fa fa-edit'></i></span>`
-                      $btnEliminar=` <span class='btn btn-sm btn-danger btnBorrar px-2 py-1' data-id='${id_movimiento}'><i class='fa fa-trash-o'></i></span>`
+                      $btnEditar=` <span class='btn btn-sm btn-success btnEditar px-2 py-1' title="Editar" data-id='${id_movimiento}'><i class='fa fa-edit'></i></span>`
+                      $btnEliminar=` <span class='btn btn-sm btn-danger btnBorrar px-2 py-1' title="Eliminar" data-id='${id_movimiento}'><i class='fa fa-trash-o'></i></span>`
                     }
                     return "M #"+id_movimiento+$btnEditar+$btnEliminar;
                   }else{
@@ -677,9 +670,9 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       }
 
       // Add event listener for opening and closing details
-      $(document).on('click', '#tablaCtaCte tbody tr', function() {
-        //var tr = $(this).closest('tr');
-        var tr = $(this);
+      $(document).on('click', '#tablaCtaCte tbody td:first-child', function() {
+        var tr = $(this).closest('tr');
+        //var tr = $(this);
         //console.log(tablaCtaCte);
         var row = tablaCtaCte.DataTable().row(tr);
 
@@ -690,6 +683,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         } else {
           // Open this row
           row.child(format(row.data())).show();
+          tr.next('tr').addClass('child');
           tr.addClass('shown');
         }
       });
@@ -697,20 +691,47 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       function format(d) {
         // `d` is the original data object for the row
         console.log(d);
-        return `<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">
+        if(d.id_movimiento!=undefined){
+          return `<table class="child" border="0" style="padding-left:50px;">
           <tr>
-            <td>Origen:</td>
-            <td>${d.origen ? d.origen : ''}</td>
-          </tr>
-          <tr>
-            <td>Chofer:</td>
-            <td>${d.chofer ? d.chofer : ''}</td>
-          </tr>
-          <tr>
-            <td>Detalle:</td>
-            <td>${d.descripcion}</td>
-          </tr>
-        </table>`;
+              <td>Detalle:</td>
+              <td>${d.descripcion}</td>
+            </tr>
+            <tr>
+              <td>Usuario creador:</td>
+              <td>${d.usuario_creador ? d.usuario_creador : ''}</td>
+            </tr>
+            <tr>
+              <td>Fecha y hora creacion:</td>
+              <td>${d.fecha_hora_alta_formatted ? d.fecha_hora_alta_formatted : ''}</td>
+            </tr>
+            <tr>
+              <td>Usuario ultima modificacion:</td>
+              <td>${d.usuario_ultima_modificacion ? d.usuario_ultima_modificacion : ''}</td>
+            </tr>
+            <tr>
+              <td>Fecha y hora ultima modificacion:</td>
+              <td>${d.fecha_hora_ultima_modificacion_formatted ? d.fecha_hora_ultima_modificacion_formatted : ''}</td>
+            </tr>
+          </table>`;
+        }else if(d.id_carga!=undefined){
+          return `<table class="child" border="0" style="padding-left:50px;">
+            <tr>
+              <td>Origen:</td>
+              <td>${d.origen ? d.origen : ''}</td>
+            </tr>
+            <tr>
+              <td>Chofer:</td>
+              <td>${d.chofer ? d.chofer : ''}</td>
+            </tr>
+            <tr>
+              <td>Usuario creador:</td>
+              <td>${d.usuario}</td>
+            </tr>
+          </table>`;
+        }else{
+          return '';
+        }
       }
 
       $("#btnNuevo").click(function(){
@@ -718,6 +739,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Alta de movimiento en Cta. Cte.");
+
+        $('#cuenta_registrar').val().change();
+        $('#tipo_movimiento').val().change();
+
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
         modal.on('shown.bs.modal', function (e) {
@@ -731,7 +756,17 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         let id_movimiento = $.trim($('#id_movimiento').html());
 
         let fecha_hora = $.trim($('#fecha_hora').val());
-        let deposito = $.trim($('#deposito').val());
+        let cuenta_registrar = $.trim($('#cuenta_registrar').val());
+        let ex=cuenta_registrar.split("-")
+        let tipo=ex[0]
+        let id=ex[1]
+        if(tipo=="responsable"){
+          id_deposito="null";
+          id_responsable=id;
+        }else{
+          id_deposito=id;
+          id_responsable="null";
+        }
         let tipo_movimiento = $.trim($('#tipo_movimiento').val());
         let monto = $.trim($('#monto').val());
         let descripcion = $.trim($('#descripcion').val());
@@ -740,7 +775,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           url: "models/administrar_cta_cte.php",
           type: "POST",
           datatype:"json",
-          data:  {accion:accion, fecha_hora:fecha_hora, deposito:deposito, tipo_movimiento:tipo_movimiento, monto:monto, descripcion:descripcion, id_movimiento:id_movimiento},
+          data:  {accion:accion, fecha_hora:fecha_hora, id_deposito:id_deposito, id_responsable:id_responsable, tipo_movimiento:tipo_movimiento, monto:monto, descripcion:descripcion, id_movimiento:id_movimiento},
           success: function(respuesta) {
             respuestaJson = JSON.parse(respuesta);
             if(respuestaJson.ok=="1"){
@@ -784,9 +819,17 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           },
           success: function(response){
             let datosInput = JSON.parse(response);
-            console.log(datosInput);
+
+            let cuenta_registrar
+            if(datosInput.id_destino!=null){
+              cuenta_registrar="destino-"+datosInput.id_destino
+            }
+            if(datosInput.id_responsable!=null){
+              cuenta_registrar="responsable-"+datosInput.id_responsable
+            }
+
             $("#fecha_hora").val(datosInput.fecha_hora);
-            $("#deposito").val(datosInput.id_destino).change();
+            $("#cuenta_registrar").val(cuenta_registrar).change();
             $("#tipo_movimiento").val(datosInput.tipo_movimiento).change();
             $('#monto').val(datosInput.monto)
             $('#descripcion').val(datosInput.descripcion)

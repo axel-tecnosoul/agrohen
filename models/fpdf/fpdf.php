@@ -1041,8 +1041,10 @@ protected function _dochecks()
   if(is_numeric(ini_get('mbstring.func_overload')) && (ini_get('mbstring.func_overload') & 2))
 		$this->Error('mbstring overloading must be disabled');
 	// Ensure runtime magic quotes are disabled
-	if(get_magic_quotes_runtime())
-		@set_magic_quotes_runtime(0);
+	// Verifica si la función get_magic_quotes_runtime existe y si la versión de PHP es menor a 7.4
+  if (function_exists('get_magic_quotes_runtime') && version_compare(PHP_VERSION, '7.4', '<') && get_magic_quotes_runtime()) {
+    @set_magic_quotes_runtime(0); // Desactiva magic_quotes_runtime en versiones más antiguas de PHP
+  }
 }
 
 protected function _checkoutput()

@@ -231,8 +231,12 @@ class cargas{
     $destinos_unicos = [];
     foreach ($aProductosDestinos as $product) {
       foreach ($product['destinos'] as $key => $destino) {
-        if (!in_array($destino['destino'], $destinos_unicos)) {
-          $destinos_unicos[] = $destino['destino'];
+        // Verificar si un id_destino específico existe
+        if (!in_array($destino['id_destino'], array_column($destinos_unicos, 'id_destino'))) {
+          $destinos_unicos[] =[
+            "id_destino"=>$destino['id_destino'],
+            "destino"=>$destino['destino'],
+          ];
         }
       }
     }
@@ -251,7 +255,10 @@ class cargas{
           <th rowspan="2" class="fixed-column-3 fixed-column-header" style="align-content: center;">Precio</th>
           <th rowspan="2" class="fixed-column-4 fixed-column-header" style="align-content: center;">Kg x bulto</th><?php
           foreach ($destinos_unicos as $destino) {?>
-            <th colspan="3" class="destino-group"><?=$destino?></th><?php
+            <th colspan="3" class="destino-group">
+              <input type='checkbox' class='checkbox_animated check_destino' id="destino-<?=$destino["id_destino"]?>" value="<?=$destino["id_destino"]?>">
+              <label for="destino-<?=$destino["id_destino"]?>" class="mb-0"><?=$destino["destino"]?></label>
+            </th><?php
           }?>
           <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Bultos</th>
           <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Kilos</th>
@@ -278,25 +285,26 @@ class cargas{
 
             $destinos_actuales = [];
             foreach ($product['destinos'] as $destino) {
-              $destinos_actuales[$destino['destino']] = $destino;
+              $destinos_actuales[$destino['id_destino']] = $destino;
             }
 
             foreach ($destinos_unicos as $destino) {
+              $id_destino=$destino['id_destino'];
               $cantidad_bultos=0;
               $kilos=0;
               $monto=0;
-              if (isset($destinos_actuales[$destino])) {
-                $cantidad_bultos=$destinos_actuales[$destino]['cantidad_bultos'];
-                $kilos=$destinos_actuales[$destino]['kilos'];
-                $monto=$destinos_actuales[$destino]['monto'];
+              if (isset($destinos_actuales[$id_destino])) {
+                $cantidad_bultos=$destinos_actuales[$id_destino]['cantidad_bultos'];
+                $kilos=$destinos_actuales[$id_destino]['kilos'];
+                $monto=$destinos_actuales[$id_destino]['monto'];
               }
               
-              if (!isset($totals[$destino])) {
-                $totals[$destino] = ['bultos' => 0, 'kilos' => 0, 'monto' => 0];
+              if (!isset($totals[$id_destino])) {
+                $totals[$id_destino] = ['bultos' => 0, 'kilos' => 0, 'monto' => 0];
               }
-              $totals[$destino]['bultos'] += $cantidad_bultos;
-              $totals[$destino]['kilos'] += $kilos;
-              $totals[$destino]['monto'] += $monto;?>
+              $totals[$id_destino]['bultos'] += $cantidad_bultos;
+              $totals[$id_destino]['kilos'] += $kilos;
+              $totals[$id_destino]['monto'] += $monto;?>
 
               <td class="text-right destino-group destino-start"><?=number_format($cantidad_bultos,0,",",".")?></td>
               <td class="text-right destino-group"><?=number_format($kilos,2,",",".")?></td>
@@ -311,10 +319,11 @@ class cargas{
       <tfoot>
         <tr>
           <td colspan="4" class="text-right fixed-column" style="background: burlywood;">Totales</td><?php
-          foreach ($destinos_unicos as $destino) { ?>
-            <td class="text-right destino-group"><?=number_format($totals[$destino]['bultos'], 0, ",", ".")?></td>
-            <td class="text-right destino-group"><?=number_format($totals[$destino]['kilos'], 2, ",", ".")?></td>
-            <td class="text-right destino-group">$ <?=number_format($totals[$destino]['monto'], 2, ",", ".")?></td><?php
+          foreach ($destinos_unicos as $destino) {
+            $id_destino=$destino["id_destino"]?>
+            <td class="text-right destino-group"><?=number_format($totals[$id_destino]['bultos'], 0, ",", ".")?></td>
+            <td class="text-right destino-group"><?=number_format($totals[$id_destino]['kilos'], 2, ",", ".")?></td>
+            <td class="text-right destino-group">$ <?=number_format($totals[$id_destino]['monto'], 2, ",", ".")?></td><?php
           } ?>
           <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_bultos')),0,",",".")?></td>
           <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_kilos')),2,",",".")?></td>

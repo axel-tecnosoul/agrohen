@@ -340,8 +340,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" id="btnImprimirConPrecio" class="btn btn-success">Imprimir con precio</button>
-              <button type="submit" id="btnImprimirSinPrecio" class="btn btn-dark">Imprimir sin precio</button>
+              <button type="submit" class="btn btn-success btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
+              <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
               <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
@@ -865,20 +865,28 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       });
 
       //Imprimir con o sin precio
-      $(document).on("click", "#btnImprimirConPrecio", function(event){
+      $(document).on("click", ".btnImprimirOC", function(event){
         event.preventDefault();
         let id_carga =  $('#id_carga').html();
-        let cp = 1;
+        
+        let cp = this.dataset.conPrecio;
 
         datosEnviar = JSON.stringify(id_carga);
 
-        const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
+        let destinos=[]
+        $(".check_destino:checked").each(function(){
+          //console.log(this);
+          destinos.push(this.value)
+        })
+        str_destinos=destinos.join(',');
+
+        const url = "./imprimirCarga.php?id_carga="+id_carga+"&cp="+cp+"&destinos="+str_destinos;
         win = window.open(url, 'toolbar=no,status=no, menubar=no');
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
       })
 
-      $(document).on("click", "#btnImprimirSinPrecio", function(event){
+      /*$(document).on("click", "#btnImprimirSinPrecio", function(event){
         event.preventDefault();
         let id_carga =  $('#id_carga').html();
         let cp = 0;
@@ -889,7 +897,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         win = window.open(url, 'toolbar=no,status=no, menubar=no');
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
-      })
+      })*/
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
