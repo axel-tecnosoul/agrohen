@@ -355,6 +355,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <button type="submit" class="btn btn-success btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
               <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
               <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
+              <button type="button" id="btnExportar" class="btn btn-warning">Exportar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
           </form>
