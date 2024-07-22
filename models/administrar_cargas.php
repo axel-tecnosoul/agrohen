@@ -150,10 +150,13 @@ class cargas{
     }
 
     $despacho = 0;
-    $fecha_hora_despacho="(La carga aún no fue despachada)";
+    //$fecha_hora_despacho="(La carga aún no fue despachada)";
+    $fecha_hora_despacho="";
+    $estado="<span class='badge badge-warning'>Pendiente</span>";
     if($rowCarga['fecha_hora_despacho']){
       $fecha_hora_despacho=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_despacho']));
       $despacho = 1;
+      $estado="<span class='badge badge-primary'>Despachado</span>";
     }
 
     $datosCarga=[
@@ -169,6 +172,7 @@ class cargas{
       'chofer' =>$rowCarga['chofer'],
       'despachado' =>$rowCarga['despachado'],
       'fecha_hora_despacho' =>$fecha_hora_despacho,
+      'estado' => $estado,
       'usuario' =>$rowCarga['usuario'],
       'despacho' => $despacho,
     ];
@@ -338,8 +342,14 @@ class cargas{
     $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1";
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cargas = array(); //creamos un array
-                
+
     while ($row = $traerCargas->fetch_array()) {
+
+      $estado="<span class='badge badge-warning'>Pendiente</span>";
+      if($row['fecha_hora_despacho']){
+        $estado="<span class='badge badge-primary'>Despachado</span>";
+      }
+
       $cargas[] = array(
         'id_carga'=>$row['id_carga'],
         'fecha'=>$fecha=$row['fecha'],
@@ -354,6 +364,7 @@ class cargas{
         'total_monto'=>$row['total_monto'],
         'fecha_hora_despacho'=>date("d-m-Y H:i",strtotime($row['fecha_hora_despacho'])),
         'despachado'=>$row['despachado'],
+        'estado' => $estado,
         'id_usuario'=>$row['id_usuario'],
         'usuario'=>$row['usuario'],
         'anulado'=>$row['anulado'],
@@ -437,11 +448,25 @@ class cargas{
     return json_encode($productoCarga);
   }
 
-  public function updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$datosDepositos){
+  public function updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$motivo_cambio_precio,$datosDepositos){
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryUpdateProductoCarga = "UPDATE cargas_productos SET id_producto=$id_producto, id_proveedor=$id_proveedor, kg_x_bulto=$kg_x_bulto, precio=$precio WHERE id = $id_carga_producto";
+    $sqltraerCargas = "SELECT IF(fecha_hora_despacho IS NULL,0,1) AS despachado FROM cargas WHERE id = ".$id_carga;
+    $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
+    $row = $traerCargas->fetch_array();
+
+    $motivo_cambio_precio="";
+    $insertarMotivoCambioCantidad=0;
+    if($row["despachado"]==1){
+      //die("auditar");
+      // Auditar datos antes de actualizar
+      $this->auditarCargaProducto($id_carga_producto);
+      $motivo_cambio_precio=" motivo_cambio_precio='$motivo_cambio_precio'";
+      $insertarMotivoCambioCantidad=1;
+    }
+
+    $queryUpdateProductoCarga = "UPDATE cargas_productos SET id_producto=$id_producto, id_proveedor=$id_proveedor, kg_x_bulto=$kg_x_bulto, precio=$precio $motivo_cambio_precio WHERE id = $id_carga_producto";
     $insertCarga = $this->conexion->consultaSimple($queryUpdateProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
 
@@ -461,6 +486,11 @@ class cargas{
       $valor_extra=$row["valor_extra"];
       $subtotal_kilos=$row["subtotal_kilos"];
 
+      $motivo_cambio_cantidad_bultos="NULL";
+      if($insertarMotivoCambioCantidad==1){
+        $motivo_cambio_cantidad_bultos=$row["motivo_cambio_cantidad_bultos"];
+      }
+
       $mensajeError="";
       if($cantidad_bultos>0){
         $monto=$cantidad_bultos*$precio;
@@ -469,11 +499,11 @@ class cargas{
       
         //var_dump($tipo_aumento_extra);
         if($id_producto_destino>0){
-          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, monto = $monto, monto_valor_extra = $monto_valor_extra, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
+          $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, motivo_cambio_cantidad_bultos = $motivo_cambio_cantidad_bultos, monto = $monto, monto_valor_extra = $monto_valor_extra, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
           $mensajeError=$this->conexion->conectar->error;
         }else{
-          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, monto, monto_valor_extra, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $monto, $monto_valor_extra, $subtotal_kilos, $id_usuario)";
+          $query=$queryInsertCarga = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, motivo_cambio_cantidad_bultos, monto, monto_valor_extra, kilos, id_usuario) VALUES($id_carga_producto, $id_deposito, $tipo_aumento_extra, $valor_extra, $cantidad_bultos, $motivo_cambio_cantidad_bultos, $monto, $monto_valor_extra, $subtotal_kilos, $id_usuario)";
           $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
           $mensajeError=$this->conexion->conectar->error;
         }
@@ -525,6 +555,57 @@ class cargas{
     }
     
     return $respuesta;
+  }
+
+  public function auditarCargaProducto($id_carga_producto) {
+    // Obtener los datos del producto
+    $queryProducto = "SELECT * FROM cargas_productos WHERE id = ?";
+    $stmtProducto = $this->conexion->prepare($queryProducto);
+    $stmtProducto->execute([$id_carga_producto]);
+    $producto = $stmtProducto->fetch(PDO::FETCH_ASSOC);
+
+    // Insertar en auditoria_cargas_productos
+    $queryInsertAuditoriaProducto = "INSERT INTO auditoria_cargas_productos (id_carga_producto, id_producto, id_proveedor, kg_x_bulto, precio, motivo_cambio_precio, total_bultos, total_kilos, total_monto, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmtInsertAuditoriaProducto = $this->conexion->prepare($queryInsertAuditoriaProducto);
+    $stmtInsertAuditoriaProducto->execute([
+      $producto['id'],
+      $producto['id_producto'],
+      $producto['id_proveedor'],
+      $producto['kg_x_bulto'],
+      $producto['precio'],
+      $producto['motivo_cambio_precio'],
+      $producto['total_bultos'],
+      $producto['total_kilos'],
+      $producto['total_monto'],
+      $producto['id_usuario']
+    ]);
+
+    // Obtener el ID de auditoría insertado
+    $id_auditoria_producto = $this->conexion->lastInsertId();
+
+    // Obtener los datos de los destinos del producto
+    $queryDestinos = "SELECT * FROM cargas_productos_destinos WHERE id_carga_producto = ?";
+    $stmtDestinos = $this->conexion->prepare($queryDestinos);
+    $stmtDestinos->execute([$id_carga_producto]);
+    $destinos = $stmtDestinos->fetchAll(PDO::FETCH_ASSOC);
+
+    // Insertar en auditoria_cargas_productos_destinos
+    foreach ($destinos as $destino) {
+      $queryInsertAuditoriaDestino = "INSERT INTO auditoria_cargas_productos_destinos (id_auditoria_cargas_productos, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, motivo_cambio_cantidad_bultos, monto, monto_valor_extra, kilos, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      $stmtInsertAuditoriaDestino = $this->conexion->prepare($queryInsertAuditoriaDestino);
+      $stmtInsertAuditoriaDestino->execute([
+        $id_auditoria_producto,
+        $destino['id_destino'],
+        $destino['tipo_aumento_extra'],
+        $destino['valor_extra'],
+        $destino['cantidad_bultos'],
+        $destino['motivo_cambio_cantidad_bultos'],
+        $destino['monto'],
+        $destino['monto_valor_extra'],
+        $destino['kilos'],
+        $destino['id_usuario']
+      ]);
+    }
   }
 
   private function calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos){
@@ -763,14 +844,103 @@ class cargas{
     
     return $respuesta;
   }
+
+  public function exportar_excel(Request $request){
+
+    $desde=$request->desde;
+    $hasta=$request->hasta;
+    $tipo_estudio_id=$request->tipo_estudio_id;
+    //if(is_null($fecha)) $fecha=date("Y-m-d");
+
+    //dd($request->fecha);
+
+    $aPacientes=$this->traerDatosPaciente($desde,$hasta,$tipo_estudio_id);
+
+    $tipo_estudio_id=explode(".",$tipo_estudio_id);
+    
+    if($tipo_estudio_id[0]=="te"){
+        $tipo_estudio=TipoEstudio::find($tipo_estudio_id[1]);
+    }elseif($tipo_estudio_id[0]=="e"){
+        $tipo_estudio=Estudio::find($tipo_estudio_id[1]);
+    }
+
+    //$ori=DB::select('SELECT definicion FROM origenes');
+    //var_dump($ori);
+
+    require_once './../vendor/PHPExcel.php';
+    $objPHPExcel = new PHPExcel();
+    //$objPHPExcel = new PHPExcel();
+    //Informacion del excel
+    /*$objPHPExcel->
+    getProperties()
+      ->setCreator("ingenieroweb.com.co")
+      ->setLastModifiedBy("ingenieroweb.com.co")
+      ->setTitle("Exportar excel desde mysql")
+      ->setSubject("Ejemplo 1")
+      ->setDescription("Documento generado con PHPExcel")
+      ->setKeywords("ingenieroweb.com.co  con  phpexcel")
+      ->setCategory("ciudades"); */   
+
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1',"Desde:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1',date("d-m-Y",strtotime($desde)));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1',"Hasta:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D1',date("d-m-Y",strtotime($hasta)));
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E1',"Tipo de estudio:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F1',$tipo_estudio->nombre);
+    
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('A1')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('C1')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('E1')->getFont()->setBold(true);
+      
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3',"Turno");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3',"Paciente");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3',"DNI");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3',"Edad");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E3',"Empresa");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F3',"Detalle");
+
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('A3')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('B3')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('C3')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('D3')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('E3')->getFont()->setBold(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getStyle('F3')->getFont()->setBold(true);
+
+    $row=4;
+    foreach($aPacientes as $paciente =>$estudios){
+
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row,strval($estudios["turno"]));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$row,strval($paciente));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$row,strval($estudios["dni"]));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$row,strval($estudios["edad"]));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$row,strval($estudios["empresa"]));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F'.$row,strval(implode(", ",$estudios["estudios"])));
+      
+      $row++;
+    }
+
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('A')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('B')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('C')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('D')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('E')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('F')->setAutoSize(true);
+
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); //mime type
+    header('Content-Disposition: attachment;filename="Visitas por medico.xlsx"'); //tell browser what's the file name
+    header('Cache-Control: max-age=0'); //no cache 
+    ob_end_clean();
+    $objWriter->save('php://output');
+    exit();
+
+  }
 }	
 
 if (isset($_POST['accion'])) {
   $cargas = new cargas();
   switch ($_POST['accion']) {
-    case 'traerAlmacenes':
-      $almacenes->traerTodoscargas();
-    break;
     case 'traerProductoDestinosCarga':
       $id_carga_producto = $_POST['id_carga_producto'];
       echo $cargas->traerProductoDestinosCarga($id_carga_producto);
@@ -794,8 +964,9 @@ if (isset($_POST['accion'])) {
       $id_proveedor=$_POST["id_proveedor"];
       $kg_x_bulto=$_POST["kg_x_bulto"];
       $precio=$_POST["precio"];
+      $motivo_cambio_precio=$_POST["motivo_cambio_precio"];
       $datosDepositos=$_POST["datosDepositos"];
-      echo $cargas->updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$datosDepositos);
+      echo $cargas->updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$motivo_cambio_precio,$datosDepositos);
     break;
     case 'despacharCarga':
       // var_dump($_POST);

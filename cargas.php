@@ -165,9 +165,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Chofer</th>
                           <th>Bultos</th>
                           <th>Kilos</th>
-                          <th>Monto</th>
+                          <!-- <th>Monto</th> -->
+                          <th>Estado</th>
                           <!-- <th>Datos adicionales del chofer</th> -->
                           <th class="text-center">Acciones</th>
+                          <th class="none">Datos adicionales del chofer:</th>
                           <th class="none">Despachado:</th>
                           <th class="none">Usuario:</th>
                         </tr>
@@ -178,8 +180,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th style="text-align:right" colspan="4">Totales</th>
                           <th style="text-align:right">Total bultos</th>
                           <th style="text-align:right">Total kilos</th>
-                          <th style="text-align:right">Total Monto</th>
+                          <!-- <th style="text-align:right">Total Monto</th> -->
+                          <th style="text-align:right"></th>
                           <th class="text-center">Acciones</th>
+                          <th class="none"></th>
                           <th class="none"></th>
                           <th class="none"></th>
                         </tr>
@@ -283,13 +287,21 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-2">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha Carga:</label>
                     <span id="lbl_fecha_carga"></span>
                     <input type="hidden" id="lbl_id_carga">
                   </div>
                 </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Despachado:</label>
+                    <span id="lbl_despachado"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Origen:</label>
@@ -302,7 +314,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <span id="lbl_chofer"></span>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-6">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Datos adicionales:</label>
                     <span id="lbl_datos_adicionales_chofer"></span>
@@ -413,9 +425,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               render: function(data, type, full, meta) {
                 return ()=>{
                   let datos_adicionales_chofer=""
-                  if(full.datos_adicionales_chofer!=""){
+                  /*if(full.datos_adicionales_chofer!=""){
                     datos_adicionales_chofer=" ("+full.datos_adicionales_chofer+")"
-                  }
+                  }*/
                   return full.chofer+datos_adicionales_chofer;
                 };
               }
@@ -429,8 +441,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               return formatNumber2Decimal(full.total_kilos);
             }},
             //{"data": "total_monto"},
-            {render: function(data, type, full, meta) {
+            /*{render: function(data, type, full, meta) {
               return formatCurrency(full.total_monto);
+            }},*/
+            {render: function(data, type, full, meta) {
+              console.log(full);
+              return full.estado;
             }},
             {
               render: function(data, type, full, meta) {
@@ -472,13 +488,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 };
               }
             },
+            {"data": "datos_adicionales_chofer"},
             {"data": "despachado"},
             {"data": "usuario"},
           ],
           "columnDefs": [
             {
-              "targets": [4,5],
+              "targets": [4,5,6],
               "className": 'text-right'
+            },{
+              "targets": [8,7],
+              "className": 'px-0'
+            },{
+              "targets": [1],
+              "className": 'text-nowrap'
             }
           ],
           "language":  idiomaEsp,
@@ -496,7 +519,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               var api = this.api();
               $(api.column(4).footer()).html(formatNumber2Decimal(suma_bultos));
               $(api.column(5).footer()).html(formatNumber2Decimal(suma_kilos));
-              $(api.column(6).footer()).html(formatCurrency(suma_monto));
+              //$(api.column(6).footer()).html(formatCurrency(suma_monto));
               //$("#total_bultos").html(suma_bultos);
               //$("#total_kilos").html(suma_kilos);
             }
@@ -786,6 +809,16 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             console.log(datosInput);
             $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
             $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+            let despachado;
+            if(datosInput.despacho==1){
+              despachado="Si"
+            }else{
+              despachado="No"
+            }
+            if(datosInput.fecha_hora_despacho!=""){
+              despachado+=" ("+datosInput.fecha_hora_despacho+")"
+            }
+            $("#lbl_despachado").html(despachado);
             $("#lbl_id_carga").val(datosInput.id_carga);
             $("#lbl_origen").html(datosInput.origen);
             $("#lbl_proveedor").html(datosInput.proveedor);

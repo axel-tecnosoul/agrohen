@@ -141,8 +141,12 @@ if($datosCarga["despachado"]=="Si"){
                           <div class="row">
                             <div class="col-sm-2 text-right"><strong>Usuario:</strong></div>
                             <div class="col-sm-2" id="usuario"><?=$datosCarga["usuario"]?></div>
-                            <div class="col-sm-3 text-right"><strong>Fecha y hora despacho:</strong></div>
-                            <div class="col-sm-5" id="fecha_hora_despacho"><?=$datosCarga["fecha_hora_despacho"]?></div>
+                            <div class="col-sm-3 text-right"><strong>Despachado:</strong></div>
+                            <div class="col-sm-5" id="fecha_hora_despacho"><?php
+                            echo $datosCarga["despachado"];
+                            if($datosCarga["fecha_hora_despacho"]!=""){
+                              echo " (".$datosCarga["fecha_hora_despacho"].")";
+                            }?></div>
                           </div>
                           <input type="hidden" id="id_carga" value="<?=$id?>">
                           <input type="hidden" id="id_chofer" value="<?=$datosCarga["id_chofer"]?>">
@@ -609,7 +613,7 @@ if($datosCarga["despachado"]=="Si"){
         $('#formAdmin').submit(function(e){
           e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
 
-          throw new Error("my error message");
+          //throw new Error("my error message");
 
           let cargarOtro=false;
           if ($('#btnGuardarCargarOtro').is(':focus')) {// Verificar si se presionó el botón "btnGuardarCargarOtro"
@@ -625,6 +629,7 @@ if($datosCarga["despachado"]=="Si"){
           let id_proveedor = $.trim($('#id_proveedor').val());
           let kg_x_bulto = $.trim($('#kg_x_bulto').val());
           let precio = $.trim($('#precio').val());
+          let motivo_cambio_precio = $.trim($('#motivo_cambio_precio').val());
 
           let datosDepositos = []; // Array para almacenar los datos de las filas seleccionadas
 
@@ -636,6 +641,7 @@ if($datosCarga["despachado"]=="Si"){
             let tipo_aumento_extra=fila.find(".tipo_aumento_extra").val()
             let valor_extra=fila.find(".valor_extra").val()
             let cantidad_bultos=fila.find(".cantidad_bultos").val()
+            let motivo_cambio_cantidad_bultos=fila.find(".motivo_cambio_cantidad_bultos").val()
             let id_deposito=fila.find(".id_deposito").val()
             let subtotal_kilos=fila.find(".subtotal_kilos").val()
             console.log(id_producto_destino);
@@ -645,6 +651,7 @@ if($datosCarga["despachado"]=="Si"){
               tipo_aumento_extra: tipo_aumento_extra,
               valor_extra: valor_extra,
               cantidad_bultos: cantidad_bultos,
+              motivo_cambio_cantidad_bultos: motivo_cambio_cantidad_bultos,
               id_deposito: id_deposito,
               subtotal_kilos: subtotal_kilos
             });
@@ -666,7 +673,7 @@ if($datosCarga["despachado"]=="Si"){
             url: "models/administrar_cargas.php",
             type: "POST",
             datatype:"json",
-            data:  {accion:accion, id_carga_producto:id_carga_producto, id_carga:id_carga, id_producto:id_producto, id_proveedor:id_proveedor, kg_x_bulto:kg_x_bulto, precio:precio, datosDepositos:datosDepositos},
+            data:  {accion:accion, id_carga_producto:id_carga_producto, id_carga:id_carga, id_producto:id_producto, id_proveedor:id_proveedor, kg_x_bulto:kg_x_bulto, precio:precio, motivo_cambio_precio:motivo_cambio_precio, datosDepositos:datosDepositos},
             success: function(data) {
               //console.log(data);
               data = JSON.parse(data);
