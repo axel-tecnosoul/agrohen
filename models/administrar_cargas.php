@@ -279,7 +279,7 @@ class cargas{
       <tbody><?php
         $totals = [];
         foreach ($aProductosDestinos as $product) {
-          //var_dump($product);
+          ////var_dump($product);
           ?>
           <tr>
             <td class="fixed-column"><?=$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")"?></td>
@@ -408,7 +408,7 @@ class cargas{
 
   public function traerProductoDestinosCarga($id_carga_producto){
     $sqlTraerProductoDestinosCarga = "SELECT cp.id AS id_carga_producto,cp.id_producto, p.nombre as producto, p.id_familia, fp.familia, pp.nombre AS presentacion, um.unidad_medida, cp.id_proveedor, pr.nombre as proveedor,cp.kg_x_bulto,cp.precio,cp.total_bultos,cp.total_kilos,cp.total_monto FROM cargas_productos cp INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON fp.id = p.id_familia INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN proveedores pr ON pr.id = cp.id_proveedor WHERE cp.id = $id_carga_producto";
-    //var_dump($sqlTraerProductoDestinosCarga);
+    ////var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $row = $traerProductoCarga->fetch_array();
     $productoCarga = [
@@ -429,7 +429,7 @@ class cargas{
     ];
 
     $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.monto,cpd.kilos FROM cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_carga_producto = $id_carga_producto";
-    //var_dump($sqlTraerProductoDestinosCarga);
+    ////var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoDestinosCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $productoDestinosCarga=[];
     while ($row = $traerProductoDestinosCarga->fetch_array()) {
@@ -477,7 +477,7 @@ class cargas{
     $errores="";
     foreach ($datosDepositos as $row) {
       $cantDatos++;
-      //var_dump($row);
+      ////var_dump($row);
       $id_producto_destino=$row["id_producto_destino"];
       $cantidad_bultos=$row["cantidad_bultos"];
       $id_deposito=$row["id_deposito"];
@@ -497,7 +497,7 @@ class cargas{
 
         list($tipo_aumento_extra,$monto_valor_extra)=$this->calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos);
       
-        //var_dump($tipo_aumento_extra);
+        ////var_dump($tipo_aumento_extra);
         if($id_producto_destino>0){
           $query=$queryUpdateCarga = "UPDATE cargas_productos_destinos SET id_destino = $id_deposito, tipo_aumento_extra = $tipo_aumento_extra, valor_extra = $valor_extra, cantidad_bultos = $cantidad_bultos, motivo_cambio_cantidad_bultos = $motivo_cambio_cantidad_bultos, monto = $monto, monto_valor_extra = $monto_valor_extra, kilos = $subtotal_kilos, id_usuario = $id_usuario WHERE id = $id_producto_destino";
           $updateCarga = $this->conexion->consultaSimple($queryUpdateCarga);
@@ -609,7 +609,7 @@ class cargas{
   }
 
   private function calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos){
-    //var_dump("tipo_aumento_extra",$tipo_aumento_extra,"valor_extra",$valor_extra,"monto",$monto,"cantidad_bultos",$cantidad_bultos);
+    ////var_dump("tipo_aumento_extra",$tipo_aumento_extra,"valor_extra",$valor_extra,"monto",$monto,"cantidad_bultos",$cantidad_bultos);
     
     // Inicializar la variable para el monto valor extra
     $monto_valor_extra = 0;
@@ -632,7 +632,7 @@ class cargas{
 
     // Calcula el monto total con el valor extra si es que posee
     $monto_valor_extra+=$monto;
-    //var_dump("tipo_aumento_extra",$tipo_aumento_extra,"monto_valor_extra",$monto_valor_extra);
+    ////var_dump("tipo_aumento_extra",$tipo_aumento_extra,"monto_valor_extra",$monto_valor_extra);
 
     return [$tipo_aumento_extra,$monto_valor_extra];
   }
@@ -714,7 +714,7 @@ class cargas{
       $sumaMonto=$sumaKilos=$sumaBultos=0;
       foreach ($datosDepositos as $row) {
         $cantDatos++;
-        //var_dump($row);
+        ////var_dump($row);
         $cantidad_bultos=$row["cantidad_bultos"];
         $id_deposito=$row["id_deposito"];
         $kilos=$row["subtotal_kilos"];
@@ -845,96 +845,176 @@ class cargas{
     return $respuesta;
   }
 
-  public function exportar_excel(Request $request){
+  public function exportar_excel($id_carga) {
+    require_once 'PHPExcel/Classes/PHPExcel.php';
 
-    $desde=$request->desde;
-    $hasta=$request->hasta;
-    $tipo_estudio_id=$request->tipo_estudio_id;
-    //if(is_null($fecha)) $fecha=date("Y-m-d");
+    // Obtener datos de la carga
+    $cargas = new Cargas($id_carga);
+    list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
+    $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
-    //dd($request->fecha);
-
-    $aPacientes=$this->traerDatosPaciente($desde,$hasta,$tipo_estudio_id);
-
-    $tipo_estudio_id=explode(".",$tipo_estudio_id);
-    
-    if($tipo_estudio_id[0]=="te"){
-        $tipo_estudio=TipoEstudio::find($tipo_estudio_id[1]);
-    }elseif($tipo_estudio_id[0]=="e"){
-        $tipo_estudio=Estudio::find($tipo_estudio_id[1]);
+    //Funcion para formatear el array y poder verlo mejor estilo vardump
+    function printArrayRecursively($array, $indent = 0) {
+      $indentation = str_repeat('  ', $indent);
+      foreach ($array as $key => $value) {
+        if (is_array($value)) {
+          echo $indentation . $key . " => array(\n";
+          printArrayRecursively($value, $indent + 1);
+          echo $indentation . "),\n";
+        } else {
+          echo $indentation . $key . " => " . $value . "\n";
+        }
+      }
     }
+    
+    /*echo "<pre>";
+    echo "Productos Destinos: ";
+    printArrayRecursively($aProductosDestinos);
+    echo "</pre>";*/
 
-    //$ori=DB::select('SELECT definicion FROM origenes');
-    //var_dump($ori);
-
-    require_once './../vendor/PHPExcel.php';
+    // Crear nuevo objeto PHPExcel
     $objPHPExcel = new PHPExcel();
-    //$objPHPExcel = new PHPExcel();
-    //Informacion del excel
-    /*$objPHPExcel->
-    getProperties()
-      ->setCreator("ingenieroweb.com.co")
-      ->setLastModifiedBy("ingenieroweb.com.co")
-      ->setTitle("Exportar excel desde mysql")
-      ->setSubject("Ejemplo 1")
-      ->setDescription("Documento generado con PHPExcel")
-      ->setKeywords("ingenieroweb.com.co  con  phpexcel")
-      ->setCategory("ciudades"); */   
 
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1',"Desde:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1',date("d-m-Y",strtotime($desde)));
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1',"Hasta:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D1',date("d-m-Y",strtotime($hasta)));
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E1',"Tipo de estudio:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F1',$tipo_estudio->nombre);
-    
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('A1')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('C1')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('E1')->getFont()->setBold(true);
-      
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3',"Turno");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3',"Paciente");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3',"DNI");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3',"Edad");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E3',"Empresa");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F3',"Detalle");
+    // Configuración del archivo
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', "ID Carga:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', $datosNecesarios['id_carga']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', "Fecha Carga:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B2', $datosNecesarios['fecha_formatted']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', "Origen:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', $datosNecesarios['origen']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A4', "Chofer:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $datosNecesarios['chofer']);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A5', "Datos adicionales:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B5', $datosNecesarios['datos_adicionales_chofer']);
 
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('A3')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('B3')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('C3')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('D3')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('E3')->getFont()->setBold(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getStyle('F3')->getFont()->setBold(true);
+    // Encabezado de la tabla de productos
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A7', "Producto");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B7', "Proveedor");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C7', "Precio");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D7', "Kg x bulto");
 
-    $row=4;
-    foreach($aPacientes as $paciente =>$estudios){
-
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$row,strval($estudios["turno"]));
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$row,strval($paciente));
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$row,strval($estudios["dni"]));
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$row,strval($estudios["edad"]));
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$row,strval($estudios["empresa"]));
-      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F'.$row,strval(implode(", ",$estudios["estudios"])));
-      
-      $row++;
+    // Añadir destinos únicos al encabezado (Fila 1)
+    $column = 'E';
+    foreach ($destinos_unicos as $destino) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', $destino['destino']);
+        $objPHPExcel->getActiveSheet()->mergeCells($column . '7:' . $this->getNextColumn($column, 2) . '7');
+        $column = $this->getNextColumn($column, 3);
     }
 
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('A')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('B')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('C')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('D')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('E')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('F')->setAutoSize(true);
+    // Subtítulos de los destinos (Fila 2)
+    $column = 'E';
+    foreach ($destinos_unicos as $destino) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Bultos");
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Kilos");
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Monto");
+        $column++;
+    }
 
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007'); 
+    // Subtítulos para totales (Fila 2)
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Bultos");
+    $column++;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Kilos");
+    $column++;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Monto");
 
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); //mime type
-    header('Content-Disposition: attachment;filename="Visitas por medico.xlsx"'); //tell browser what's the file name
-    header('Cache-Control: max-age=0'); //no cache 
+    // Datos de productos y destinos
+    $row = 9; // Ajustar fila inicial para los datos
+    foreach ($aProductosDestinos as $producto) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $row,  $producto['familia'] . ' - ' . $producto['producto']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B' . $row, $producto['proveedor']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C' . $row, $producto['precio']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, $producto['kg_x_bulto']);
+
+        $column = 'E';
+        foreach ($destinos_unicos as $destino) {
+            $found = false;
+            foreach ($producto['destinos'] as $destino) {
+                if ($destino['id_destino'] == $destino['id_destino']) {
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['cantidad_bultos']);
+                    $column++;
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['kilos']);
+                    $column++;
+                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['monto']);
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+                $column++;
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+                $column++;
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+            }
+            $column++;
+        }
+
+        // Añadir totales
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_bultos']);
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_kilos']);
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_monto']);
+
+        $row++;
+    }
+
+    // Fila de totales
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, "Totales");
+    $column = 'E';
+    foreach ($destinos_unicos as $destino) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $column++;
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $column++;
+    }
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+    $column++;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+    $column++;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+
+    // Formatear celdas para precios y montos
+    $objPHPExcel->getActiveSheet()->getStyle('C9:C' . $row)->getNumberFormat()->setFormatCode('"$"#,##0.00');
+    $objPHPExcel->getActiveSheet()->getStyle('E9:' . $column . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+    // Aplicar bordes a todas las celdas
+    $styleArray = [
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+            ],
+        ],
+    ];
+    $objPHPExcel->getActiveSheet()->getStyle('A7:' . $column . $row)->applyFromArray($styleArray);
+
+    // Auto-ajustar columnas
+    foreach (range('A', $column) as $col) {
+        $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Establecer el nombre de la hoja
+    $objPHPExcel->getActiveSheet()->setTitle('Detalle Carga');
+
+    // Redirigir la salida al navegador
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="Detalle_Carga.xlsx"');
+    header('Cache-Control: max-age=0');
+
     ob_end_clean();
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
     $objWriter->save('php://output');
     exit();
+  }
 
+  // Función auxiliar para obtener la siguiente columna
+  private function getNextColumn($col, $offset = 1) {
+      $ascii = ord($col);
+      return chr($ascii + $offset);
   }
 }	
 
@@ -969,7 +1049,7 @@ if (isset($_POST['accion'])) {
       echo $cargas->updateProductoCarga($id_carga,$id_carga_producto,$id_producto,$id_proveedor,$kg_x_bulto,$precio,$motivo_cambio_precio,$datosDepositos);
     break;
     case 'despacharCarga':
-      // var_dump($_POST);
+      // //var_dump($_POST);
       // die;
       $id_carga = $_POST['id_carga'];
       $cargas->despacharCarga($id_carga);
@@ -1026,6 +1106,11 @@ if (isset($_POST['accion'])) {
       echo "%%";
       echo json_encode($datosNecesarios);
     break;
+    case 'exportar_excel':
+      $id_carga = $_POST['id_carga'];
+      //var_dump($id_carga);
+      echo $cargas->exportar_excel($id_carga);
+    break;
   }
 }elseif(isset($_GET['accion'])){
   $cargas = new cargas();
@@ -1036,6 +1121,11 @@ if (isset($_POST['accion'])) {
     case 'traerProductosCarga':
       $id_carga=$_GET["id_carga"];
       echo $cargas->traerProductosCarga($id_carga);
+    break;
+    case 'exportar_excel':
+      $id_carga = $_GET['id_carga'];
+      //var_dump($id_carga);
+      echo $cargas->exportar_excel($id_carga);
     break;
   }
 }

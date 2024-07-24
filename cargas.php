@@ -898,6 +898,56 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         window.location.href="cargas_abm.php?id="+id_carga
       });
 
+      $(document).on('click', '#btnExportar', function() {
+        let id_carga = $('#lbl_id_carga').val();
+        console.log('id_carga: '+id_carga);
+        exportarExcel(id_carga);
+      });
+
+      function exportarExcel(id_carga) {
+        let datosExportar = new FormData();
+        datosExportar.append('accion', 'exportar_excel');
+        datosExportar.append('id_carga', id_carga);
+        console.log(datosExportar);
+
+        $.ajax({
+            url: './models/administrar_cargas.php',
+            method: 'POST',
+            data: datosExportar,
+            cache: false,
+            contentType: false,
+            processData: false,
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function(response) {
+                // Asegurarse que la respuesta es un Blob
+                if (response instanceof Blob) {
+                    let a = document.createElement('a');
+                    let url = window.URL.createObjectURL(response);
+                    a.href = url;
+                    a.download = 'Detalle_Carga.xlsx';
+                    document.body.append(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    console.error('La respuesta no es un Blob:', response);
+                    alert('Error al exportar los datos. La respuesta no es un archivo válido.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                // Manejo de errores detallado
+                let errorMessage = 'Error al exportar los datos. Por favor, inténtelo de nuevo.';
+                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                    errorMessage = jqXHR.responseJSON.error;
+                }
+                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+                alert(errorMessage);
+            }
+        });
+      }
+
       //Imprimir con o sin precio
       $(document).on("click", ".btnImprimirOC", function(event){
         event.preventDefault();
