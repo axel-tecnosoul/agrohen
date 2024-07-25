@@ -107,6 +107,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   if($id_perfil==1){?>
                     <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar Movimiento</button><?php
                   }?>
+                  <button id="btnImprimir" type="button" class="btn btn-primary ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Imprimir Movimiento</button>
+                  <button id="btnExportar" type="button" class="btn btn-secondary ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Exportar Movimiento</button>
                   <span id="id_perfil" class="d-none"><?=$id_perfil?></span>
                 </div>
                 <div class="card-body py-1">
@@ -841,6 +843,28 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
         $('#modalCRUD').modal('show');
       });
+
+      $(document).on("click", "#btnImprimir", function(event){
+        event.preventDefault();
+
+        let desde = $('#desde').val();
+        let hasta = $('#hasta').val();
+        let id_deposito = $('#id_deposito').val();
+        var $selectCuenta = $('#cuenta');
+        var selectedIndex = $selectCuenta.prop('selectedIndex');
+        var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
+        var id_cuenta=selectedOption.data("id")
+        var tipo=selectedOption.data("tipo")
+        var tipo_aumento_extra=selectedOption.data("tipo_aumento_extra")
+        var valor_extra=selectedOption.data("valor_extra")
+
+        datosEnviar = JSON.stringify(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra);
+
+        const url = "./imprimirCuenta.php?id_cuenta="+id_cuenta+"&desde="+desde+"&hasta="+hasta+"&id_deposito="+id_deposito+"&tipo="+tipo+"&tipo_aumento_extra="+tipo_aumento_extra+"&valor_extra="+valor_extra;
+        win = window.open(url, 'toolbar=no,status=no, menubar=no');
+        // Cambiar el foco al nuevo tab (punto opcional)
+        win.focus();
+      })
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
