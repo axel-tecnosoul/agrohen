@@ -40,7 +40,7 @@ if ($id_carga > 0) {
 
     $cant_destinos=count($destinos_unicos);
 
-    $ancho_repartir_destinos=110;//190 - 60 - 20
+    $ancho_repartir_destinos=120;//190 - 50 - 20
     if ($con_precio) {
       $ancho_repartir_destinos-=20;//descontamos lo que ocupa la columna del precio
     }
@@ -52,6 +52,11 @@ if ($id_carga > 0) {
       function Header() {
         global $destinos_unicos,$con_precio,$ancho_destino;
 
+        $this->Image('assets/images/logo horizontal.png',12,7,48);
+
+        $this->SetFont('Arial', '', 8);
+        $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
+        $this->SetY(10);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(0, 10, 'Orden de Carga ID ' . $_GET['id_carga'], 0, 1, 'C');
         $this->Ln(5);
@@ -59,7 +64,7 @@ if ($id_carga > 0) {
         $this->SetFont('Arial', 'B', 8);
         $this->SetFillColor(143, 143, 143); // Color de fondo gris
 
-        $this->Cell(60, 6, 'Producto', 1, 0, 'C', true);
+        $this->Cell(50, 6, 'Producto', 1, 0, 'C', true);
         if ($con_precio) {
           $this->Cell(20, 6, 'Precio', 1, 0, 'C', true);
         }
@@ -97,7 +102,8 @@ if ($id_carga > 0) {
         $totals = [];
         $total_precio = 0;
         foreach ($aProductosDestinos as $product) {
-          $this->Cell(60,6,$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")",1);
+          $nombre_producto=$this->cortarTexto($product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")", 30);
+          $this->Cell(50,6,utf8_decode($nombre_producto),1);
 
           if ($con_precio) {
             $precio = $product['precio'];
@@ -134,7 +140,7 @@ if ($id_carga > 0) {
 
         // Totales
         $this->SetFont('Arial', 'B', 8);
-        $anchoTotales=60;
+        $anchoTotales=50;
         if ($con_precio) {
           //$this->Cell(20, 6, '$ ' . number_format($total_precio, 2, ",", "."), 1, 0, 'R');
           $anchoTotales+=20;

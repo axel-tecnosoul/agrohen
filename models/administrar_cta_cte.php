@@ -270,7 +270,7 @@ class ctacte{
       $ctacte[$key]["saldo"]=$saldo;
     }
 
-    echo json_encode($ctacte);
+    return json_encode($ctacte);
   }
 
   public function registrarMovimiento($fecha_hora,$id_deposito,$id_responsable,$tipo_movimiento,$monto,$descripcion){

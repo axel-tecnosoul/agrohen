@@ -6,7 +6,8 @@ $hora = date('Hi');
 $hoy = date('Y-m-d');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
   header("location:./models/redireccionar.php");
-}?>
+}
+$id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -80,14 +81,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         z-index: 30; /* Más alto para asegurar que está sobre las celdas fijas */
       }
 
-      /*OPCION 1: bordes */
       .tablaDetalleCarga .destino-start {
-        /*border-left: 3px solid black;*/
         background-color: #d0cece;
       }
 
       .tablaDetalleCarga .destino-end {
-        /*border-right: 3px solid black;*/
         background-color: #d0cece;
       }
 
@@ -95,19 +93,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         background: burlywood;
       }
 
-      /*OPCION 2: color de fondo */
-      /*.tablaDetalleCarga .destino-group:nth-child(odd) {
-        background-color: #f9f9f9;
+      #destinos_default {
+        display: flex;
+        flex-wrap: wrap;
       }
 
-      .tablaDetalleCarga .destino-group:nth-child(even) {
-        background-color: #e9e9e9;
-      }*/
-
-      /*OPCION 3: sombras */
-      .tablaDetalleCarga .destino-group {
-        /*box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);*/
+      #destinos_default .custom-control.custom-switch {
+        width: 33%; /* Asegura que cada switch ocupe el 50% del ancho del contenedor */
+        padding: 5px 2.5rem; /* Espaciado interno */
+        box-sizing: border-box; /* Incluye padding y border en el ancho total */
       }
+
     </style>
   </head>
   <body>
@@ -155,6 +151,35 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <span id="id_perfil" class="d-none"><?=$_SESSION["rowUsers"]["id_perfil"]?></span>
                 </div>
                 <div class="card-body py-1">
+                <input type="hidden" id="id_deposito_usuario" value="<?=$_SESSION["rowUsers"]["id_deposito"]?>">
+                  <table id="tableFiltros" style="" class="table table-borderless mb-3">
+                    <tr>
+                      <td width="8%" class="text-right p-1">Desde: </td>
+                      <td width="15%" class="p-1 inputDate" style="">
+                        <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 year"))?>" class="form-control form-control-sm w-auto filtraTabla">
+                      </td>
+                      <td width="8%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Estado:</td>
+                      <td width="15%" rowspan="2" style="vertical-align: middle;" class="p-1">
+                        <select id="estado" class="form-control js-example-basic-single filtraTabla" style="width: 100%;">
+                          <option value="p">Pendiente</option>
+                          <option value="d">Despachado</option>
+                          <option value="c">Confirmado</option>
+                        </select>
+                      </td>
+                      <td width="8%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Origen:</td>
+                      <td width="19%" rowspan="2" style="vertical-align: middle;" class="p-1">
+                        <select id="filtro_id_origen" class="form-control js-example-basic-single filtraTabla" style="width: 100%;"></select>
+                      </td>
+                      <td width="8%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Chofer:</td>
+                      <td width="19%" rowspan="2" style="vertical-align: middle;" class="p-1">
+                        <select id="filtro_id_chofer" class="form-control js-example-basic-single filtraTabla" style="width: 100%;"></select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-right p-1">Hasta: </td>
+                      <td class="p-1 inputDate"><input type="date" id="hasta" value="<?=date("Y-m-d")?>" class="form-control form-control-sm w-auto filtraTabla"></td>
+                    </tr>
+                  </table>
                   <div class="dt-ext table-responsive">
                     <table class="table table-hover display" id="tablaCargas">
                       <thead class="text-center">
@@ -215,7 +240,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUDadmin" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel"></h5>
@@ -225,27 +250,33 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           <form id="formAdmin">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="fecha_carga" class="col-form-label">Fecha de carga:</label>
                     <input type="date" class="form-control" id="fecha_carga" value="<?=$hoy?>" required>
                   </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="id_origen" class="col-form-label">Origen</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_origen" required></select>
                   </div>
                 </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label for="id_proveedor_default" class="col-form-label">Proveedor por defecto:</label>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default"></select>
+                  </div>
+                </div>
               </div>
               <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label for="id_chofer" class="col-form-label">Chofer:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_chofer" required></select>
                   </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-8">
                   <div class="form-group">
                     <label for="datos_adicionales_chofer" class="col-form-label">Datos adicionales del chofer:</label>
                     <input type="text" class="form-control" id="datos_adicionales_chofer">
@@ -254,15 +285,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               </div>
               <div class="row">
                 <div class="col-lg-12">
-                  <div class="form-group">
-                    <label for="id_proveedor_default" class="col-form-label">Proveedor por defecto:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor_default"></select>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    
-                  </div>
+                  <label class="col-form-label">Destinos preseleccionados:</label>
+                  <div class="form-group" id="destinos_default"></div>
                 </div>
               </div>
             </div>
@@ -298,6 +322,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Despachado:</label>
                     <span id="lbl_despachado"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Confirmado:</label>
+                    <span id="lbl_confirmado"></span>
                   </div>
                 </div>
               </div>
@@ -355,6 +385,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               <button type="submit" class="btn btn-success btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
               <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
               <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
+              <button type="button" id="btnConfirmar" class="btn btn-primary d-none">Confirmar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
           </form>
@@ -409,129 +440,164 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script type="text/javascript">
       var accion
       var id_perfil=$("#id_perfil").html()
+      var tablaCargas= $('#tablaCargas')
+      var desde_aux=""
+      var hasta_aux=""
+      var id_origen_aux=""
+      var id_chofer_aux=""
+      var estado_aux=""
       $(document).ready(function(){
-        tablaCargas= $('#tablaCargas').DataTable({
-          "ajax": {
-            "url" : "./models/administrar_cargas.php?accion=traerCargas",
-            "dataSrc": "",
-          },
-          "responsive": true,
-          "columns":[
-            {"data": "id_carga"},
-            {"data": "fecha_formatted"},
-            {"data": "origen"},
-            //{"data": "chofer"},
-            {
-              render: function(data, type, full, meta) {
-                return ()=>{
-                  let datos_adicionales_chofer=""
-                  /*if(full.datos_adicionales_chofer!=""){
-                    datos_adicionales_chofer=" ("+full.datos_adicionales_chofer+")"
-                  }*/
-                  return full.chofer+datos_adicionales_chofer;
-                };
-              }
-            },
-            //{"data": "datos_adicionales_chofer"},
-            //{"data": "total_kilos"},
-            {render: function(data, type, full, meta) {
-              return formatNumber2Decimal(full.total_bultos);
-            }},
-            {render: function(data, type, full, meta) {
-              return formatNumber2Decimal(full.total_kilos);
-            }},
-            //{"data": "total_monto"},
-            /*{render: function(data, type, full, meta) {
-              return formatCurrency(full.total_monto);
-            }},*/
-            {render: function(data, type, full, meta) {
-              console.log(full);
-              return full.estado;
-            }},
-            {
-              render: function(data, type, full, meta) {
-                return ()=>{
-                  $buttonsGroup="<div class='text-center'><div class='btn-group'>";
-                  
-                  $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
-                  $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
-                  
-                  $btnGestionarCarga=''
-                  
-                  //console.log(full);
-                  let despachado=0;
-                  if(full.despachado=="Si"){
-                    despachado=1;
-                    $btnEliminar=''
-                    $btnEditar=''
-                    //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
-                  }
-
-                  if(id_perfil==2){
-                    $btnEliminar=''
-                    $btnEditar=''
-                  }
-
-                  $btnVer=`<button class='btn btn-primary btnVer' data-despachado='${despachado}'><i class='fa fa-eye'></i></button>`
-
-                  if(full.total_bultos=="0.00" && full.total_kilos=="0.00" && full.total_monto=="0.00"){
-                    $btnVer=''
-                  }
-
-                  $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
-                  
-                  $buttonsGroupEnd=`</div></div>`
-
-                  $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnVer+$buttonsGroupEnd
-                  
-                  return $btnComplete;
-                };
-              }
-            },
-            {"data": "datos_adicionales_chofer"},
-            {"data": "despachado"},
-            {"data": "usuario"},
-          ],
-          "columnDefs": [
-            {
-              "targets": [4,5,6],
-              "className": 'text-right'
-            },{
-              "targets": [8,7],
-              "className": 'px-0'
-            },{
-              "targets": [1],
-              "className": 'text-nowrap'
-            }
-          ],
-          "language":  idiomaEsp,
-          drawCallback: function(settings) {
-            if(settings.json){
-              let suma_bultos=0;
-              let suma_kilos=0;
-              let suma_monto=0;
-              settings.json.forEach(row => {
-                suma_bultos+=parseFloat(row.total_bultos)
-                suma_kilos+=parseFloat(row.total_kilos)
-                suma_monto+=parseFloat(row.total_monto)
-              });
-              // Update footer
-              var api = this.api();
-              $(api.column(4).footer()).html(formatNumber2Decimal(suma_bultos));
-              $(api.column(5).footer()).html(formatNumber2Decimal(suma_kilos));
-              //$(api.column(6).footer()).html(formatCurrency(suma_monto));
-              //$("#total_bultos").html(suma_bultos);
-              //$("#total_kilos").html(suma_kilos);
-            }
-          },
-          initComplete: function(settings, json){
-            $('[title]').tooltip();
-          }
-        });
-        
+        getCargas()
         cargarDatosComponentes();
-      
+        $(document).on("change",".filtraTabla",getCargas)
       });
+
+      function getCargas(){
+        let desde=$("#desde").val()
+        let hasta=$("#hasta").val()
+
+        if(desde>hasta){
+          alert("La fecha desde no puede ser mayor a la fecha hasta")
+        }else{
+          let id_origen=$("#filtro_id_origen").val()
+          let id_chofer=$("#filtro_id_chofer").val()
+          let estado=$("#estado").val()
+          
+          let hayCambioEnLosDatos=0;
+          if(desde_aux!==desde || hasta_aux!==hasta || id_origen_aux!==id_origen || id_chofer_aux!==id_chofer || estado_aux!==estado){
+            hayCambioEnLosDatos=1;
+          }
+
+          if(hayCambioEnLosDatos==1){
+            tablaCargas.DataTable().destroy();
+            tablaCargas.DataTable({
+              "ajax": {
+                "url" : "./models/administrar_cargas.php?accion=traerCargas&desde="+desde+"&hasta="+hasta+"&id_origen="+id_origen+"&id_chofer="+id_chofer+"&estado="+estado,
+                "dataSrc": "",
+              },
+              "responsive": true,
+              "order": [[0, "desc"]],
+              "columns":[
+                {"data": "id_carga"},
+                {"data": "fecha_formatted"},
+                {"data": "origen"},
+                //{"data": "chofer"},
+                {
+                  render: function(data, type, full, meta) {
+                    return ()=>{
+                      let datos_adicionales_chofer=""
+                      /*if(full.datos_adicionales_chofer!=""){
+                        datos_adicionales_chofer=" ("+full.datos_adicionales_chofer+")"
+                      }*/
+                      return full.chofer+datos_adicionales_chofer;
+                    };
+                  }
+                },
+                //{"data": "datos_adicionales_chofer"},
+                //{"data": "total_kilos"},
+                {render: function(data, type, full, meta) {
+                  return formatNumber2Decimal(full.total_bultos);
+                }},
+                {render: function(data, type, full, meta) {
+                  return formatNumber2Decimal(full.total_kilos);
+                }},
+                //{"data": "total_monto"},
+                /*{render: function(data, type, full, meta) {
+                  return formatCurrency(full.total_monto);
+                }},*/
+                {render: function(data, type, full, meta) {
+                  //console.log(full);
+                  return full.estado;
+                }},
+                {
+                  render: function(data, type, full, meta) {
+                    return ()=>{
+                      $buttonsGroup="<div class='text-center'><div class='btn-group'>";
+                      
+                      $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
+                      $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
+                      
+                      $btnGestionarCarga=''
+                      
+                      //console.log(full);
+                      let despachado=0;
+                      if(full.despachado=="Si"){
+                        despachado=1;
+                        $btnEliminar=''
+                        $btnEditar=''
+                        //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
+                      }
+
+                      if(id_perfil==2){
+                        $btnEliminar=''
+                        $btnEditar=''
+                      }
+
+                      $btnVer=`<button class='btn btn-primary btnVer' data-despachado='${despachado}'><i class='fa fa-eye'></i></button>`
+
+                      if(full.total_bultos=="0.00" && full.total_kilos=="0.00" && full.total_monto=="0.00"){
+                        $btnVer=''
+                      }
+
+                      $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
+                      
+                      $buttonsGroupEnd=`</div></div>`
+
+                      $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnVer+$buttonsGroupEnd
+                      
+                      return $btnComplete;
+                    };
+                  }
+                },
+                {"data": "datos_adicionales_chofer"},
+                {"data": "despachado"},
+                {"data": "usuario"},
+              ],
+              "columnDefs": [
+                {
+                  "targets": [4,5,6],
+                  "className": 'text-right'
+                },{
+                  "targets": [8,7],
+                  "className": 'px-0'
+                },{
+                  "targets": [1],
+                  "className": 'text-nowrap'
+                }
+              ],
+              "language":  idiomaEsp,
+              drawCallback: function(settings) {
+                if(settings.json){
+                  let suma_bultos=0;
+                  let suma_kilos=0;
+                  let suma_monto=0;
+                  settings.json.forEach(row => {
+                    suma_bultos+=parseFloat(row.total_bultos)
+                    suma_kilos+=parseFloat(row.total_kilos)
+                    suma_monto+=parseFloat(row.total_monto)
+                  });
+                  // Update footer
+                  var api = this.api();
+                  $(api.column(4).footer()).html(formatNumber2Decimal(suma_bultos));
+                  $(api.column(5).footer()).html(formatNumber2Decimal(suma_kilos));
+                  //$(api.column(6).footer()).html(formatCurrency(suma_monto));
+                  //$("#total_bultos").html(suma_bultos);
+                  //$("#total_kilos").html(suma_kilos);
+                }
+              },
+              initComplete: function(settings, json){
+                $('[title]').tooltip();
+              }
+            });
+
+            desde_aux=desde;
+            hasta_aux=hasta;
+            id_origen_aux=id_origen;
+            id_chofer_aux=id_chofer;
+            estado_aux=estado;
+          }
+        }
+      }
 
       idiomaEsp = {
         "autoFill": {
@@ -644,27 +710,51 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
             /*Identifico el select de choferes*/
             $selectChofer = document.getElementById("id_chofer");
+            $selectFiltroChofer = document.getElementById("filtro_id_chofer");
             //Genero los options del select choferes
             respuestaJson.choferes.forEach((chofer)=>{
-              $option = document.createElement("option");
+              $option1 = document.createElement("option");
               let optionText = document.createTextNode(chofer.chofer);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", chofer.id_chofer);
-              $selectChofer.appendChild($option);
+              $option1.appendChild(optionText);
+              $option1.setAttribute("value", chofer.id_chofer);
+
+              const $option2 = $option1.cloneNode(true); // Clona el nodo de la opción completa
+              $selectFiltroChofer.appendChild($option2);
+              $selectChofer.appendChild($option1);
             })
             $($selectChofer).select2()
+            $($selectFiltroChofer).select2()
+
+            let destinos_default = document.getElementById("destinos_default");
+            destinos_default.innerHTML=""
+            let destinos_check="";
+            respuestaJson.destinos.forEach((destino)=>{
+              destinos_check+=`
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input destinos_check" value="${destino.id_destino}" id="destino-${destino.id_destino}">
+                  <label class="custom-control-label" for="destino-${destino.id_destino}">${destino.destino}</label>
+                </div>
+              `
+            })
+            destinos_default.innerHTML=destinos_check;
+              
 
             /*Identifico el select de origenes*/
             $selectOrigen = document.getElementById("id_origen");
+            $selectFiltroOrigen = document.getElementById("filtro_id_origen");
             //Genero los options del select origenes
             respuestaJson.origenes.forEach((origen)=>{
-              $option = document.createElement("option");
+              $option1 = document.createElement("option");
               let optionText = document.createTextNode(origen.origen);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", origen.id_origen);
-              $selectOrigen.appendChild($option);
+              $option1.appendChild(optionText);
+              $option1.setAttribute("value", origen.id_origen);
+
+              const $option2 = $option1.cloneNode(true); // Clona el nodo de la opción completa
+              $selectFiltroOrigen.appendChild($option2);
+              $selectOrigen.appendChild($option1);
             })
             $($selectOrigen).select2()
+            $($selectFiltroOrigen).select2()
 
             /*Identifico el select de proveedores*/
             $selectProveedor = document.getElementById("id_proveedor_default");
@@ -703,12 +793,18 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let id_chofer = $.trim($('#id_chofer').val());
         let datos_adicionales_chofer = $.trim($('#datos_adicionales_chofer').val());
         let id_proveedor_default = $.trim($('#id_proveedor_default').val());
+        let datosDepositos = []
+
+        let destinos_check=$(".destinos_check:checked").each(function(){
+          let id_deposito=this.value;
+          datosDepositos.push(id_deposito);
+        })
 
         $.ajax({
           url: "models/administrar_cargas.php",
           type: "POST",
           datatype:"json",
-          data:  {accion:accion, fecha_carga:fecha_carga, id_origen:id_origen, id_chofer:id_chofer, datos_adicionales_chofer:datos_adicionales_chofer, id_proveedor_default:id_proveedor_default, id_carga:id_carga},
+          data:  {accion:accion, fecha_carga:fecha_carga, id_origen:id_origen, id_chofer:id_chofer, datos_adicionales_chofer:datos_adicionales_chofer, id_proveedor_default:id_proveedor_default, id_carga:id_carga, datosDepositos:datosDepositos},
           success: function(respuesta) {
             respuestaJson = JSON.parse(respuesta);
             if(respuestaJson.ok=="1"){
@@ -722,6 +818,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             }
           }
         });
+
         /*$('#modalCRUDadmin').modal('hide');
         swal({
           icon: 'success',
@@ -752,13 +849,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           },
           success: function(response){
             let datosInput = JSON.parse(response);
-            console.log(datosInput);
+            //console.log(datosInput);
             $("#fecha_carga").val(datosInput.fecha);
             $("#id_origen").val(datosInput.id_origen).change();
             $("#id_chofer").val(datosInput.id_chofer).change();
             $('#datos_adicionales_chofer').val(datosInput.datos_adicionales_chofer)
             $('#id_proveedor_default').val(datosInput.id_proveedor).change()
             $('#id_carga').html(id_carga)
+
+            let destinos_check=$(".destinos_check").each(function(){
+              let id_deposito=this.value;
+              if (datosInput.destinos_preseleccionados.includes(id_deposito)){
+                this.checked=true;
+              }
+            })
 
             accion = "updateCarga";
           }
@@ -779,8 +883,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
         if(despachado==1){
           $("#btnDespachar").addClass("disbaled d-none")
+          $("#btnConfirmar").removeClass("disbaled d-none")
         }else{
           $("#btnDespachar").removeClass("disbaled d-none")
+          $("#btnConfirmar").addClass("disbaled d-none")
         }
 
         if(id_perfil==2){
@@ -818,7 +924,17 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             if(datosInput.fecha_hora_despacho!=""){
               despachado+=" ("+datosInput.fecha_hora_despacho+")"
             }
+            let confirmado;
+            if(datosInput.confirmada==1){
+              confirmado="Si"
+            }else{
+              confirmado="No"
+            }
+            if(datosInput.fecha_hora_confirmacion!=""){
+              confirmado+=" ("+datosInput.fecha_hora_confirmacion+")"
+            }
             $("#lbl_despachado").html(despachado);
+            $("#lbl_confirmado").html(confirmado);
             $("#lbl_id_carga").val(datosInput.id_carga);
             $("#lbl_origen").html(datosInput.origen);
             $("#lbl_proveedor").html(datosInput.proveedor);
@@ -887,6 +1003,45 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             });
           } else {
             swal("La carga no se despachó!");
+          }
+        })
+      });
+
+      $(document).on("click", "#btnConfirmar", function(event){
+        event.preventDefault();
+        let id_carga = $("#lbl_id_carga").val();
+        //console.log("id_carga: " + id_carga);
+        swal({
+          title: "Estas seguro?",
+          text: "Una vez confirmada esta carga, no se podrá modificar",
+          icon: "info",
+          buttons: true,
+          dangerMode: true,
+        })
+        .then((willDelete) => {
+          if (willDelete) {
+            accion = "confirmarCarga";
+            $.ajax({
+              url: "models/administrar_cargas.php",
+              type: "POST",
+              datatype:"json",
+              data:  {accion:accion, id_carga:id_carga},
+              success: function() {
+                swal({
+                  icon: 'success',
+                  title: 'Carga confirmada correctamente'
+                }).then(() => {
+                  $('#modalCRUDadminVer').modal('hide');
+                  getCargas()
+                  //tablaCargas.ajax.reload(null, false);
+                });
+                // setTimeout(() => {
+                //   location.reload();
+                // }, 3000);
+              }
+            });
+          } else {
+            swal("La carga no se confirmó!");
           }
         })
       });
