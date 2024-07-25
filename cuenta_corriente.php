@@ -207,7 +207,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="cuenta_registrar" class="col-form-label">Cuenta:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="cuenta_registrar"></select>
+                    <select class="form-control" style="width: 100%;" id="cuenta_registrar" required></select>
                   </div>
                 </div>
               </div>
@@ -215,8 +215,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="tipo_movimiento" class="col-form-label">Tipo de movimiento</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="tipo_movimiento" required>
-                      <option>Seleccione...</option>
+                    <select class="form-control" style="width: 100%;" id="tipo_movimiento" required>
+                      <option value="">Seleccione...</option>
                       <option value="debe">Debe</option>
                       <option value="haber">Haber</option>
                     </select>
@@ -225,7 +225,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="monto" class="col-form-label">Monto:</label>
-                    <input type="number" class="form-control" id="monto">
+                    <input type="number" class="form-control" id="monto" required>
                   </div>
                 </div>
               </div>
@@ -233,7 +233,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-12">
                 <div class="form-group">
                     <label for="descripcion" class="col-form-label">Descripcion:</label>
-                    <input type="text" class="form-control" id="descripcion">
+                    <input type="text" class="form-control" id="descripcion" required>
                   </div>
                 </div>
               </div>
@@ -464,6 +464,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             respuestaJson = JSON.parse(respuesta);
 
             /*Identifico el select de choferes*/
+            selectTipoMovimiento = document.getElementById("tipo_movimiento");
             selectCuenta = document.getElementById("cuenta");
             $selectCuentaRegistrarNuevoMovimiento = document.getElementById("cuenta_registrar");
             
@@ -474,11 +475,15 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 let $option1 = document.createElement("option");
                 let optionText = document.createTextNode(cuenta.cuenta);
                 $option1.appendChild(optionText);
-                $option1.setAttribute("value", cuenta.tipo+"-"+cuenta.id);
-                $option1.setAttribute("data-id", cuenta.id);
-                $option1.setAttribute("data-tipo", cuenta.tipo);
-                $option1.setAttribute("data-tipo_aumento_extra", cuenta.tipo_aumento_extra);
-                $option1.setAttribute("data-valor_extra", cuenta.valor_extra);
+                let valor="";
+                if(cuenta.id!=""){
+                  valor=cuenta.tipo+"-"+cuenta.id;
+                  $option1.setAttribute("data-id", cuenta.id);
+                  $option1.setAttribute("data-tipo", cuenta.tipo);
+                  $option1.setAttribute("data-tipo_aumento_extra", cuenta.tipo_aumento_extra);
+                  $option1.setAttribute("data-valor_extra", cuenta.valor_extra);
+                }
+                $option1.setAttribute("value", valor);
                 selectCuenta.appendChild($option1);
 
                 // Crear opción para el select de nuevo movimiento
@@ -486,6 +491,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 $selectCuentaRegistrarNuevoMovimiento.appendChild($option2);
               })
               $(selectCuenta).select2()
+              $($selectCuentaRegistrarNuevoMovimiento).select2()
+              $(selectTipoMovimiento).select2()
             }
 
             /*Identifico el select de destinos*/
@@ -742,8 +749,13 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Alta de movimiento en Cta. Cte.");
 
-        $('#cuenta_registrar').val().change();
-        $('#tipo_movimiento').val().change();
+        let cuenta=$("#cuenta").val();
+        if(cuenta!=""){
+          $('#cuenta_registrar').val(cuenta).change();
+        }else{
+          $('#cuenta_registrar').val('').change();
+        }
+        $('#tipo_movimiento').val('').change();
 
         let modal=$('#modalCRUDadmin')
         modal.modal('show');
@@ -770,6 +782,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           id_responsable="null";
         }
         let tipo_movimiento = $.trim($('#tipo_movimiento').val());
+        
         let monto = $.trim($('#monto').val());
         let descripcion = $.trim($('#descripcion').val());
 

@@ -153,6 +153,7 @@ if($datosCarga["despachado"]=="Si"){
                           <input type="hidden" id="id_origen" value="<?=$datosCarga["id_origen"]?>">
                           <input type="hidden" id="id_proveedor_default" value="<?=$datosCarga["id_proveedor"]?>">
                           <input type="hidden" id="despachado" value="<?=$datosCarga["despachado"]?>">
+                          <input type="hidden" id="confirmada" value="<?=$datosCarga["confirmada"]?>">
                         </div>
                       </div>
                     </div>
@@ -273,7 +274,7 @@ if($datosCarga["despachado"]=="Si"){
                 <div class="col-lg-6">
                   <div class="form-group" id="motivo_group">
                     <label for="kg_x_bulto" class="col-form-label">Motivo de la modificacion del precio:</label>
-                    <input type="text" class="form-control" id="motivo_precio">
+                    <input type="text" class="form-control" id="motivo_cambio_precio">
                     <input type="hidden" class="form-control" id="precio_aux">
                   </div>
                 </div>
@@ -293,7 +294,7 @@ if($datosCarga["despachado"]=="Si"){
                     <tbody></tbody>
                     <tfoot>
                       <th style="text-align:right">Totales</th>
-                      <th id="total_bultos">0</th>
+                      <th class="text-right" id="total_bultos">0</th>
                       <th class="text-right" id="total_kilos">0</th>
                       <th class="text-right" id="total_monto">0</th><?php
                       if($mostrarMotivo==1){?>
@@ -319,32 +320,35 @@ if($datosCarga["despachado"]=="Si"){
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel"></h5>
-            <span id="id_carga_producto" class="d-none"></span>
+            <h5 class="modal-title mr-4" id="exampleModalLabel">Ver carga de producto</h5>
+            <span id="historial" class="d-none"><select id="select_historial"></select></span>
+            <span id="id_carga_producto_ver" class="d-none"></span>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Familia:</label>
                     <span id="lbl_familia"></span>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Nombre:</label>
                     <span id="lbl_producto"></span>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-4">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Proveedor:</label>
                     <span id="lbl_proveedor"></span>
                   </div>
                 </div>
-                <div class="col-lg-2">
+              </div>
+              <div class="row">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label font-weight-bold">Kg x bulto:</label>
                     <span id="lbl_kg"></span>
@@ -356,22 +360,44 @@ if($datosCarga["despachado"]=="Si"){
                     <span id="lbl_precio"></span>
                   </div>
                 </div>
+                <div class="col-lg-7">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Motivo de la modificacion del precio:</label>
+                    <span id="lbl_motivo_cambio_precio"></span>
+                  </div>
+                </div>
               </div>
               <div class="row">
                 <div class="col-lg-12">
                   <table id="tableDepositosVer" class="table table-striped">
                     <thead>
-                      <th style="width: 30%">Deposito</th>
+                      <th class="text-center" style="width: 30%">Deposito</th>
+                      <th class="text-center" style="width: 20%">Cantidad de bultos</th>
+                      <th class="text-center" style="width: 15%">Kg Total</th>
+                      <th class="text-center" style="width: 15%">Monto Total</th><?php
+                      if($mostrarMotivo==1){?>
+                        <th class="text-center" style="width: 20%">Motivo</th><?php
+                      }?>
+
+                      <!-- <th style="width: 30%">Deposito</th>
                       <th style="width: 40%">Cantidad de bultos</th>
                       <th style="width: 15%">Kg Total</th>
-                      <th style="width: 15%">Monto Total</th>
+                      <th style="width: 15%">Monto Total</th> -->
                     </thead>
                     <tbody></tbody>
                     <tfoot>
+                      <!-- <th style="text-align:right">Totales</th>
+                      <th id="total_bultos">0</th>
+                      <th class="text-right" id="total_kilos">0</th>
+                      <th class="text-right" id="total_monto">0</th> -->
+
                       <th style="text-align:right">Totales</th>
-                      <th id="total_bultos_ver">0</th>
+                      <th class="text-right" id="total_bultos_ver">0</th>
                       <th class="text-right" id="total_kilos_ver">0</th>
-                      <th class="text-right" id="total_monto_ver">0</th>
+                      <th class="text-right" id="total_monto_ver">0</th><?php
+                      if($mostrarMotivo==1){?>
+                        <th style="width: 20%"></th><?php
+                      }?>
                     </tfoot>
                   </table>
                 </div>
@@ -480,6 +506,7 @@ if($datosCarga["despachado"]=="Si"){
       var id_perfil=$("#id_perfil").html()
       var id_carga=$("#id_carga").val();
       var despachado = $("#despachado").val()
+      var confirmada = $("#confirmada").val()
       var bandera_buscar_producto=true;
       var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
 
@@ -527,6 +554,9 @@ if($datosCarga["despachado"]=="Si"){
                   
                   if(despachado=="Si"){
                     $btnEliminar=''
+                  }
+                  if(confirmada==1){
+                    $btnEditar=''
                   }
 
                   if(id_perfil==2){
@@ -607,6 +637,8 @@ if($datosCarga["despachado"]=="Si"){
           $('#kg_x_bulto').attr("disabled",false)
           $('#id_proveedor').attr("disabled",false)
 
+          calcularTotales()
+
           accion = "addProductoCarga";
         });
 
@@ -644,7 +676,7 @@ if($datosCarga["despachado"]=="Si"){
             let motivo_cambio_cantidad_bultos=fila.find(".motivo_cambio_cantidad_bultos").val()
             let id_deposito=fila.find(".id_deposito").val()
             let subtotal_kilos=fila.find(".subtotal_kilos").val()
-            console.log(id_producto_destino);
+            //console.log(motivo_cambio_cantidad_bultos);
 
             datosDepositos.push({
               id_producto_destino: id_producto_destino,
@@ -657,6 +689,9 @@ if($datosCarga["despachado"]=="Si"){
             });
 
           })
+
+          /*console.log(datosDepositos);
+          throw new Error("stop");*/
 
           if (datosDepositos.length==0) {
             swal({
@@ -690,6 +725,7 @@ if($datosCarga["despachado"]=="Si"){
                   // Puedes agregar aquí la lógica que deseas ejecutar después de presionar OK
                   if (cargarOtro) {
                     $("#btnNuevo").click()
+                    let id_proveedor_default=$("#id_proveedor_default").val();
                     $('#id_proveedor').val(id_proveedor_default).change();
                   }
                 });
@@ -792,125 +828,32 @@ if($datosCarga["despachado"]=="Si"){
         $(document).on("click", ".btnVer", function(){
           $(".modal-header").css( "background-color", "#007bff");
           $(".modal-header").css( "color", "white" );
-          $(".modal-title").text("Ver carga de producto");
+          //$(".modal-title").text("Ver carga de producto");
           $('#modalVer').modal('show');
           fila = $(this).closest("tr");
           let id_carga_producto = fila.find('td:eq(0)').text();
 
-          $("#id_carga_producto").html(id_carga_producto);
-          let datosUpdate = new FormData();
-          datosUpdate.append('accion', 'traerProductoDestinosCarga');
-          datosUpdate.append('id_carga_producto', id_carga_producto);
-          $.ajax({
-            data: datosUpdate,
-            url: './models/administrar_cargas.php',
-            method: "post",
-            cache: false,
-            contentType: false,
-            processData: false,
-            beforeSed: function(){
-              //$('#procesando').modal('show');
-            },
-            success: function(response){
-              accion = "updateProductoCarga";
-              let datosInput = JSON.parse(response);
-              //console.log("Datos Input: ", datosInput);
+          $("#id_carga_producto_ver").html(id_carga_producto);
 
-              $('#lbl_familia').html(datosInput.familia);
-              $('#lbl_producto').html(datosInput.producto);
-              $('#lbl_proveedor').html(datosInput.proveedor);
-              //$('#id_producto').val(datosInput.id_producto).change();
-              $('#lbl_kg').html(datosInput.kg_x_bulto);
-              $('#lbl_precio').html(datosInput.precio);
-              $('#id_proveedor').val(datosInput.id_proveedor).change();
-
-              let destinos=datosInput["destinos"];
-              //console.log("Destinos: " + destinos);
-              let tableDepositosRows = $("#tableDepositos tbody tr");
-              tableDepositosRows.each(function(){
-                let fila=$(this);
-                //console.log("fila: "+ fila);
-                let id_deposito=fila.find(".id_deposito").val()
-                
-                //console.log("Deposito: " + id_deposito);
-                let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
-                //console.log("Data: " + data);
-                if(data!=undefined){
-                  //console.log("data no undefined",data);
-                  fila.find(".id_producto_destino").val(data.id_producto_destino)
-                  fila.find(".cantidad_bultos").val(data.cantidad_bultos)
-                  fila.find(".subtotal_kilos").val(data.subtotal)
-                  fila.find(".subtotal_monto").val(data.subtotal)
-                }
-              })
-
-              // Identifico la tabla de destinos
-              var tbody = document.querySelector('#tableDepositosVer tbody');
-              tbody.innerHTML="";
-              let cantidad_bulto_total = 0
-              let total_kilos = 0
-              let total_monto = 0
-              datosInput.destinos.forEach((destino) => {
-                //console.log(destino)
-                  // Plantilla para cada fila
-                let tipo_aumento_extra=destino.tipo_aumento_extra
-                let valor_extra=destino.valor_extra
-                let lbl_tipo_aumento_extra=""
-                if(tipo_aumento_extra>0){
-                  //lbl_tipo_aumento_extra=" (+"+tipo_aumento_extra+"%)"
-                }
-                
-                // Sumar cantidad de bultos
-                cantidad_bulto_total += parseFloat(destino.cantidad_bultos);
-                console.log("cantidad_bulto_total = " + cantidad_bulto_total);
-
-                // Sumar kilos
-                total_kilos += parseFloat(destino.kilos);
-                console.log("total_kilos = " + total_kilos);
-
-                // Sumar monto
-                total_monto += parseFloat(destino.monto)
-                console.log("total_monto = "+total_monto)
-
-                let contenidoFila = `
-                  <td class="align-middle">
-                    <input type='text' readonly tabindex="-1"class="form-control destino" value='${destino.destino}'>
-                    
-                  </td>
-                  <td class="align-middle">
-                    <div class="input-group">
-                      <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${destino.cantidad_bultos}" placeholder="Deje en blanco si no desea cargar este producto al destino">
-                    </div>
-                  </td>
-                  <td class="align-middle">
-                    <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${destino.kilos}'>
-                  </td>
-                  <td class="align-middle">
-                    <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${destino.monto}'>
-                  </td>`;
-                // Crear una nueva fila
-                var newRow = document.createElement('tr');
-                // Insertar el contenido HTML en la nueva fila
-                newRow.innerHTML = contenidoFila;
-                // Agregar la fila al tbody
-                tbody.appendChild(newRow);
-              });
-
-              $('#total_bultos_ver').text(cantidad_bulto_total.toFixed(2));
-              //console.log("Actualizado total_bultos: " + $('#total_bultos').text());
-              $('#total_kilos_ver').text(total_kilos.toFixed(2));
-              //console.log("Actualizado total_kilos: " + $('#total_kilos').text());
-              $('#total_monto_ver').text(total_monto.toFixed(2));
-              //console.log("Actualizado total_monto: " + $('#total_monto').text());
-              //console.log($('#total_bultos_ver')); // Debe mostrar el elemento en la consola
-              //console.log($('#total_kilos_ver'));  // Debe mostrar el elemento en la consola
-
-
-            }
-          });
+          getDatosVerCargaProducto(id_carga_producto,buscar="actual")
 
           //$('#modalCRUD').modal('show');
         });
+
+        $(document).on("change", "#select_historial", function(){
+          let id_carga_producto=this.value
+          let buscar="auditoria"
+          if(id_carga_producto=="actual"){
+            buscar=id_carga_producto
+            id_carga_producto=$("#id_carga_producto_ver").html();
+          }
+
+          getDatosVerCargaProducto(id_carga_producto,buscar)
+        })
+
+        $('#modalVer').on('hidden.bs.modal', function (event) {
+          $("#historial").addClass("d-none")
+        })
 
         //Borrar
         $(document).on("click", ".btnBorrar", function(){
@@ -1170,6 +1113,146 @@ if($datosCarga["despachado"]=="Si"){
         }
       }
 
+      function getDatosVerCargaProducto(id_carga_producto,buscar){
+        //$("#id_carga_producto").html(id_carga_producto);
+        let modalBody=$("#modalVer").find(".modal-body")
+        if(buscar=="auditoria"){
+          modalBody.css("background-color","beige")
+        }else{
+          modalBody.css("background-color","white")
+        }
+        let datosUpdate = new FormData();
+        datosUpdate.append('accion', 'traerProductoDestinosCarga');
+        datosUpdate.append('id_carga_producto', id_carga_producto);
+        datosUpdate.append('buscar', buscar);
+        $.ajax({
+          data: datosUpdate,
+          url: './models/administrar_cargas.php',
+          method: "post",
+          cache: false,
+          contentType: false,
+          processData: false,
+          beforeSed: function(){
+            //$('#procesando').modal('show');
+          },
+          success: function(response){
+            accion = "updateProductoCarga";
+            let datosInput = JSON.parse(response);
+            //console.log("Datos Input: ", datosInput);
+
+            //console.log(datosInput.historial.length);
+            //debugger
+            if(buscar=="actual" && datosInput.historial.length>0){
+              $("#historial").removeClass("d-none")
+              var selectHistorial = document.getElementById("select_historial");
+              selectHistorial.innerHTML="";
+
+              //Genero los options del select familias
+              $option = document.createElement("option");
+              let optionText = document.createTextNode("Actual");
+              $option.appendChild(optionText);
+              $option.setAttribute("value", "actual");
+              //$option.setAttribute("selected", true);
+              selectHistorial.appendChild($option);
+
+              datosInput.historial.forEach((registro)=>{
+                $option = document.createElement("option");
+                let text=registro.id_auditoria_producto_destino+" - "+registro.usuario+" ("+registro.fecha_hora+")"
+                let optionText = document.createTextNode(text);
+                $option.appendChild(optionText);
+                $option.setAttribute("value", registro.id_auditoria_producto_destino);
+                selectHistorial.appendChild($option);
+              })
+              $(selectHistorial).select2()
+            }
+
+            $('#lbl_familia').html(datosInput.familia);
+            $('#lbl_producto').html(datosInput.producto);
+            $('#lbl_proveedor').html(datosInput.proveedor);
+            //$('#id_producto').val(datosInput.id_producto).change();
+            $('#lbl_kg').html(formatNumber2Decimal(datosInput.kg_x_bulto));
+            $('#lbl_precio').html(formatCurrency(datosInput.precio));
+            $('#lbl_motivo_cambio_precio').html(datosInput.motivo_cambio_precio);
+            $('#id_proveedor').val(datosInput.id_proveedor).change();
+
+            let destinos=datosInput["destinos"];
+            //console.log("Destinos: " + destinos);
+            let tableDepositosRows = $("#tableDepositos tbody tr");
+            tableDepositosRows.each(function(){
+              let fila=$(this);
+              //console.log("fila: "+ fila);
+              let id_deposito=fila.find(".id_deposito").val()
+              
+              //console.log("Deposito: " + id_deposito);
+              let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
+              //console.log("Data: " + data);
+              if(data!=undefined){
+                //console.log("data no undefined",data);
+                fila.find(".id_producto_destino").val(data.id_producto_destino)
+                fila.find(".cantidad_bultos").val(formatNumber2Decimal(data.cantidad_bultos))
+                fila.find(".subtotal_kilos").val(formatNumber2Decimal(data.subtotal))
+                fila.find(".subtotal_monto").val(formatCurrency(data.subtotal))
+              }
+            })
+
+            // Identifico la tabla de destinos
+            var tbody = document.querySelector('#tableDepositosVer tbody');
+            tbody.innerHTML="";
+            let cantidad_bulto_total = 0
+            let total_kilos = 0
+            let total_monto = 0
+            datosInput.destinos.forEach((destino) => {
+              //console.log(destino)
+              // Plantilla para cada fila
+              let tipo_aumento_extra=destino.tipo_aumento_extra
+              let valor_extra=destino.valor_extra
+              let lbl_tipo_aumento_extra=""
+              if(tipo_aumento_extra>0){
+                //lbl_tipo_aumento_extra=" (+"+tipo_aumento_extra+"%)"
+              }
+              
+              cantidad_bulto_total += parseFloat(destino.cantidad_bultos);
+              total_kilos += parseFloat(destino.kilos);
+              total_monto += parseFloat(destino.monto)
+
+              /*let contenidoFila = `
+                <td class="align-middle">
+                  <input type='text' readonly tabindex="-1"class="form-control destino" value='${destino.destino}'>
+                </td>
+                <td class="align-middle">
+                  <div class="input-group">
+                    <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${destino.cantidad_bultos}" placeholder="Deje en blanco si no desea cargar este producto al destino">
+                  </div>
+                </td>
+                <td class="align-middle">
+                  <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${destino.kilos}'>
+                </td>
+                <td class="align-middle">
+                  <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${destino.monto}'>
+                </td>`;*/
+              let contenidoFila = `
+                <td class="align-middle">${destino.destino}</td>
+                <td style="text-align: right;">${formatNumber2Decimal(destino.cantidad_bultos)}</td>
+                <td style="text-align: right;">${formatNumber2Decimal(destino.kilos)}</td>
+                <td style="text-align: right;">${formatCurrency(destino.monto)}</td>
+                <td class="align-middle">${destino.motivo_cambio_cantidad_bultos}</td>`;
+              // Crear una nueva fila
+              var newRow = document.createElement('tr');
+              // Insertar el contenido HTML en la nueva fila
+              newRow.innerHTML = contenidoFila;
+              // Agregar la fila al tbody
+              tbody.appendChild(newRow);
+            });
+
+            $('#total_bultos_ver').text(formatNumber2Decimal(cantidad_bulto_total));
+            $('#total_kilos_ver').text(formatNumber2Decimal(total_kilos));
+            $('#total_monto_ver').text(formatCurrency(total_monto));
+
+
+          }
+        });
+      }
+
       function getProductosByFamilia(id_familia,id_producto){
         if(bandera_buscar_producto){
           //console.log("BUSCAMOS LOS PRODUCTOS");
@@ -1239,10 +1322,10 @@ if($datosCarga["despachado"]=="Si"){
         //si la carga está despachada verificamos si hay cambios en la cantidad de bultos y pedimos que sea obligatorio el motivo
         if(despachado=="Si"){
           let precio_aux=$("#precio_aux").val()
-          console.log(precio_aux);
-          console.log(precio);
+          /*console.log(precio_aux);
+          console.log(precio);*/
           if(precio_aux!=undefined && precio_aux!=precio){
-            $("#motivo_precio").attr("required",true)
+            $("#motivo_cambio_precio").attr("required",true)
           }
         }
 
@@ -1293,7 +1376,7 @@ if($datosCarga["despachado"]=="Si"){
           if(despachado=="Si"){
             let cantidad_bultos_aux=fila.find(".cantidad_bultos_aux").val()
             if(cantidad_bultos_aux!=undefined && cantidad_bultos_aux!=cantidad_bultos){
-              fila.find(".motivo").attr("required",true)
+              fila.find(".motivo_cambio_cantidad_bultos").attr("required",true)
             }
           }
 
@@ -1305,8 +1388,10 @@ if($datosCarga["despachado"]=="Si"){
       }
 
       function cargarDatosComponentes(){
+        let id_carga=$("#id_carga").val();
         let datosIniciales = new FormData();
         datosIniciales.append('accion', 'traerDatosInicialesCargas');
+        datosIniciales.append('id_carga', id_carga);
         $.ajax({
           data: datosIniciales,
           url: "./models/administrar_cargas.php",
@@ -1349,48 +1434,50 @@ if($datosCarga["despachado"]=="Si"){
             var tbody = document.querySelector('#tableDepositos tbody');
             tbody.innerHTML="";
             respuestaJson.destinos.forEach((destino) => {
+              if (respuestaJson.destinos_preseleccionados.length==0 || respuestaJson.destinos_preseleccionados.includes(destino.id_destino)){
                 // Plantilla para cada fila
-              let tipo_aumento_extra=destino.tipo_aumento_extra
-              let valor_extra=destino.valor_extra
-              let lbl_aumento_extra=""
-              if(tipo_aumento_extra==null){
-                tipo_aumento_extra="";
-                //lbl_aumento_extra=" (+"+tipo_aumento_extra+"%)"
-              }
-              console.log(destino)
-              let contenidoFila = `
-                <td class="align-middle">
-                  <input type='hidden' class="tipo_aumento_extra" value='${tipo_aumento_extra}'>
-                  <input type='hidden' class="valor_extra" value='${valor_extra}'>
-                  <input type='hidden' class="id_producto_destino" value=''>
-                  <input type='hidden' class="id_deposito" value='${destino.id_destino}'>${destino.destino+lbl_aumento_extra}
-                </td>
-                <td class="align-middle">
-                  <div class="input-group">
-                    <input type="number" class="form-control cantidad_bultos" value="" title="Deje en blanco si no desea cargar este producto al destino">
-                  </div>
-                </td>
-                <td class="align-middle">
-                  <input type="hidden" name="subtotal_kilos" class="subtotal_kilos">
-                  <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted">
-                </td>
-                <td class="align-middle">
-                  <input type="hidden" name="subtotal_monto" class="subtotal_monto">
-                  <input type="text" disabled tabindex="-1" class="form-control text-right subtotal_monto_formatted">
-                </td>`;
-                if(despachado=="Si"){
-                  contenidoFila+=`
-                  <td class="align-middle">
-                    <input type="hidden" name="cantidad_bultos_aux" class="cantidad_bultos_aux">
-                    <input type="text" class="form-control motivo">
-                  </td>`
+                let tipo_aumento_extra=destino.tipo_aumento_extra
+                let valor_extra=destino.valor_extra
+                let lbl_aumento_extra=""
+                if(tipo_aumento_extra==null){
+                  tipo_aumento_extra="";
+                  //lbl_aumento_extra=" (+"+tipo_aumento_extra+"%)"
                 }
-              // Crear una nueva fila
-              var newRow = document.createElement('tr');
-              // Insertar el contenido HTML en la nueva fila
-              newRow.innerHTML = contenidoFila;
-              // Agregar la fila al tbody
-              tbody.appendChild(newRow);
+                //console.log(destino)
+                let contenidoFila = `
+                  <td class="align-middle">
+                    <input type='hidden' class="tipo_aumento_extra" value='${tipo_aumento_extra}'>
+                    <input type='hidden' class="valor_extra" value='${valor_extra}'>
+                    <input type='hidden' class="id_producto_destino" value=''>
+                    <input type='hidden' class="id_deposito" value='${destino.id_destino}'>${destino.destino+lbl_aumento_extra}
+                  </td>
+                  <td class="align-middle">
+                    <div class="input-group">
+                      <input type="number" class="form-control cantidad_bultos" value="" title="Deje en blanco si no desea cargar este producto al destino">
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <input type="hidden" name="subtotal_kilos" class="subtotal_kilos">
+                    <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted">
+                  </td>
+                  <td class="align-middle">
+                    <input type="hidden" name="subtotal_monto" class="subtotal_monto">
+                    <input type="text" disabled tabindex="-1" class="form-control text-right subtotal_monto_formatted">
+                  </td>`;
+                  if(despachado=="Si"){
+                    contenidoFila+=`
+                    <td class="align-middle">
+                      <input type="hidden" name="cantidad_bultos_aux" class="cantidad_bultos_aux">
+                      <input type="text" class="form-control motivo_cambio_cantidad_bultos">
+                    </td>`
+                  }
+                // Crear una nueva fila
+                var newRow = document.createElement('tr');
+                // Insertar el contenido HTML en la nueva fila
+                newRow.innerHTML = contenidoFila;
+                // Agregar la fila al tbody
+                tbody.appendChild(newRow);
+              }
             });
 
           }
