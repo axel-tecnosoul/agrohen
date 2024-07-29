@@ -1081,10 +1081,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     let a = document.createElement('a');
                     let url = window.URL.createObjectURL(response);
                     a.href = url;
-                    a.download = 'Detalle_Carga.xlsx';
+                    a.download = 'Carga ID '+id_carga+'.xlsx';
                     document.body.append(a);
                     a.click();
-                    a.remove();
+                    //a.remove();
                     window.URL.revokeObjectURL(url);
                 } else {
                     console.error('La respuesta no es un Blob:', response);

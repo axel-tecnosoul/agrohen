@@ -4,6 +4,16 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include_once('conexion.php');
 include_once('administrar_producto.php');
+// Includes y configuraciones
+require __DIR__.'/../vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+
 class cargas{
   private $id_deposito;
   private $nombre;
@@ -637,6 +647,7 @@ class cargas{
     }
 
     $respuesta=$errores;
+    //actualizamos los totales de los productos
     if($respuesta==""){
 
       $queryGetSumas = "SELECT SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM cargas_productos_destinos WHERE id_carga_producto=".$id_carga_producto;
@@ -661,14 +672,50 @@ class cargas{
 
       if($mensajeError==""){
         $this->updateTotalesCarga($id_carga);
-        $respuesta=[
-          "ok"=>1,
-        ];
-        $respuesta=json_encode($respuesta);
       }else{
-        $respuesta="Algo ha fallado al actualizar los kilos y el monto total del producto";
+        $errores="Algo ha fallado al actualizar los kilos y el monto total del producto";
       }
     }
+
+    $respuesta=$errores;
+
+    //actualizamos los totales de los destinos
+    if($respuesta==""){
+
+      $queryGetSumas = "SELECT id_destino,SUM(cantidad_bultos) AS suma_bultos,SUM(kilos) AS suma_kilos,SUM(monto) AS suma_monto,SUM(monto_valor_extra) AS suma_monto_valor_extra FROM cargas_productos_destinos cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga GROUP BY id_destino";
+      $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
+      
+      $c=$c2=0;
+      while($row = $getSumas->fetch_array()){
+        $c++;
+        $id_destino=$row["id_destino"];
+        $total_bultos=$row["suma_bultos"];
+        $total_kilos=$row["suma_kilos"];
+        $total_monto=$row["suma_monto"];
+        $total_monto_valor_extra=$row["suma_monto_valor_extra"];
+
+        $queryInsertCarga = "UPDATE cargas_destinos SET total_bultos = $total_bultos, total_kilos = $total_kilos, total_monto = $total_monto, total_monto_valor_extra = $total_monto_valor_extra WHERE id_carga = $id_carga AND id_destino = $id_destino";
+        $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
+        $mensajeError=$this->conexion->conectar->error;
+
+        if($mensajeError==""){
+          $c2++;
+        }
+      }
+
+      if($c!=$c2){
+        $errores="Algo ha fallado al actualizar los kilos y el monto total de los destinos";
+      }
+    }
+
+    $respuesta=$errores;
+
+    if($respuesta==""){
+      $respuesta=[
+        "ok"=>1,
+      ];
+    }
+    $respuesta=json_encode($respuesta);
     
     return $respuesta;
   }
@@ -996,170 +1043,246 @@ class cargas{
   }
 
   public function exportar_excel($id_carga) {
-    require_once 'PHPExcel/Classes/PHPExcel.php';
-
     // Obtener datos de la carga
     $cargas = new Cargas($id_carga);
     list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
     $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
-    //Funcion para formatear el array y poder verlo mejor estilo vardump
-    function printArrayRecursively($array, $indent = 0) {
-      $indentation = str_repeat('  ', $indent);
-      foreach ($array as $key => $value) {
-        if (is_array($value)) {
-          echo $indentation . $key . " => array(\n";
-          printArrayRecursively($value, $indent + 1);
-          echo $indentation . "),\n";
-        } else {
-          echo $indentation . $key . " => " . $value . "\n";
-        }
-      }
-    }
-    
-    /*echo "<pre>";
-    echo "Productos Destinos: ";
-    printArrayRecursively($aProductosDestinos);
-    echo "</pre>";*/
-
-    // Crear nuevo objeto PHPExcel
-    $objPHPExcel = new PHPExcel();
+    // Crear nuevo objeto Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Detalle Carga ID '.$id_carga);
 
     // Configuración del archivo
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', "ID Carga:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', $datosNecesarios['id_carga']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', "Fecha Carga:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B2', $datosNecesarios['fecha_formatted']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', "Origen:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', $datosNecesarios['origen']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A4', "Chofer:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B4', $datosNecesarios['chofer']);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A5', "Datos adicionales:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B5', $datosNecesarios['datos_adicionales_chofer']);
+    $sheet->setCellValue('A1', "ID Carga:")->setCellValue('A2', $datosNecesarios['id_carga']);
+    $sheet->setCellValue('B1', "Fecha Carga:")->setCellValue('B2', \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(strtotime($datosNecesarios['fecha_formatted'])));
+    $sheet->setCellValue('C1', "Origen:")->setCellValue('C2', $datosNecesarios['origen']);
+    $sheet->setCellValue('E1', "Chofer:")->setCellValue('E2', $datosNecesarios['chofer']);
+    $sheet->setCellValue('G1', "Datos adicionales:")->setCellValue('G2', $datosNecesarios['datos_adicionales_chofer']);
+
+    $sheet->mergeCells('C1:D1');
+    $sheet->mergeCells('C2:D2');
+    $sheet->mergeCells('E1:F1');
+    $sheet->mergeCells('E2:F2');
+    $sheet->mergeCells('G1:J1');
+    $sheet->mergeCells('G2:J2');
 
     // Encabezado de la tabla de productos
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A7', "Producto");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B7', "Proveedor");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C7', "Precio");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D7', "Kg x bulto");
+    $sheet->setCellValue('A4', "Familia");
+    $sheet->setCellValue('B4', "Producto");
+    $sheet->setCellValue('C4', "Presentación");
+    $sheet->setCellValue('D4', "Unidad Medida");
+    $sheet->setCellValue('E4', "Proveedor");
+    $sheet->setCellValue('F4', "Precio");
+    $sheet->setCellValue('G4', "Kg x bulto");
 
-    // Añadir destinos únicos al encabezado (Fila 1)
-    $column = 'E';
+    // Combinar celdas de los encabezados
+    $sheet->mergeCells('A4:A5');
+    $sheet->mergeCells('B4:B5');
+    $sheet->mergeCells('C4:C5');
+    $sheet->mergeCells('D4:D5');
+    $sheet->mergeCells('E4:E5');
+    $sheet->mergeCells('F4:F5');
+    $sheet->mergeCells('G4:G5');
+
+    // Añadir destinos únicos al encabezado (Fila 4)
+    $aStyleColorGris = [
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'd0cece', // Color para las celdas de totales
+            ],
+        ],
+    ];
+
+    $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', $destino['destino']);
-        $objPHPExcel->getActiveSheet()->mergeCells($column . '7:' . $this->getNextColumn($column, 2) . '7');
-        $column = $this->getNextColumn($column, 3);
+        $sheet->setCellValue($column . '4', $destino['destino']);
+        $sheet->mergeCells($column . '4:' . chr(ord($column) + 2) . '4');
+        $column = chr(ord($column) + 3);
     }
 
-    // Subtítulos de los destinos (Fila 2)
-    $column = 'E';
+    // Subtítulos de los destinos (Fila 5)
+    $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Bultos");
+        $sheet->setCellValue($column . '5', "Bultos");
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Kilos");
+        $sheet->setCellValue($column . '5', "Kilos");
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '8', "Monto");
+        $sheet->setCellValue($column . '5', "Monto");
         $column++;
     }
 
-    // Subtítulos para totales (Fila 2)
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Bultos");
+    // Subtítulos para totales (Fila 4)
+    $column_aux = $column;
+    $sheet->setCellValue($column . '4', "Total Bultos");
+    $sheet->mergeCells($column . '4:' . $column . '5');
     $column++;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Kilos");
+    $sheet->setCellValue($column . '4', "Total Kilos");
+    $sheet->mergeCells($column . '4:' . $column . '5');
     $column++;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . '7', "Total Monto");
+    $sheet->setCellValue($column . '4', "Total Monto");
+    $sheet->mergeCells($column . '4:' . $column . '5');
 
     // Datos de productos y destinos
-    $row = 9; // Ajustar fila inicial para los datos
+    $row = 6; // Ajustar fila inicial para los datos
     foreach ($aProductosDestinos as $producto) {
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $row,  $producto['familia'] . ' - ' . $producto['producto']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B' . $row, $producto['proveedor']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C' . $row, $producto['precio']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, $producto['kg_x_bulto']);
+        $sheet->setCellValue('A' . $row, $producto['familia']);
+        $sheet->setCellValue('B' . $row, $producto['producto']);
+        $sheet->setCellValue('C' . $row, $producto['presentacion']);
+        $sheet->setCellValue('D' . $row, $producto['unidad_medida']);
+        $sheet->setCellValue('E' . $row, $producto['proveedor']);
+        $sheet->setCellValue('F' . $row, $producto['precio']);
+        $sheet->setCellValue('G' . $row, $producto['kg_x_bulto']);
 
-        $column = 'E';
+        $column = 'H';
         foreach ($destinos_unicos as $destino) {
             $found = false;
-            foreach ($producto['destinos'] as $destino) {
-                if ($destino['id_destino'] == $destino['id_destino']) {
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['cantidad_bultos']);
+            foreach ($producto['destinos'] as $dest) {
+                if ($dest['id_destino'] == $destino['id_destino']) {
+                    $sheet->setCellValue($column . $row, $dest['cantidad_bultos']);
+                    $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
                     $column++;
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['kilos']);
+                    $sheet->setCellValue($column . $row, $dest['kilos']);
+                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+                    
                     $column++;
-                    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $destino['monto']);
+                    $sheet->setCellValue($column . $row, $dest['monto']);
+                    $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
                     $found = true;
                     break;
                 }
             }
             if (!$found) {
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+                $sheet->setCellValue($column . $row, '0');
+                $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+                
                 $column++;
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+                $sheet->setCellValue($column . $row, '0');
+                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+                
                 $column++;
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, '0');
+                $sheet->setCellValue($column . $row, '0');
+                $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
             }
             $column++;
         }
 
         // Añadir totales
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_bultos']);
+        $sheet->setCellValue($column . $row, $producto['total_bultos']);
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_kilos']);
+        $sheet->setCellValue($column . $row, $producto['total_kilos']);
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, $producto['total_monto']);
+        $sheet->setCellValue($column . $row, $producto['total_monto']);
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
 
         $row++;
     }
 
     // Fila de totales
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, "Totales");
-    $column = 'E';
+    $sheet->setCellValue('G' . $row, "Totales");
+    $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
         $column++;
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
         $column++;
     }
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+    $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
     $column++;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+    $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
     $column++;
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue($column . $row, "=SUM($column" . "9:$column" . ($row - 1) . ")");
+    $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
 
     // Formatear celdas para precios y montos
-    $objPHPExcel->getActiveSheet()->getStyle('C9:C' . $row)->getNumberFormat()->setFormatCode('"$"#,##0.00');
-    $objPHPExcel->getActiveSheet()->getStyle('E9:' . $column . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('F6:F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
 
     // Aplicar bordes a todas las celdas
-    $styleArray = [
+    $aStyleBordes = [
         'borders' => [
-            'allborders' => [
-                'style' => PHPExcel_Style_Border::BORDER_THIN,
+            'allBorders' => [
+                'borderStyle' => Border::BORDER_THIN,
             ],
         ],
     ];
-    $objPHPExcel->getActiveSheet()->getStyle('A7:' . $column . $row)->applyFromArray($styleArray);
+    $sheet->getStyle('A4:' . $column . $row)->applyFromArray($aStyleBordes);
+
+    // Formatear la columna de fecha
+    $dateFormat = 'dd/mm/yyyy';
+    $sheet->getStyle('B2')->getNumberFormat()->setFormatCode($dateFormat);
+
+    // Estilos para los encabezados
+    $aStyleCenter = [
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER,
+            'vertical' => Alignment::VERTICAL_CENTER,
+        ],
+    ];
+    $aStyleBold = [
+        'font' => [
+            'bold' => true,
+        ],
+    ];
+
+    $sheet->getStyle('A4:' . $column . '5')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
+    $sheet->getStyle('A1:J1')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
+    $sheet->getStyle('A1:J2')->applyFromArray($aStyleBordes);
+    $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleBold);
 
     // Auto-ajustar columnas
     foreach (range('A', $column) as $col) {
-        $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension($col)->setAutoSize(true);
+        $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    // Establecer el nombre de la hoja
-    $objPHPExcel->getActiveSheet()->setTitle('Detalle Carga');
+    $aStyleColorEncabezado = [
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => [
+                'argb' => 'deb887', // Color para las celdas de encabezado
+            ],
+        ],
+    ];
+    $sheet->getStyle('A1:J1')->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('A4:G' . $row)->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('H4:' . $column . '5')->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle($column_aux . '4:' . $column . $row)->applyFromArray($aStyleColorEncabezado);
+
+    // Establecer la celda seleccionada
+    $sheet->setSelectedCell('A1');
 
     // Redirigir la salida al navegador
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="Detalle_Carga.xlsx"');
+    header('Content-Disposition: attachment;filename="Carga ID ' . $id_carga . '.xlsx"');
     header('Cache-Control: max-age=0');
 
     ob_end_clean();
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-    $objWriter->save('php://output');
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
     exit();
-  }
+}
+
 
   // Función auxiliar para obtener la siguiente columna
   private function getNextColumn($col, $offset = 1) {
