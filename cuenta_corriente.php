@@ -1013,7 +1013,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       });
 
       function imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
-        const url = "./imprimirCuenta.php?id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
+        const url = "./imprimirCuentaCorriente.php?id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
         let win = window.open(url);
         win.focus();
       }

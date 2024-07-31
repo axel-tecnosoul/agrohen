@@ -43,24 +43,24 @@ if ($id_cuenta > 0) {
 
     // Filtrar solo los datos necesarios
     $aCtaCte_filtrados = array();
-    foreach ($aCtaCte as $mov) {
+    foreach ($aCtaCte as $row) {
         // Verificar que los campos necesarios existen en cada movimiento
-        if (isset($mov['fecha_hora_formatted'], $mov['descripcion'], $mov['debe'], $mov['haber'], $mov['saldo'])) {
+        if (isset($row['fecha_hora_formatted'], $row['descripcion'], $row['debe'], $row['haber'], $row['saldo'])) {
             // Manejar la descripción de acuerdo a las nuevas reglas
-            if (isset($mov['id_carga'])) {
-                $descripcion = "Carga #" . $mov['id_carga'];
-            } else if (isset($mov['id_movimiento'])) {
-                $descripcion = "Movimiento #" . $mov['id_movimiento'];
+            if (isset($row['id_carga'])) {
+                $descripcion = "Carga #" . $row['id_carga'] . " - ". $row['chofer'];
+            } else if (isset($row['id_movimiento'])) {
+                $descripcion = "Movimiento #" . $row['id_movimiento'];
             } else {
-                $descripcion = strip_tags($mov['descripcion']);
+                $descripcion = strip_tags($row['descripcion']);
             }
 
             $aCtaCte_filtrados[] = array(
-                'fecha_hora_formatted' => $mov['fecha_hora_formatted'],
+                'fecha_hora_formatted' => $row['fecha_hora_formatted'],
                 'descripcion' => $descripcion, // Usar la descripción modificada
-                'debe' => (float) $mov['debe'],
-                'haber' => (float) $mov['haber'],
-                'saldo' => (float) $mov['saldo']
+                'debe' => (float) $row['debe'],
+                'haber' => (float) $row['haber'],
+                'saldo' => (float) $row['saldo']
             );
         }
     }
