@@ -23,39 +23,64 @@ $valor_extra = $_GET['valor_extra'];
 include_once('models/administrar_cta_cte.php');
 
 if ($id_cuenta > 0) {
-    $cargas = new ctacte($id_cuenta);
-    $movimientos = $cargas->getCtacte($desde, $hasta, $id_cuenta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
+    $ctacte = new ctacte($id_cuenta);
+    $ctacteJson = $ctacte->getCtacte($desde, $hasta, $id_cuenta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
 
-    // Verificar si $movimientos es un array válido
-    if (!is_array($movimientos)) {
-        echo json_encode(['error' => 'Datos invalidos recibidos']);
+    // Decodificar el JSON
+    $aCtaCte = json_decode($ctacteJson, true);
+
+    // Verificar si la decodificación fue exitosa
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['error' => 'Datos inválidos recibidos']);
+        exit;
+    }
+
+    // Verificar si $aCtaCte es un array válido
+    if (!is_array($aCtaCte)) {
+        echo json_encode(['error' => 'Datos inválidos recibidos']);
         exit;
     }
 
     // Filtrar solo los datos necesarios
-    $movimientos_filtrados = array();
-    foreach ($movimientos as $mov) {
-        $movimientos_filtrados[] = array(
-            'fecha_hora_formatted' => $mov['fecha_hora_formatted'],
-            'descripcion' => strip_tags($mov['descripcion']), // Eliminar etiquetas HTML de la descripción
-            'debe' => (float) $mov['debe'],
-            'haber' => (float) $mov['haber'],
-            'saldo' => (float) $mov['saldo']
-        );
+    $aCtaCte_filtrados = array();
+    foreach ($aCtaCte as $mov) {
+        // Verificar que los campos necesarios existen en cada movimiento
+        if (isset($mov['fecha_hora_formatted'], $mov['descripcion'], $mov['debe'], $mov['haber'], $mov['saldo'])) {
+            // Manejar la descripción de acuerdo a las nuevas reglas
+            if (isset($mov['id_carga'])) {
+                $descripcion = "Carga #" . $mov['id_carga'];
+            } else if (isset($mov['id_movimiento'])) {
+                $descripcion = "Movimiento #" . $mov['id_movimiento'];
+            } else {
+                $descripcion = strip_tags($mov['descripcion']);
+            }
+
+            $aCtaCte_filtrados[] = array(
+                'fecha_hora_formatted' => $mov['fecha_hora_formatted'],
+                'descripcion' => $descripcion, // Usar la descripción modificada
+                'debe' => (float) $mov['debe'],
+                'haber' => (float) $mov['haber'],
+                'saldo' => (float) $mov['saldo']
+            );
+        }
     }
 
     class PDF extends FPDF {
         // Encabezado
         function Header() {
             global $id_cuenta;
+            $this->Image('assets/images/logo horizontal.png',12,7,48); // Logo
+            $this->SetFont('Arial', '', 8);
+            $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
+            $this->SetY(10);
             $this->SetFont('Arial', 'B', 12);
             $this->Cell(0, 10, 'Cuenta Corriente ID ' . $id_cuenta, 0, 1, 'C');
             $this->Ln(5);
             // Encabezado de la tabla
             $this->SetFont('Arial', 'B', 10);
-            $this->SetFillColor(200, 200, 200); // Color de fondo gris claro
+            $this->SetFillColor(143, 143, 143); // Color de fondo gris
             $this->Cell(40, 8, 'Fecha y Hora', 1, 0, 'C', true);
-            $this->Cell(80, 8, 'Descripcion', 1, 0, 'C', true);
+            $this->Cell(60, 8, 'Descripcion', 1, 0, 'C', true);
             $this->Cell(30, 8, 'Debe', 1, 0, 'C', true);
             $this->Cell(30, 8, 'Haber', 1, 0, 'C', true);
             $this->Cell(30, 8, 'Saldo', 1, 1, 'C', true);
@@ -68,12 +93,21 @@ if ($id_cuenta > 0) {
             $this->Cell(0, 10, utf8_decode('Página ') . $this->PageNo() . '/{nb}', 0, 0, 'C');
         }
 
+        // Método para cortar texto
+        function cortarTexto($texto, $longitudMaxima) {
+            if (strlen($texto) > $longitudMaxima) {
+                return substr($texto, 0, $longitudMaxima) . '...';
+            } else {
+                return $texto;
+            }
+        }
+
         // Tabla con los movimientos
-        function TablaMovimientos($movimientos) {
+        function TablaMovimientos($aCtaCte) {
             $this->SetFont('Arial', '', 10);
-            foreach ($movimientos as $mov) {
+            foreach ($aCtaCte as $mov) {
                 $this->Cell(40, 8, $mov['fecha_hora_formatted'], 1);
-                $this->Cell(80, 8, $mov['descripcion'], 1);
+                $this->Cell(60, 8, $this->cortarTexto($mov['descripcion'], 30), 1);
                 $this->Cell(30, 8, '$ ' . number_format($mov['debe'], 2, ",", "."), 1, 0, 'R');
                 $this->Cell(30, 8, '$ ' . number_format($mov['haber'], 2, ",", "."), 1, 0, 'R');
                 $this->Cell(30, 8, '$ ' . number_format($mov['saldo'], 2, ",", "."), 1, 1, 'R');
@@ -85,7 +119,7 @@ if ($id_cuenta > 0) {
     $pdf = new PDF();
     $pdf->AliasNbPages();
     $pdf->AddPage();
-    $pdf->TablaMovimientos($movimientos_filtrados);
+    $pdf->TablaMovimientos($aCtaCte_filtrados);
     $pdf->Output();
     exit;
 } else {
