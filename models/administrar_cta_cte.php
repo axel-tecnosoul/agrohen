@@ -10,7 +10,7 @@ class ctacte{
   private $id_responsable;
   private $tipo_aumento_extra;
   private $valor_extra;
-  
+
   public function __construct(){
       $this->conexion = new Conexion();
       date_default_timezone_set("America/Buenos_Aires");
@@ -156,7 +156,7 @@ class ctacte{
         'descripcion' => "Saldo inicial",
         'saldo_anterior' => $saldo_anterior,
       );
-      
+
 
       /*CARGO MOVIMIENTOS EN LA CTA CTE EN BASE A LAS CARGAS */
 
@@ -198,7 +198,7 @@ class ctacte{
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
       $filtroDesde=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroDesde);
       $filtroHasta=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroHasta);
-      
+
       //$query = "SELECT mcc.id AS id_movimiento,mcc.fecha_hora,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,mcc.fecha_hora_alta,uc.usuario,mcc.id_usuario_ultima_modificacion,um.usuario AS usuario_ultima_modificacion,mcc.fecha_hora_ultima_modificacion FROM movimientos_cta_cte mcc INNER JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios uc ON mcc.id_usuario=uc.id LEFT JOIN usuarios um ON mcc.id_usuario_ultima_modificacion=um.id WHERE mcc.anulado=0 AND mcc.id_destino IN ($depositos) $filtroDesde $filtroHasta";
       $query = "SELECT mcc.id AS id_movimiento,mcc.fecha_hora,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,mcc.fecha_hora_alta,uc.usuario,mcc.id_usuario_ultima_modificacion,um.usuario AS usuario_ultima_modificacion,mcc.fecha_hora_ultima_modificacion FROM movimientos_cta_cte mcc LEFT JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios uc ON mcc.id_usuario=uc.id LEFT JOIN usuarios um ON mcc.id_usuario_ultima_modificacion=um.id WHERE mcc.anulado=0 $filtroCuentaParaMovimientos $filtroDesde $filtroHasta";
       $get = $this->conexion->consultaRetorno($query);
@@ -230,16 +230,16 @@ class ctacte{
         $t2 = strtotime($b['fecha_hora']);
         return $t1 - $t2;
       }
-    
+
       usort($ctacte, 'date_compare');
 
       //var_dump($ctacte);
-      
+
       //$ctacte = $aSaldoInicial + $ctacte;
       $ctacte = array_merge($aSaldoInicial, $ctacte);
 
       //var_dump($ctacte);
-      
+
     }
 
     //$saldo=0;
@@ -262,7 +262,7 @@ class ctacte{
           $debe=$value["monto"];
         }
       }
-      
+
       $saldo=$saldo+$debe-$haber;
 
       $ctacte[$key]["debe"]=$debe;
@@ -273,6 +273,104 @@ class ctacte{
     return json_encode($ctacte);
   }
 
+  public function exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra) {
+    require_once 'PHPExcel/Classes/PHPExcel.php';
+    include_once('models/administrar_cta_cte.php');
+
+    // Obtener datos de la cuenta corriente
+    $ctacte = new ctacte();
+    $ctacteJson = $ctacte->getCtacte($desde, $hasta, $id_cuenta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
+
+    // Decodificar el JSON
+    $aCtaCte = json_decode($ctacteJson, true);
+
+    // Verificar si la decodificación fue exitosa
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['error' => 'Datos inválidos recibidos']);
+        exit;
+    }
+
+    // Filtrar solo los datos necesarios
+    $aCtaCte_filtrados = array();
+    foreach ($aCtaCte as $mov) {
+        // Verificar que los campos necesarios existen en cada movimiento
+        if (isset($mov['fecha_hora_formatted'], $mov['descripcion'], $mov['debe'], $mov['haber'], $mov['saldo'])) {
+            if (isset($mov['id_carga'])) {
+                $descripcion = "Carga #" . $mov['id_carga'];
+            } else if (isset($mov['id_movimiento'])) {
+                $descripcion = "Movimiento #" . $mov['id_movimiento'];
+            } else {
+                $descripcion = strip_tags($mov['descripcion']);
+            }
+
+            $aCtaCte_filtrados[] = array(
+                'fecha_hora_formatted' => $mov['fecha_hora_formatted'],
+                'descripcion' => $descripcion,
+                'debe' => (float) $mov['debe'],
+                'haber' => (float) $mov['haber'],
+                'saldo' => (float) $mov['saldo']
+            );
+        }
+    }
+
+    // Crear nuevo objeto PHPExcel
+    $objPHPExcel = new PHPExcel();
+
+    // Configuración del archivo
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', "ID Cuenta:");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', $id_cuenta);
+
+    // Encabezado de la tabla de movimientos
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', "Fecha y Hora");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', "Descripcion");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3', "Debe");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3', "Haber");
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E3', "Saldo");
+
+    // Añadir los datos de los movimientos
+    $row = 4; // Fila inicial para los datos
+    foreach ($aCtaCte_filtrados as $mov) {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $row, $mov['fecha_hora_formatted']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B' . $row, $mov['descripcion']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C' . $row, $mov['debe']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, $mov['haber']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E' . $row, $mov['saldo']);
+        $row++;
+    }
+
+    // Formatear celdas para valores numéricos
+    $objPHPExcel->getActiveSheet()->getStyle('C4:C' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $objPHPExcel->getActiveSheet()->getStyle('D4:D' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $objPHPExcel->getActiveSheet()->getStyle('E4:E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+    // Aplicar bordes a todas las celdas
+    $styleArray = [
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+            ],
+        ],
+    ];
+    $objPHPExcel->getActiveSheet()->getStyle('A3:E' . ($row - 1))->applyFromArray($styleArray);
+
+    // Auto-ajustar columnas
+    foreach (range('A', 'E') as $col) {
+        $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    $objPHPExcel->getActiveSheet()->setTitle('Detalle Cuenta');
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="Detalle_Cuenta.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    ob_end_clean();
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+    $objWriter->save('php://output');
+    exit();
+  }
+
+
   public function registrarMovimiento($fecha_hora,$id_deposito,$id_responsable,$tipo_movimiento,$monto,$descripcion){
 
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
@@ -281,7 +379,7 @@ class ctacte{
     $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
     $mensajeError = $this->conexion->conectar->error;
     $id_movimiento = $this->conexion->conectar->insert_id;
-    
+
     $respuesta=$mensajeError;
     if($mensajeError!=""){
       $respuesta.="<br><br>".$queryInsertCarga;
@@ -292,7 +390,7 @@ class ctacte{
       ];
       $respuesta=json_encode($respuesta);
     }
-    
+
     return $respuesta;
   }
 
@@ -300,7 +398,7 @@ class ctacte{
     $sqltraerMovimientoCtaCte = "SELECT mcc.fecha_hora,mcc.id_destino,mcc.id_responsable,d.nombre AS destino,mcc.tipo_movimiento,mcc.monto,mcc.descripcion,mcc.id_usuario,u.usuario,mcc.fecha_hora_alta FROM movimientos_cta_cte mcc LEFT JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios u ON mcc.id_usuario=u.id WHERE mcc.id = ".$id_movimiento;
     //echo $sqltraerMovimientoCtaCte;
     $traerMovimientoCtaCte = $this->conexion->consultaRetorno($sqltraerMovimientoCtaCte);
-    
+
     $cargas = array(); //creamos un array
     if($traerMovimientoCtaCte){
       $row = $traerMovimientoCtaCte->fetch_array();
@@ -340,7 +438,7 @@ class ctacte{
       ];
       $respuesta=json_encode($respuesta);
     }
-    
+
     return $respuesta;
   }
 
@@ -356,7 +454,7 @@ class ctacte{
     }elseif($affected_rows<1){
       $result="No se han anulado registros";
     }
-    
+
     return $result;
   }
 
@@ -456,6 +554,18 @@ if (isset($_POST['accion'])) {
       $valor_extra=$_GET["valor_extra"];
 
       echo $ctacte->getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra);
+    break;
+    case 'exportar_excel':
+      $id_cuenta = $_GET['id_cuenta'];
+      $desde = $_GET['desde'];
+      $hasta = $_GET['hasta'];
+      $id_deposito = $_GET['id_deposito'];
+      $tipo = $_GET['tipo'];
+      $tipo_aumento_extra = $_GET['tipo_aumento_extra'];
+      $valor_extra = $_GET['valor_extra'];
+      // var_dump("id_cuenta: " . $id_cuenta, "desde: " . $desde, " hasta: " . $hasta, " tipo: " . $tipo, " tipo_ aumento_extra : " . $tipo_aumento_extra, " id_deposito: " . $id_deposito, " valor_extra: " . $valor_extra);
+      // die;
+      $ctacte->exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
     break;
   }
 }

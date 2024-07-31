@@ -357,36 +357,17 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   </div>
                 </div> -->
               </div>
-              <!-- <div class="row">
-                <div class="col-lg-12">
-                  <table id="tableProductosVer" class="table table-striped">
-                    <thead>
-                      <th style="width: 30%">Producto</th>
-                      <th style="width: 40%">Cantidad de bultos</th>
-                      <th style="width: 15%">Kg Total</th>
-                      <th style="width: 15%">Monto Total</th>
-                    </thead>
-                    <tbody></tbody>
-                    <tfoot>
-                      <th style="text-align:right">Totales</th>
-                      <th id="total_bultos_ver">0</th>
-                      <th class="text-right" id="total_kilos_ver">0</th>
-                      <th class="text-right" id="total_monto_ver">0</th>
-                    </tfoot>
-                  </table>
-                </div>
-              </div> -->
               <div class="row">
-                <div class="col-lg-12 table-container tablaDetalleCarga" id="tableProductosVer" style="overflow-x: auto; overflow-y: auto; max-height: 350px;padding-left: 0;">
+                <div class="col-lg-12 table-container tablaDetalleCarga" id="tableProductosVer" style="overflow-x: auto; overflow-y: auto; max-height: 50vh;padding-left: 0;">
                 </div>
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-success btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
+              <button type="submit" class="btn btn-warning btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
               <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
               <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
               <button type="button" id="btnConfirmar" class="btn btn-primary d-none">Confirmar</button>
-              <button type="button" id="btnExportar" class="btn btn-warning">Exportar</button>
+              <button type="button" id="btnExportar" class="btn btn-success">Exportar</button>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
           </form>
