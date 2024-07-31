@@ -199,7 +199,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="fecha_hora" class="col-form-label">Fecha:</label>
-                    <input type="datetime-local" class="form-control" id="fecha_hora" value="<?=$ahora?>" required>
+                    <input type="datetime-local" class="form-control" id="fecha_hora" value="<?=$ahora?>" max="<?=$ahora?>" required>
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -239,6 +239,48 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             <div class="modal-footer">
               <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
               <button type="submit" id="btnGuardar" class="btn btn-dark">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!--Modal para ver la info de un producto-->
+    <div class="modal fade" id="modalVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title mr-4" id="exampleModalLabel">Ver carga de producto</h5>
+            <span id="historial" class="d-none"><select id="select_historial"></select></span>
+            <span id="id_carga_producto_ver" class="d-none"></span>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form id="formAdmin" style="display: contents;">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-12">
+                  <table id="tableProductosCarga" class="table table-striped">
+                    <thead>
+                      <th class="text-center" style="width: 18%">Deposito</th>
+                      <th class="text-center" style="width: 25%">Producto</th>
+                      <th class="text-center" style="width: 13%">Precio</th>
+                      <th class="text-center" style="width: 13%">Cantidad de bultos</th>
+                      <th class="text-center" style="width: 13%">Kg Total</th>
+                      <th class="text-center" style="width: 18%">Monto Total</th>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                      <th colspan="3" style="text-align:right">Totales</th>
+                      <th class="text-right" id="total_bultos_ver">0</th>
+                      <th class="text-right" id="total_kilos_ver">0</th>
+                      <th class="text-right" id="total_monto_ver">0</th>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
             </div>
           </form>
         </div>
@@ -571,7 +613,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 //{"data": "id_carga"},
                 {render: function(data, type, full, meta) {
                   if(full.id_carga!=undefined){
-                    return "C #"+full.id_carga;
+                    $btnVer=` <span class='btn btn-sm btn-info btnVerCarga px-2 py-1' title="Ver carga" data-id='${full.id_carga}'><i class='fa fa-eye'></i></span>`
+                    return $btnVer+" C #"+full.id_carga+" - "+full.chofer;
                   }else if(full.id_movimiento!=undefined){
                     let id_movimiento=full.id_movimiento;
 
@@ -581,7 +624,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       $btnEditar=` <span class='btn btn-sm btn-success btnEditar px-2 py-1' title="Editar" data-id='${id_movimiento}'><i class='fa fa-edit'></i></span>`
                       $btnEliminar=` <span class='btn btn-sm btn-danger btnBorrar px-2 py-1' title="Eliminar" data-id='${id_movimiento}'><i class='fa fa-trash-o'></i></span>`
                     }
-                    return "M #"+id_movimiento+$btnEditar+$btnEliminar;
+                    return $btnEditar+$btnEliminar+" M #"+id_movimiento;
                   }else{
                     return full.descripcion
                   }
@@ -633,7 +676,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               "columnDefs": [
                 {
                   //"targets": [1,4,5],
-                  "targets": [1,3,4],
+                  "targets": [3,4],
                   "className": 'text-right'
                 }
               ],
@@ -853,6 +896,81 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         });
 
         $('#modalCRUD').modal('show');
+      });
+
+      $(document).on("click", ".btnVerCarga", function(){
+        let id_carga = $(this).data('id');
+
+        var $selectCuenta = $('#cuenta');
+        var selectedIndex = $selectCuenta.prop('selectedIndex');
+        var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
+
+        var id_cuenta=selectedOption.data("id")
+        var tipo=selectedOption.data("tipo")
+        let id_deposito=$("#id_deposito").val()
+
+        $(".modal-header").css( "background-color", "#007bff");
+        $(".modal-header").css( "color", "white" );
+        $(".modal-title").text("Productos de la Carga ID "+id_carga);
+        $('#modalVer').modal('show');
+
+        let datosUpdate = new FormData();
+        datosUpdate.append('accion', 'traerProductosCarga');
+        datosUpdate.append('id_carga', id_carga);
+        datosUpdate.append('id_cuenta', id_cuenta);
+        datosUpdate.append('tipo', tipo);
+        datosUpdate.append('id_deposito', id_deposito);
+        $.ajax({
+          data: datosUpdate,
+          url: './models/administrar_cta_cte.php',
+          method: "post",
+          cache: false,
+          contentType: false,
+          processData: false,
+          beforeSed: function(){
+            //$('#procesando').modal('show');
+          },
+          success: function(response){
+            let datosInput = JSON.parse(response);
+            console.log(datosInput);
+
+            // Identifico la tabla de destinos
+            var tbody = document.querySelector('#tableProductosCarga tbody');
+            tbody.innerHTML="";
+            let cantidad_bulto_total = 0
+            let total_kilos = 0
+            let total_monto = 0
+            datosInput.forEach((row) => {
+              //console.log(row)
+              // Plantilla para cada fila
+              let tipo_aumento_extra=row.tipo_aumento_extra
+              let valor_extra=row.valor_extra
+              
+              cantidad_bulto_total += parseFloat(row.cantidad_bultos);
+              total_kilos += parseFloat(row.kilos);
+              total_monto += parseFloat(row.monto)
+
+              let contenidoFila = `
+                <td class="align-left">${row.deposito}</td>
+                <td class="align-left">${row.familia+" "+row.producto}</td>
+                <td class="align-right">${formatCurrency(row.precio)}</td>
+                <td style="text-align: right;">${formatNumber2Decimal(row.cantidad_bultos)}</td>
+                <td style="text-align: right;">${formatNumber2Decimal(row.kilos)}</td>
+                <td style="text-align: right;">${formatCurrency(row.monto)}</td>`;
+              // Crear una nueva fila
+              var newRow = document.createElement('tr');
+              // Insertar el contenido HTML en la nueva fila
+              newRow.innerHTML = contenidoFila;
+              // Agregar la fila al tbody
+              tbody.appendChild(newRow);
+            });
+
+            $('#total_bultos_ver').text(formatNumber2Decimal(cantidad_bulto_total));
+            $('#total_kilos_ver').text(formatNumber2Decimal(total_kilos));
+            $('#total_monto_ver').text(formatCurrency(total_monto));
+
+          }
+        });
       });
 
       //Borrar

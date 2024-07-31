@@ -359,6 +359,47 @@ class ctacte{
     
     return $result;
   }
+
+  public function traerProductosCarga($id_carga,$id_cuenta,$tipo,$id_deposito){
+
+    $depositos=$id_cuenta;
+    $columna_utilizar="cpd.monto_valor_extra";
+    if($tipo=="responsable"){
+      $columna_utilizar="cpd.monto";
+
+      if($id_deposito==""){
+        $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
+        $get = $this->conexion->consultaRetorno($query);
+        $row = $get->fetch_array();
+        $depositos=$row["depositos"];
+      }else{
+        $depositos=$id_deposito;
+      }
+    }
+
+    $aProductosCarga=[];
+    $query = "SELECT cpd.monto,cpd.monto_valor_extra,fp.familia,p.nombre AS producto,pp.nombre AS presentacion,um.unidad_medida,cpd.cantidad_bultos,cpd.kilos,cp.precio,cpd.id_destino,d.nombre AS deposito FROM cargas_productos cp INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cp.id_carga=$id_carga AND cpd.id_destino IN ($depositos)";
+    $get = $this->conexion->consultaRetorno($query);
+    //echo $query;
+    //$get->num_rows;
+    while ($row = $get->fetch_array()) {
+      $aProductosCarga[]= array(
+        'monto' =>$row['monto'],
+        'monto_valor_extra' =>$row['monto_valor_extra'],
+        'id_destino' =>$row['id_destino'],
+        'deposito' =>$row['deposito'],
+        'familia' =>$row["familia"],
+        'producto' =>$row['producto'],
+        'presentacion' =>$row['presentacion'],
+        'unidad_medida' =>$row['unidad_medida'],
+        'cantidad_bultos' =>$row['cantidad_bultos'],
+        'kilos' =>$row['kilos'],
+        'precio' =>$row['precio'],
+      );
+    }
+
+    return json_encode($aProductosCarga);
+  }
 }
 
 if (isset($_POST['accion'])) {
@@ -393,6 +434,13 @@ if (isset($_POST['accion'])) {
     case 'eliminarMovimiento':
       $id_movimiento = $_POST['id_movimiento'];
       echo $ctacte->eliminarMovimiento($id_movimiento);
+    break;
+    case 'traerProductosCarga':
+      $id_carga = $_POST['id_carga'];
+      $id_cuenta = $_POST['id_cuenta'];
+      $tipo = $_POST['tipo'];
+      $id_deposito = $_POST['id_deposito'];
+      echo $ctacte->traerProductosCarga($id_carga,$id_cuenta,$tipo,$id_deposito);
     break;
   }
 }elseif(isset($_GET['accion'])){

@@ -213,6 +213,7 @@ if($datosCarga["despachado"]=="Si"){
         </div>
       </footer>
     </div>
+
     <!--Modal para CRUD admin-->
     <div class="modal fade" id="modalCRUD" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
@@ -315,7 +316,7 @@ if($datosCarga["despachado"]=="Si"){
       </div>
     </div>
 
-    <!--Modal para CRUD admin-->
+    <!--Modal para ver la info de un producto-->
     <div class="modal fade" id="modalVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
         <div class="modal-content">
