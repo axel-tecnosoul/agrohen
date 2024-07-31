@@ -107,6 +107,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   if($id_perfil==1){?>
                     <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar Movimiento</button><?php
                   }?>
+                  <button id="btnImprimir" type="button" class="btn btn-primary ml-2 " data-toggle="modal"><i class="fa fa-plus-square"></i> Imprimir Movimiento</button>
+                  <button id="btnExportar" type="button" class="btn btn-secondary ml-2 " data-toggle="modal"><i class="fa fa-plus-square"></i> Exportar Movimiento</button>
                   <span id="id_perfil" class="d-none"><?=$id_perfil?></span>
                 </div>
                 <div class="card-body py-1">
@@ -199,6 +201,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="fecha_hora" class="col-form-label">Fecha:</label>
+                    <input type="hidden" id="lbl_id_cuenta">
                     <input type="datetime-local" class="form-control" id="fecha_hora" value="<?=$ahora?>" required>
                   </div>
                 </div>
@@ -538,11 +541,19 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
 
           //var id_cuenta=$selectCuenta.val()
-
+          console.log(selectedOption.data("id"))
           var id_cuenta=selectedOption.data("id")
           var tipo=selectedOption.data("tipo")
           var tipo_aumento_extra=selectedOption.data("tipo_aumento_extra")
           var valor_extra=selectedOption.data("valor_extra")
+
+          if(id_cuenta===undefined){
+            $("#btnImprimir").addClass("disabled d-none")
+            $("#btnExportar").addClass("disabled d-none")
+          }else{
+            $("#btnImprimir").removeClass("disabled d-none")
+            $("#btnExportar").removeClass("disabled d-none")
+          }
 
           let id_deposito=$("#id_deposito").val()
           let id_deposito_usuario=$("#id_deposito_usuario").val()
@@ -854,6 +865,55 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
         $('#modalCRUD').modal('show');
       });
+
+      $(document).on("click", "#btnImprimir, #btnExportar", function(event) {
+        event.preventDefault();
+
+        let desde = $('#desde').val();
+        let hasta = $('#hasta').val();
+        let id_deposito = $('#id_deposito').val();
+        var $selectCuenta = $('#cuenta');
+        var selectedIndex = $selectCuenta.prop('selectedIndex');
+        var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
+        var id_cuenta = selectedOption.data("id");
+        var tipo = selectedOption.data("tipo");
+        var tipo_aumento_extra = selectedOption.data("tipo_aumento_extra");
+        var valor_extra = selectedOption.data("valor_extra");
+
+        // Identificar cuál botón fue presionado
+        var botonPresionado = $(this).attr("id");
+
+        if (botonPresionado === "btnImprimir") {
+          imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra);
+        } else if (botonPresionado === "btnExportar") {
+          exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra);
+        }
+      });
+
+      function imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
+        const url = "./imprimirCuenta.php?id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
+        let win = window.open(url);
+        win.focus();
+      }
+
+      function exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
+        const url = "./models/administrar_cta_cte.php?accion=exportar_excel&id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
+
+        fetch(url)
+          .then(response => {
+            if (!response.ok) throw new Error('Error al exportar el Excel');
+            return response.blob();
+          })
+          .then(blob => {
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "Cuenta_Exportada.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          })
+        .catch(error => console.error('Error exportando la cuenta:', error));
+      }
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){
