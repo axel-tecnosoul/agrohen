@@ -715,7 +715,7 @@ if($datosCarga["despachado"]=="Si"){
               if(data.ok==1){
                 tablaProductosCarga.ajax.reload(null, false);
                 
-                swal({
+                /*swal({
                   icon: 'success',
                   title: 'Accion realizada correctamente'
                 }).then(function() {
@@ -727,7 +727,21 @@ if($datosCarga["despachado"]=="Si"){
                     let id_proveedor_default=$("#id_proveedor_default").val();
                     $('#id_proveedor').val(id_proveedor_default).change();
                   }
+                });*/
+                swal({
+                  icon: 'success',
+                  title: 'Accion realizada correctamente',
+                  timer: 1000, // 1 segundo
+                  buttons: false // Esconde el botón de OK
+                }).then(function() {
+                  // La función dentro del then se ejecutará después de que el alert se cierre automáticamente
+                  if (cargarOtro) {
+                    $("#btnNuevo").click();
+                    let id_proveedor_default = $("#id_proveedor_default").val();
+                    $('#id_proveedor').val(id_proveedor_default).change();
+                  }
                 });
+
 
                 /*if (cargarOtro) {
                   $(this).reset();

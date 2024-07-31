@@ -867,7 +867,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               }
             })*/
 
-            console.log(datosInput.destinos_preseleccionados);
             let destinos_check = $(".destinos_check").each(function() {
             let id_deposito = this.value;
 
@@ -1086,40 +1085,57 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         console.log(datosExportar);
 
         $.ajax({
-            url: './models/administrar_cargas.php',
-            method: 'POST',
-            data: datosExportar,
-            cache: false,
-            contentType: false,
-            processData: false,
-            xhrFields: {
-                responseType: 'blob'
-            },
-            success: function(response) {
-                // Asegurarse que la respuesta es un Blob
-                if (response instanceof Blob) {
-                    let a = document.createElement('a');
-                    let url = window.URL.createObjectURL(response);
-                    a.href = url;
-                    a.download = 'Carga ID '+id_carga+'.xlsx';
-                    document.body.append(a);
-                    a.click();
-                    //a.remove();
-                    window.URL.revokeObjectURL(url);
-                } else {
-                    console.error('La respuesta no es un Blob:', response);
-                    alert('Error al exportar los datos. La respuesta no es un archivo válido.');
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                // Manejo de errores detallado
-                let errorMessage = 'Error al exportar los datos. Por favor, inténtelo de nuevo.';
-                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                    errorMessage = jqXHR.responseJSON.error;
-                }
-                console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
-                alert(errorMessage);
+          url: './models/administrar_cargas.php',
+          method: 'POST',
+          data: datosExportar,
+          cache: false,
+          contentType: false,
+          processData: false,
+          xhrFields: {
+              responseType: 'blob'
+          },
+          success: function(response) {
+            // Asegurarse que la respuesta es un Blob
+            if (response instanceof Blob) {
+              let a = document.createElement('a');
+              let url = window.URL.createObjectURL(response);
+
+              // Obtener la fecha y hora actual
+              let now = new Date();
+              let year = now.getFullYear();
+              let month = String(now.getMonth() + 1).padStart(2, '0'); // Meses desde 0 a 11
+              let day = String(now.getDate()).padStart(2, '0');
+              let hours = String(now.getHours()).padStart(2, '0');
+              let minutes = String(now.getMinutes()).padStart(2, '0');
+              let seconds = String(now.getSeconds()).padStart(2, '0');
+
+              // Formato deseado: "YYYY-MM-DD_HH-MM-SS"
+              let formattedDate = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+              
+              // Nombre del archivo con fecha y hora
+              let filename = `Carga ID ${id_carga}_${formattedDate}.xlsx`;
+              
+              a.href = url;
+              //a.download = 'Carga ID '+id_carga+'.xlsx';
+              a.download = filename;
+              document.body.append(a);
+              a.click();
+              //a.remove();
+              window.URL.revokeObjectURL(url);
+            } else {
+              console.error('La respuesta no es un Blob:', response);
+              alert('Error al exportar los datos. La respuesta no es un archivo válido.');
             }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            // Manejo de errores detallado
+            let errorMessage = 'Error al exportar los datos. Por favor, inténtelo de nuevo.';
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMessage = jqXHR.responseJSON.error;
+            }
+            console.error('Error en la solicitud AJAX:', textStatus, errorThrown);
+            alert(errorMessage);
+          }
         });
       }
 
@@ -1139,24 +1155,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         })
         str_destinos=destinos.join(',');
 
-        const url = "./imprimirCarga.php?id_carga="+id_carga+"&cp="+cp+"&destinos="+str_destinos;
-        win = window.open(url, 'toolbar=no,status=no, menubar=no');
+        win = window.open("./imprimirCarga.php?id_carga="+id_carga+"&cp="+cp+"&destinos="+str_destinos);
         // Cambiar el foco al nuevo tab (punto opcional)
         win.focus();
       })
-
-      /*$(document).on("click", "#btnImprimirSinPrecio", function(event){
-        event.preventDefault();
-        let id_carga =  $('#id_carga').html();
-        let cp = 0;
-
-        datosEnviar = JSON.stringify(id_carga);
-
-        const url = "./imprimirCarga.php?id_carga=" + id_carga + "&cp=" + cp;
-        win = window.open(url, 'toolbar=no,status=no, menubar=no');
-        // Cambiar el foco al nuevo tab (punto opcional)
-        win.focus();
-      })*/
 
       //Borrar
       $(document).on("click", ".btnBorrar", function(){

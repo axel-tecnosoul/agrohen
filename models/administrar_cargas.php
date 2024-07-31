@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class cargas{
   private $id_deposito;
@@ -1136,11 +1137,24 @@ class cargas{
       ],
     ];
 
-    $column = 'H';
+    /*$column = 'H';
     foreach ($destinos_unicos as $destino) {
       $sheet->setCellValue($column . '4', $destino['destino']);
       $sheet->mergeCells($column . '4:' . chr(ord($column) + 2) . '4');
       $column = chr(ord($column) + 3);
+    }*/
+
+    $column = 'H';
+    foreach ($destinos_unicos as $destino) {
+      $startColumnIndex = Coordinate::columnIndexFromString($column); // Convierte la columna a un índice numérico
+      $endColumnIndex = $startColumnIndex + 2; // Calcula la columna final
+
+      $startColumn = Coordinate::stringFromColumnIndex($startColumnIndex); // Convierte el índice de vuelta a letra de columna
+      $endColumn = Coordinate::stringFromColumnIndex($endColumnIndex); // Convierte el índice de vuelta a letra de columna
+
+      $sheet->setCellValue($startColumn . '4', $destino['destino']);
+      $sheet->mergeCells($startColumn . '4:' . $endColumn . '4');
+      $column = Coordinate::stringFromColumnIndex($endColumnIndex + 1); // Avanza a la siguiente columna de inicio
     }
 
     // Subtítulos de los destinos (Fila 5)
@@ -1296,11 +1310,6 @@ class cargas{
     $sheet->getStyle('A1:J2')->applyFromArray($aStyleBordes);
     $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleBold);
 
-    // Auto-ajustar columnas
-    foreach (range('A', $column) as $col) {
-      $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-
     $aStyleColorEncabezado = [
       'fill' => [
         'fillType' => Fill::FILL_SOLID,
@@ -1314,6 +1323,19 @@ class cargas{
     $sheet->getStyle('H4:' . $column . '5')->applyFromArray($aStyleColorEncabezado);
     $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleColorEncabezado);
     $sheet->getStyle($column_aux . '4:' . $column . $row)->applyFromArray($aStyleColorEncabezado);
+
+    // Auto-ajustar columnas
+    /*foreach (range('A', $column) as $col) {
+      $sheet->getColumnDimension($col)->setAutoSize(true);
+    }*/
+    // Calcula el índice de la última columna usada
+    $lastColumnIndex = Coordinate::columnIndexFromString($column);
+
+    // Auto-ajustar columnas
+    for ($i = 1; $i <= $lastColumnIndex; $i++) {
+      $colString = Coordinate::stringFromColumnIndex($i);
+      $sheet->getColumnDimension($colString)->setAutoSize(true);
+    }
 
     // Establecer la celda seleccionada
     $sheet->setSelectedCell('A1');

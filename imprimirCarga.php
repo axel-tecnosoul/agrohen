@@ -40,7 +40,13 @@ if ($id_carga > 0) {
 
     $cant_destinos=count($destinos_unicos);
 
-    $ancho_repartir_destinos=120;//190 - 50 - 20
+    $orientacion="P";//vertical
+    $ancho_repartir_destinos=120;//210 (ancho) - 20 (margenes) - 50 - 20
+    if($cant_destinos>5){
+      $orientacion="L";//horizontal
+      $ancho_repartir_destinos=207;///297 (ancho) - 20 (margenes) - 50 - 20
+    }
+
     if ($con_precio) {
       $ancho_repartir_destinos-=20;//descontamos lo que ocupa la columna del precio
     }
@@ -157,7 +163,7 @@ if ($id_carga > 0) {
     }
 
     // Creación del PDF
-    $pdf = new PDF();
+    $pdf = new PDF($orientacion);
     $pdf->AliasNbPages();
     $pdf->AddPage();
     $pdf->TablaProductos($aProductosDestinos, $destinos_unicos, $con_precio);
