@@ -858,12 +858,32 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             $('#id_proveedor_default').val(datosInput.id_proveedor).change()
             $('#id_carga').html(id_carga)
 
-            let destinos_check=$(".destinos_check").each(function(){
+            /*let destinos_check=$(".destinos_check").each(function(){
               let id_deposito=this.value;
+              console.log(datosInput.destinos_preseleccionados);
+              //total_bultos
               if (datosInput.destinos_preseleccionados.includes(id_deposito)){
                 this.checked=true;
               }
-            })
+            })*/
+
+            console.log(datosInput.destinos_preseleccionados);
+            let destinos_check = $(".destinos_check").each(function() {
+            let id_deposito = this.value;
+
+            // Buscar el destino en el array de destinos preseleccionados
+            let destino = datosInput.destinos_preseleccionados.find(dest => dest.id_destino == id_deposito);
+
+            if (destino) {
+              // Marcar la casilla si el destino está en la lista
+              this.checked = true;
+
+              // Deshabilitar la casilla si total_bultos es mayor a 0
+              if (parseFloat(destino.total_bultos) > 0) {
+                this.disabled = true;
+              }
+            }
+          });
 
             accion = "updateCarga";
           }

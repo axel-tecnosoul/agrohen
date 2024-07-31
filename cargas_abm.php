@@ -668,30 +668,29 @@ if($datosCarga["despachado"]=="Si"){
           let tableDepositosRows = $("#tableDepositos tbody tr");
           tableDepositosRows.each(function(){
             let fila=$(this);
-            
-            let id_producto_destino=fila.find(".id_producto_destino").val()
-            let tipo_aumento_extra=fila.find(".tipo_aumento_extra").val()
-            let valor_extra=fila.find(".valor_extra").val()
             let cantidad_bultos=fila.find(".cantidad_bultos").val()
-            let motivo_cambio_cantidad_bultos=fila.find(".motivo_cambio_cantidad_bultos").val()
-            let id_deposito=fila.find(".id_deposito").val()
-            let subtotal_kilos=fila.find(".subtotal_kilos").val()
-            //console.log(motivo_cambio_cantidad_bultos);
+            if(cantidad_bultos>0){
+              
+              let id_producto_destino=fila.find(".id_producto_destino").val()
+              let tipo_aumento_extra=fila.find(".tipo_aumento_extra").val()
+              let valor_extra=fila.find(".valor_extra").val()
+              let motivo_cambio_cantidad_bultos=fila.find(".motivo_cambio_cantidad_bultos").val()
+              let id_deposito=fila.find(".id_deposito").val()
+              let subtotal_kilos=fila.find(".subtotal_kilos").val()
+              //console.log(motivo_cambio_cantidad_bultos);
 
-            datosDepositos.push({
-              id_producto_destino: id_producto_destino,
-              tipo_aumento_extra: tipo_aumento_extra,
-              valor_extra: valor_extra,
-              cantidad_bultos: cantidad_bultos,
-              motivo_cambio_cantidad_bultos: motivo_cambio_cantidad_bultos,
-              id_deposito: id_deposito,
-              subtotal_kilos: subtotal_kilos
-            });
+              datosDepositos.push({
+                id_producto_destino: id_producto_destino,
+                tipo_aumento_extra: tipo_aumento_extra,
+                valor_extra: valor_extra,
+                cantidad_bultos: cantidad_bultos,
+                motivo_cambio_cantidad_bultos: motivo_cambio_cantidad_bultos,
+                id_deposito: id_deposito,
+                subtotal_kilos: subtotal_kilos
+              });
+            }
 
           })
-
-          /*console.log(datosDepositos);
-          throw new Error("stop");*/
 
           if (datosDepositos.length==0) {
             swal({

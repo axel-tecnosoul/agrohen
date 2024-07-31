@@ -105,7 +105,7 @@ class cargas{
     $arrayDestinosPreseleccionados=[];
     if($id_carga>0){
       /*Destinos preseleccionados*/
-      $queryDestinosCarga = "SELECT id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
+      $queryDestinosCarga = "SELECT id_destino,total_bultos FROM cargas_destinos WHERE id_carga=$id_carga";
       $getDestinosCarga = $this->conexion->consultaRetorno($queryDestinosCarga);
       /*CARGO ARRAY Destinos*/
       while ($row = $getDestinosCarga->fetch_array()) {
@@ -205,11 +205,14 @@ class cargas{
       'confirmada' => $rowCarga['confirmada'],
     ];
 
-    $sqltraerDestinos = "SELECT id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
+    $sqltraerDestinos = "SELECT id_destino,total_bultos FROM cargas_destinos WHERE id_carga=$id_carga";
     $traerDestinos = $this->conexion->consultaRetorno($sqltraerDestinos);
     $destinos_preseleccionados = []; //creamos un array
     while ($row = $traerDestinos->fetch_array()) {
-      $destinos_preseleccionados[]=$row["id_destino"];
+      $destinos_preseleccionados[]=[
+        "id_destino"=>$row["id_destino"],
+        "total_bultos"=>$row["total_bultos"],
+      ];
     }
 
     $datosCarga["destinos_preseleccionados"]=$destinos_preseleccionados;
@@ -584,6 +587,7 @@ class cargas{
       $this->auditarCargaProducto($id_carga_producto);
       $insertarMotivoCambioCantidad=1;
     }
+
     if(empty($motivo_cambio_precio)){
       $motivo_cambio_precio="NULL";
     }else{
@@ -646,64 +650,14 @@ class cargas{
       }
     }
 
-    $respuesta=$errores;
-    //actualizamos los totales de los productos
-    if($respuesta==""){
-
-      $queryGetSumas = "SELECT SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM cargas_productos_destinos WHERE id_carga_producto=".$id_carga_producto;
-      $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
-      $row = $getSumas->fetch_array();
-      $sumaBultos=0;
-      if($row["suma_bultos"]>0){
-        $sumaBultos=$row["suma_bultos"];
+    //actualizamos los totales de los productos y destinos
+    if($errores==""){
+      $okProductos=$this->updateTotalesCargasProductos($id_carga);
+      $okDestinos=$this->updateTotalesCargasDestinos($id_carga);
+      if($okProductos==0){
+        $errores="Algo ha fallado al actualizar los kilos y el monto total de los productos";
       }
-      $sumaKilos=0;
-      if($row["suma_kilos"]>0){
-        $sumaKilos=$row["suma_kilos"];
-      }
-      $sumaMonto=0;
-      if($row["suma_monto"]>0){
-        $sumaMonto=$row["suma_monto"];
-      }
-
-      $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
-      $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
-      $mensajeError=$this->conexion->conectar->error;
-
-      if($mensajeError==""){
-        $this->updateTotalesCarga($id_carga);
-      }else{
-        $errores="Algo ha fallado al actualizar los kilos y el monto total del producto";
-      }
-    }
-
-    $respuesta=$errores;
-
-    //actualizamos los totales de los destinos
-    if($respuesta==""){
-
-      $queryGetSumas = "SELECT id_destino,SUM(cantidad_bultos) AS suma_bultos,SUM(kilos) AS suma_kilos,SUM(monto) AS suma_monto,SUM(monto_valor_extra) AS suma_monto_valor_extra FROM cargas_productos_destinos cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga GROUP BY id_destino";
-      $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
-      
-      $c=$c2=0;
-      while($row = $getSumas->fetch_array()){
-        $c++;
-        $id_destino=$row["id_destino"];
-        $total_bultos=$row["suma_bultos"];
-        $total_kilos=$row["suma_kilos"];
-        $total_monto=$row["suma_monto"];
-        $total_monto_valor_extra=$row["suma_monto_valor_extra"];
-
-        $queryInsertCarga = "UPDATE cargas_destinos SET total_bultos = $total_bultos, total_kilos = $total_kilos, total_monto = $total_monto, total_monto_valor_extra = $total_monto_valor_extra WHERE id_carga = $id_carga AND id_destino = $id_destino";
-        $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
-        $mensajeError=$this->conexion->conectar->error;
-
-        if($mensajeError==""){
-          $c2++;
-        }
-      }
-
-      if($c!=$c2){
+      if($okDestinos==0){
         $errores="Algo ha fallado al actualizar los kilos y el monto total de los destinos";
       }
     }
@@ -718,6 +672,86 @@ class cargas{
     $respuesta=json_encode($respuesta);
     
     return $respuesta;
+  }
+
+  private function updateTotalesCargasProductos($id_carga){
+    $queryGetSumas = "SELECT id_producto,SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(kilos) AS suma_kilos FROM cargas_productos_destinos  cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga GROUP BY id_producto";
+    $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
+
+    $ok=1;
+    $c=$c2=0;
+    while($row = $getSumas->fetch_array()){
+      $c++;
+    
+      $id_producto=$row["id_producto"];
+      $sumaBultos = $row["suma_bultos"] > 0 ? $row["suma_bultos"] : 0;
+      $sumaKilos = $row["suma_kilos"] > 0 ? $row["suma_kilos"] : 0;
+      $sumaMonto = $row["suma_monto"] > 0 ? $row["suma_monto"] : 0;
+
+      $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id_carga = $id_carga AND id_producto = $id_producto";
+      $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
+      $mensajeError=$this->conexion->conectar->error;
+      if($mensajeError==""){
+        $c2++;
+      }
+    }
+
+    if($c==$c2){
+      $ok=0;
+      $respuesta=$this->updateTotalesCarga($id_carga);
+      if($respuesta==1){
+        $ok=1;
+      }
+    }
+    return $ok;
+  }
+
+  private function updateTotalesCargasDestinos($id_carga){
+
+    $queryGetDestinos = "SELECT id,id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
+    $getDestinos = $this->conexion->consultaRetorno($queryGetDestinos);
+    $ok=1;
+    $c=$c2=0;
+    while($row = $getDestinos->fetch_array()){
+      $c++;
+      $id_cargas_destinos=$row["id"];
+      $id_destino=$row["id_destino"];
+
+      $queryGetSumas = "SELECT SUM(cantidad_bultos) AS suma_bultos,SUM(kilos) AS suma_kilos,SUM(monto) AS suma_monto,SUM(monto_valor_extra) AS suma_monto_valor_extra FROM cargas_productos_destinos cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga AND id_destino=$id_destino";
+      $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
+      $row2 = $getSumas->fetch_array();
+
+      $total_bultos = $row2["suma_bultos"] > 0 ? $row2["suma_bultos"] : 0;
+      $total_kilos = $row2["suma_kilos"] > 0 ? $row2["suma_kilos"] : 0;
+      $total_monto = $row2["suma_monto"] > 0 ? $row2["suma_monto"] : 0;
+      $total_monto_valor_extra = $row2["suma_monto_valor_extra"] > 0 ? $row2["suma_monto_valor_extra"] : 0;
+
+      $queryInsertCarga = "UPDATE cargas_destinos SET total_bultos = $total_bultos, total_kilos = $total_kilos, total_monto = $total_monto, total_monto_valor_extra = $total_monto_valor_extra WHERE id = $id_cargas_destinos";
+      $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
+      $mensajeError=$this->conexion->conectar->error;
+      if($mensajeError==""){
+        $c2++;
+      }
+    }
+
+    if($c==$c2){
+      $ok=0;
+
+      /*if($afe==0){
+        $queryInsertCarga = "UPDATE cargas_destinos SET total_bultos = 0, total_kilos = 0, total_monto = 0, total_monto_valor_extra = 0 WHERE id_carga = $id_carga";
+        $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
+        $mensajeError=$this->conexion->conectar->error;
+        if($mensajeError==""){
+          $ok=1;
+        }
+      }*/
+      
+      $respuesta=$this->updateTotalesCarga($id_carga);
+      if($respuesta==1){
+        $ok=1;
+      }
+    }
+    return $ok;
   }
 
   public function auditarCargaProducto($id_carga_producto) {
@@ -771,8 +805,7 @@ class cargas{
         $this->conexion->consultaSimple($queryInsertAuditoriaDestino);
         //die($queryInsertAuditoriaDestino);
     }
-}
-
+  }
 
   private function calcularMontoConValorExtra($tipo_aumento_extra,$valor_extra,$monto,$cantidad_bultos){
     ////var_dump("tipo_aumento_extra",$tipo_aumento_extra,"valor_extra",$valor_extra,"monto",$monto,"cantidad_bultos",$cantidad_bultos);
@@ -805,7 +838,7 @@ class cargas{
 
   public function eliminarCarga($id_carga){
 
-    $sqltraerCargas = "SELECT id FROM cargas_productos WHERE id_carga = ".$id_carga;
+    /*$sqltraerCargas = "SELECT id FROM cargas_productos WHERE id_carga = ".$id_carga;
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
     $cant=$cantOk=0;
     while ($row = $traerCargas->fetch_array()) {
@@ -815,13 +848,14 @@ class cargas{
       if($respuesta=="ok"){
         $cantOk++;
       }
-    }
+    }*/
 
-    if($cant==$cantOk){
+    //if($cant==$cantOk){
       /*ELIMINO la carga*/
-      $sqleliminarCarga = "DELETE FROM cargas WHERE id = $id_carga";
+      //$sqleliminarCarga = "DELETE FROM cargas WHERE id = $id_carga";
+      $sqleliminarCarga = "UPDATE cargas SET anulado = 1 WHERE id = $id_carga";
       $eliminarCarga = $this->conexion->consultaSimple($sqleliminarCarga);
-    }
+    //}
   }
 
   public function despacharCarga($id_carga){
@@ -860,7 +894,7 @@ class cargas{
     $id_carga=$this->conexion->conectar->insert_id;
 
     if(!empty($datosDepositos)){
-      foreach($datosDepositos as $id_deposito){
+      foreach($datosDepositos as $id_destino){
         $queryInsertCarga = "INSERT INTO cargas_destinos (id_carga, id_destino) VALUES($id_carga, $id_destino)";
         $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
         $mensajeError=$this->conexion->conectar->error;
@@ -929,28 +963,30 @@ class cargas{
         }
       }
 
-      $respuesta=$errores;
-      if($respuesta==""){
-
-        $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga_producto;
-        $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
-        $mensajeError=$this->conexion->conectar->error;
-
-        if($mensajeError==""){
-          $this->updateTotalesCarga($id_carga);
-          $respuesta=[
-            "ok"=>1,
-          ];
-          $respuesta=json_encode($respuesta);
-        }else{
-          $respuesta="Algo ha fallado al actualizar los kilos y el monto total del producto";
+      //actualizamos los totales de los productos y destinos
+      if($errores==""){
+        $okProductos=$this->updateTotalesCargasProductos($id_carga);
+        $okDestinos=$this->updateTotalesCargasDestinos($id_carga);
+        if($okProductos==0){
+          $errores="Algo ha fallado al actualizar los kilos y el monto total de los productos";
+        }
+        if($okDestinos==0){
+          $errores="Algo ha fallado al actualizar los kilos y el monto total de los destinos";
         }
       }
     }else{
-      $respuesta="Algo ha fallado al registrar el producto en la carga";
+      $errores="Algo ha fallado al registrar el producto en la carga";
+    }
+
+    $respuesta=$errores;
+
+    if($respuesta==""){
+      $respuesta=[
+        "ok"=>1,
+      ];
     }
     
-    return $respuesta;
+    return json_encode($respuesta);
   }
 
   public function eliminarProductoCarga($id_carga_producto,$id_carga){
@@ -959,55 +995,55 @@ class cargas{
     $sqleliminarProductoCarga = "DELETE FROM cargas_productos_destinos WHERE id_carga_producto = $id_carga_producto";
     $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
     $mensajeError=$this->conexion->conectar->error;
-    $respuesta="";
+    $errores="";
     if($mensajeError==""){
       /*ELIMINO el producto*/
       $sqleliminarProductoCarga = "DELETE FROM cargas_productos WHERE id = $id_carga_producto";
       $eliminarProductoCarga = $this->conexion->consultaSimple($sqleliminarProductoCarga);
       $mensajeError=$this->conexion->conectar->error;
       if($mensajeError==""){
-        $this->updateTotalesCarga($id_carga);
-        $respuesta="ok";
+        //$this->updateTotalesCarga($id_carga);
+        $okDestinos=$this->updateTotalesCargasDestinos($id_carga);
+        if($okDestinos==0){
+          $errores="Algo ha fallado al actualizar los kilos y el monto total de los destinos";
+        }
       }else{
-        $respuesta=$mensajeError;
+        $errores=$mensajeError;
       }
     }else{
-      $respuesta=$mensajeError;
+      $errores=$mensajeError;
     }
 
-    return $respuesta;
+    $respuesta=$errores;
+
+    if($respuesta==""){
+      $respuesta=[
+        "ok"=>1,
+      ];
+    }
+    
+    return json_encode($respuesta);
   }
 
   private function updateTotalesCarga($id_carga){
-
     $queryGetSumas = "SELECT SUM(total_bultos) AS suma_bultos, SUM(total_kilos) AS suma_kilos, SUM(total_monto) AS suma_monto FROM cargas_productos WHERE id_carga=".$id_carga;
-      $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
-      $row = $getSumas->fetch_array();
-      $sumaBultos=0;
-      if($row["suma_bultos"]>0){
-        $sumaBultos=$row["suma_bultos"];
-      }
-      $sumaKilos=0;
-      if($row["suma_kilos"]>0){
-        $sumaKilos=$row["suma_kilos"];
-      }
-      $sumaMonto=0;
-      if($row["suma_monto"]>0){
-        $sumaMonto=$row["suma_monto"];
-      }
+    $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
+    $row = $getSumas->fetch_array();
 
-      $queryInsertCarga = "UPDATE cargas SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
-      $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
-      $mensajeError=$this->conexion->conectar->error;
+    $sumaBultos = $row["suma_bultos"] > 0 ? $row["suma_bultos"] : 0;
+    $sumaKilos = $row["suma_kilos"] > 0 ? $row["suma_kilos"] : 0;
+    $sumaMonto = $row["suma_monto"] > 0 ? $row["suma_monto"] : 0;
 
-      if($mensajeError==""){
-        $respuesta=[
-          "ok"=>1,
-        ];
-        $respuesta=json_encode($respuesta);
-      }else{
-        $respuesta="Algo ha fallado al actualizar los kilos y el monto total del producto";
-      }
+    $queryInsertCarga = "UPDATE cargas SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id = ".$id_carga;
+    $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
+    $mensajeError=$this->conexion->conectar->error;
+
+    if($mensajeError==""){
+      $respuesta=1;
+    }else{
+      $respuesta="Algo ha fallado al actualizar los totales de la carga";
+    }
+    return $respuesta;
   }
 
   public function updateCarga($id_carga,$fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default,$datosDepositos){
@@ -1025,6 +1061,11 @@ class cargas{
         $queryInsertDestinos = "INSERT INTO cargas_destinos (id_carga, id_destino) VALUES($id_carga, $id_deposito)";
         $insertCarga = $this->conexion->consultaSimple($queryInsertDestinos);
         $mensajeError=$this->conexion->conectar->error;
+      }
+
+      $okDestinos=$this->updateTotalesCargasDestinos($id_carga);
+      if($okDestinos==0){
+        $mensajeError="Algo ha fallado al actualizar los kilos y el monto total de los destinos";
       }
     }
 
@@ -1087,39 +1128,43 @@ class cargas{
 
     // Añadir destinos únicos al encabezado (Fila 4)
     $aStyleColorGris = [
-        'fill' => [
-            'fillType' => Fill::FILL_SOLID,
-            'startColor' => [
-                'argb' => 'd0cece', // Color para las celdas de totales
-            ],
+      'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => [
+          'argb' => 'd0cece', // Color para las celdas de totales
         ],
+      ],
     ];
 
     $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $sheet->setCellValue($column . '4', $destino['destino']);
-        $sheet->mergeCells($column . '4:' . chr(ord($column) + 2) . '4');
-        $column = chr(ord($column) + 3);
+      $sheet->setCellValue($column . '4', $destino['destino']);
+      $sheet->mergeCells($column . '4:' . chr(ord($column) + 2) . '4');
+      $column = chr(ord($column) + 3);
     }
 
     // Subtítulos de los destinos (Fila 5)
     $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $sheet->setCellValue($column . '5', "Bultos");
-        $column++;
-        $sheet->setCellValue($column . '5', "Kilos");
-        $column++;
-        $sheet->setCellValue($column . '5', "Monto");
-        $column++;
+      $sheet->setCellValue($column . '5', "Bultos");
+      $column++;
+      
+      $sheet->setCellValue($column . '5', "Kilos");
+      $column++;
+      
+      $sheet->setCellValue($column . '5', "Monto");
+      $column++;
     }
 
     // Subtítulos para totales (Fila 4)
     $column_aux = $column;
     $sheet->setCellValue($column . '4', "Total Bultos");
     $sheet->mergeCells($column . '4:' . $column . '5');
+    
     $column++;
     $sheet->setCellValue($column . '4', "Total Kilos");
     $sheet->mergeCells($column . '4:' . $column . '5');
+    
     $column++;
     $sheet->setCellValue($column . '4', "Total Monto");
     $sheet->mergeCells($column . '4:' . $column . '5');
@@ -1127,83 +1172,84 @@ class cargas{
     // Datos de productos y destinos
     $row = 6; // Ajustar fila inicial para los datos
     foreach ($aProductosDestinos as $producto) {
-        $sheet->setCellValue('A' . $row, $producto['familia']);
-        $sheet->setCellValue('B' . $row, $producto['producto']);
-        $sheet->setCellValue('C' . $row, $producto['presentacion']);
-        $sheet->setCellValue('D' . $row, $producto['unidad_medida']);
-        $sheet->setCellValue('E' . $row, $producto['proveedor']);
-        $sheet->setCellValue('F' . $row, $producto['precio']);
-        $sheet->setCellValue('G' . $row, $producto['kg_x_bulto']);
+      $sheet->setCellValue('A' . $row, $producto['familia']);
+      $sheet->setCellValue('B' . $row, $producto['producto']);
+      $sheet->setCellValue('C' . $row, $producto['presentacion']);
+      $sheet->setCellValue('D' . $row, $producto['unidad_medida']);
+      $sheet->setCellValue('E' . $row, $producto['proveedor']);
+      $sheet->setCellValue('F' . $row, $producto['precio']);
+      $sheet->setCellValue('G' . $row, $producto['kg_x_bulto']);
 
-        $column = 'H';
-        foreach ($destinos_unicos as $destino) {
-            $found = false;
-            foreach ($producto['destinos'] as $dest) {
-                if ($dest['id_destino'] == $destino['id_destino']) {
-                    $sheet->setCellValue($column . $row, $dest['cantidad_bultos']);
-                    $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
-                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+      $column = 'H';
+      foreach ($destinos_unicos as $destino) {
+        $found = false;
+        foreach ($producto['destinos'] as $dest) {
+          if ($dest['id_destino'] == $destino['id_destino']) {
+            $sheet->setCellValue($column . $row, $dest['cantidad_bultos']);
+            $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+            $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
 
-                    $column++;
-                    $sheet->setCellValue($column . $row, $dest['kilos']);
-                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
-                    
-                    $column++;
-                    $sheet->setCellValue($column . $row, $dest['monto']);
-                    $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
-                    $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                $sheet->setCellValue($column . $row, '0');
-                $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
-                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
-                
-                $column++;
-                $sheet->setCellValue($column . $row, '0');
-                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
-                
-                $column++;
-                $sheet->setCellValue($column . $row, '0');
-                $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
-                $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
-            }
             $column++;
+            $sheet->setCellValue($column . $row, $dest['kilos']);
+            $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+            
+            $column++;
+            $sheet->setCellValue($column . $row, $dest['monto']);
+            $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+            $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+            $found = true;
+            break;
+          }
         }
-
-        // Añadir totales
-        $sheet->setCellValue($column . $row, $producto['total_bultos']);
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
-
+        if (!$found) {
+          $sheet->setCellValue($column . $row, '0');
+          $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+          $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+          
+          $column++;
+          $sheet->setCellValue($column . $row, '0');
+          $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+          
+          $column++;
+          $sheet->setCellValue($column . $row, '0');
+          $sheet->getStyle($column . $row)->applyFromArray($aStyleColorGris);
+          $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+        }
         $column++;
-        $sheet->setCellValue($column . $row, $producto['total_kilos']);
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+      }
 
-        $column++;
-        $sheet->setCellValue($column . $row, $producto['total_monto']);
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+      // Añadir totales
+      $sheet->setCellValue($column . $row, $producto['total_bultos']);
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
 
-        $row++;
+      $column++;
+      $sheet->setCellValue($column . $row, $producto['total_kilos']);
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+
+      $column++;
+      $sheet->setCellValue($column . $row, $producto['total_monto']);
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+
+      $row++;
     }
 
     // Fila de totales
     $sheet->setCellValue('G' . $row, "Totales");
     $column = 'H';
     foreach ($destinos_unicos as $destino) {
-        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+      $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
 
-        $column++;
-        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+      $column++;
+      $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
 
-        $column++;
-        $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
-        $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
-        $column++;
+      $column++;
+      $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
+      $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+      $column++;
     }
+
     $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
     $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
 
@@ -1220,11 +1266,11 @@ class cargas{
 
     // Aplicar bordes a todas las celdas
     $aStyleBordes = [
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => Border::BORDER_THIN,
-            ],
+      'borders' => [
+        'allBorders' => [
+          'borderStyle' => Border::BORDER_THIN,
         ],
+      ],
     ];
     $sheet->getStyle('A4:' . $column . $row)->applyFromArray($aStyleBordes);
 
@@ -1234,15 +1280,15 @@ class cargas{
 
     // Estilos para los encabezados
     $aStyleCenter = [
-        'alignment' => [
-            'horizontal' => Alignment::HORIZONTAL_CENTER,
-            'vertical' => Alignment::VERTICAL_CENTER,
-        ],
+      'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER,
+      ],
     ];
     $aStyleBold = [
-        'font' => [
-            'bold' => true,
-        ],
+      'font' => [
+        'bold' => true,
+      ],
     ];
 
     $sheet->getStyle('A4:' . $column . '5')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
@@ -1252,16 +1298,16 @@ class cargas{
 
     // Auto-ajustar columnas
     foreach (range('A', $column) as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
+      $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
     $aStyleColorEncabezado = [
-        'fill' => [
-            'fillType' => Fill::FILL_SOLID,
-            'startColor' => [
-                'argb' => 'deb887', // Color para las celdas de encabezado
-            ],
+      'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => [
+          'argb' => 'deb887', // Color para las celdas de encabezado
         ],
+      ],
     ];
     $sheet->getStyle('A1:J1')->applyFromArray($aStyleColorEncabezado);
     $sheet->getStyle('A4:G' . $row)->applyFromArray($aStyleColorEncabezado);
@@ -1281,8 +1327,7 @@ class cargas{
     $writer = new Xlsx($spreadsheet);
     $writer->save('php://output');
     exit();
-}
-
+  }
 
   // Función auxiliar para obtener la siguiente columna
   private function getNextColumn($col, $offset = 1) {
