@@ -128,7 +128,7 @@ class cargas{
 
     if($id_familia>0){
       /*Productos*/
-      $queryProductos = "SELECT id as id_producto, nombre, ultimo_precio, ultimo_kg_x_bulto FROM productos WHERE id_familia = $id_familia";
+      $queryProductos = "SELECT p.id as id_producto, p.nombre, p.ultimo_precio, p.ultimo_kg_x_bulto, pp.nombre AS presentacion,um.unidad_medida FROM productos p INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE id_familia = $id_familia";
       $getProductos = $this->conexion->consultaRetorno($queryProductos);
 
       if ($getProductos->num_rows > 0) {
@@ -141,6 +141,8 @@ class cargas{
           $productosByFamilia[]= array(
             'id_producto' =>$rowProductos['id_producto'],
             'producto' =>$rowProductos['nombre'],
+            'presentacion' =>$rowProductos['presentacion'],
+            'unidad_medida' =>$rowProductos['unidad_medida'],
             'ultimo_precio' =>$rowProductos['ultimo_precio'],
             'ultimo_kg_x_bulto' =>$rowProductos['ultimo_kg_x_bulto'],
           );
@@ -303,8 +305,8 @@ class cargas{
           <th rowspan="2" class="fixed-column-4 fixed-column-header" style="align-content: center;">Kg x bulto</th><?php
           foreach ($destinos_unicos as $destino) {?>
             <th colspan="3" class="destino-group">
-              <input type='checkbox' class='checkbox_animated check_destino' id="destino-<?=$destino["id_destino"]?>" value="<?=$destino["id_destino"]?>">
-              <label for="destino-<?=$destino["id_destino"]?>" class="mb-0"><?=$destino["destino"]?></label>
+              <input type='checkbox' class='checkbox_animated check_destino' id="verDestino-<?=$destino["id_destino"]?>" value="<?=$destino["id_destino"]?>">
+              <label for="verDestino-<?=$destino["id_destino"]?>" class="mb-0"><?=$destino["destino"]?></label>
             </th><?php
           }?>
           <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Bultos</th>
@@ -707,7 +709,7 @@ class cargas{
     return $ok;
   }
 
-  private function updateTotalesCargasDestinos($id_carga){
+  public function updateTotalesCargasDestinos($id_carga){
 
     $queryGetDestinos = "SELECT id,id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
     $getDestinos = $this->conexion->consultaRetorno($queryGetDestinos);

@@ -26,6 +26,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
       }
 
+      tr.child {
+        background-color: beige !important;
+      }
+
       .tablaDetalleCarga-container {
         position: relative;
         overflow: auto;

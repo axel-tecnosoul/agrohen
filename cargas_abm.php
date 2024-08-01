@@ -42,6 +42,20 @@ if($datosCarga["despachado"]=="Si"){
           box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; /* Puedes ajustar el estilo de sombra al tener foco según tus necesidades */
       }
 
+      /* Agrega este estilo a tu archivo CSS o en un <style> en tu HTML */
+      .select2-container--default .select2-dropdown,
+      .select2-container--default .select2-results__option,
+      .select2-container--default .select2-results__option {
+        /*min-width: 300px; /* Ajusta este valor según sea necesario */
+        min-width: max-content !important;
+      }
+
+      .select2-container--default .select2-dropdown {
+        width: auto; /* Permitir que el ancho sea ajustable */
+        min-width: 300px; /* Ajusta este valor según sea necesario */
+      }
+
+
       #tableDepositos tbody td{
         padding: 0.3rem;
       }
@@ -234,7 +248,7 @@ if($datosCarga["despachado"]=="Si"){
                 </div>
                 <div class="col-lg-4">
                   <div class="form-group">
-                    <label for="id_producto" class="col-form-label">Nombre:</label>
+                    <label for="id_producto" class="col-form-label">Producto:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
                       <option>Seleccione una familia</option>
                     </select>
@@ -1293,8 +1307,12 @@ if($datosCarga["despachado"]=="Si"){
               //Genero los options del select familias
               productosByFamilia.forEach((producto)=>{
                 $option = document.createElement("option");
-                
-                let text=producto.producto;
+                let presentacion=producto.presentacion
+                let unidad_medida=producto.unidad_medida
+                let text=producto.producto
+                if(presentacion!=undefined && unidad_medida!=undefined){
+                  text+=" x "+producto.presentacion+" - "+producto.unidad_medida;
+                }
                 if(producto.ultimo_precio && despachado=="No"){
                   text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
                 }

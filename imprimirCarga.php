@@ -42,7 +42,7 @@ if ($id_carga > 0) {
 
     $orientacion="P";//vertical
     $ancho_repartir_destinos=120;//210 (ancho) - 20 (margenes) - 50 - 20
-    if($cant_destinos>5){
+    if($cant_destinos>4){
       $orientacion="L";//horizontal
       $ancho_repartir_destinos=207;///297 (ancho) - 20 (margenes) - 50 - 20
     }
@@ -77,7 +77,7 @@ if ($id_carga > 0) {
 
         $cant_caracteres=$ancho_destino/2;
         foreach ($destinos_unicos as $destino) {
-          $this->Cell($ancho_destino, 6, $this->cortarTexto($destino["destino"], $cant_caracteres), 1, 0, 'C', true);
+          $this->Cell($ancho_destino, 6, $this->cortarTexto(utf8_decode($destino["destino"]), $cant_caracteres), 1, 0, 'C', true);
         }
 
         $this->Cell(20, 6, 'Total Bultos', 1, 1, 'C', true);
