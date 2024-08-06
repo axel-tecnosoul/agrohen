@@ -23,7 +23,7 @@ if ($id_carga > 0) {
 
     $cargas = new Cargas($id_carga);
     
-    list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
+    list($datosNecesarios, $aProductosDestinos) = $cargas->getDatosVerDetalleCarga($id_carga);
 
     $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
     //var_dump($destinos_unicos);

@@ -223,7 +223,7 @@ class cargas{
     return json_encode($datosCarga);
   }
 
-  public function traerDatosVerDetalleCarga($id_carga) {
+  public function getDatosVerDetalleCarga($id_carga) {
     $datosCargaJson = $this->getDatosCarga($id_carga); 
     
     // Decodificar el JSON devuelto por getDatosCarga
@@ -243,7 +243,7 @@ class cargas{
       'confirmada' => $datosCargaArray['confirmada'],
     ];
         
-    $sqltraerProductosCarga = "
+    /*$sqltraerProductosCarga = "
       SELECT cp.id AS id_carga_producto, cp.id_producto, fp.familia, p.nombre AS producto, pr.nombre AS proveedor, cp.kg_x_bulto, 
       cp.precio, cp.total_bultos, cp.total_kilos, cp.total_monto 
       FROM cargas_productos cp 
@@ -253,8 +253,9 @@ class cargas{
       INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id 
       INNER JOIN proveedores pr ON cp.id_proveedor=pr.id 
       INNER JOIN usuarios u ON cp.id_usuario=u.id 
-      WHERE cp.id_carga = " . $id_carga;
-        
+      WHERE cp.id_carga = " . $id_carga;*/
+    
+    $sqltraerProductosCarga = "SELECT id AS id_carga_producto FROM cargas_productos WHERE id_carga = " . $id_carga;
     $traerProductosCarga = $this->conexion->consultaRetorno($sqltraerProductosCarga);
     $aProductosDestinos = array();
         
@@ -263,7 +264,7 @@ class cargas{
 
         $id_carga_producto=$row['id_carga_producto'];
 
-        $json_destinos=$this->traerProductoDestinosCarga($id_carga_producto);
+        $json_destinos=$this->getProductoDestinosCarga($id_carga_producto);
         $destinos=json_decode($json_destinos,true);
 
         $aProductosDestinos[]=$destinos;
@@ -292,40 +293,47 @@ class cargas{
     return $destinos_unicos;
   }
 
-  public function ordenarInfoProductosDestinos($aProductosDestinos){
+  public function mostrarInfoProductosDestinos($aProductosDestinos,$aDepositos,$tipo){
     $destinos_unicos=$this->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
+    //var_dump($aDepositos);
     // Generar la tabla?>
     <table class="table table-striped">
       <thead style="text-align: center;">
         <tr>
-          <th rowspan="2" class="fixed-column fixed-column-header" style="align-content: center;">Producto</th>
-          <th rowspan="2" class="fixed-column-2 fixed-column-header" style="align-content: center;">Proveedor</th>
-          <th rowspan="2" class="fixed-column-3 fixed-column-header" style="align-content: center;">Precio</th>
-          <th rowspan="2" class="fixed-column-4 fixed-column-header" style="align-content: center;">Kg x bulto</th><?php
-          foreach ($destinos_unicos as $destino) {?>
-            <th colspan="3" class="destino-group">
-              <input type='checkbox' class='checkbox_animated check_destino' id="verDestino-<?=$destino["id_destino"]?>" value="<?=$destino["id_destino"]?>">
-              <label for="verDestino-<?=$destino["id_destino"]?>" class="mb-0"><?=$destino["destino"]?></label>
-            </th><?php
+          <th rowspan="2" class="fixed-column fixed-column-header align-middle">Producto</th>
+          <th rowspan="2" class="fixed-column-2 fixed-column-header align-middle">Proveedor</th>
+          <th rowspan="2" class="fixed-column-3 fixed-column-header align-middle">Precio</th>
+          <th rowspan="2" class="fixed-column-4 fixed-column-header align-middle">Kg x bulto</th><?php
+          foreach ($destinos_unicos as $destino) {
+            if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){?>
+              <th colspan="3" class="destino-group"><?php
+                if($aDepositos==""){?>
+                  <input type='checkbox' class='checkbox_animated check_destino' id="verDestino-<?=$destino["id_destino"]?>" value="<?=$destino["id_destino"]?>"><?php
+                }?>
+                <label for="verDestino-<?=$destino["id_destino"]?>" class="mb-0"><?=$destino["destino"]?></label>
+              </th><?php
+            }
+          }
+          if($aDepositos==""){ ?>
+            <th rowspan="2" class="fixed-column-header align-middle">Total Bultos</th>
+            <th rowspan="2" class="fixed-column-header align-middle">Total Kilos</th>
+            <th rowspan="2" class="fixed-column-header align-middle">Total Monto</th><?php
           }?>
-          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Bultos</th>
-          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Kilos</th>
-          <th rowspan="2" style="align-content: center;" class="fixed-column-header">Total Monto</th>
         </tr>
         <tr><?php
-          foreach ($destinos_unicos as $destino) {?>
-            <th style="top:46px" class="destino-group">Bultos</th>
-            <th style="top:46px" class="destino-group">Kilos</th>
-            <th style="top:46px" class="destino-group">Monto</th><?php
+          foreach ($destinos_unicos as $destino) {
+            if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){?>
+              <th style="top:46px" class="destino-group">Bultos</th>
+              <th style="top:46px" class="destino-group">Kilos</th>
+              <th style="top:46px" class="destino-group">Monto</th><?php
+            }
           }?>
         </tr>
       </thead>
       <tbody><?php
         $totals = [];
-        foreach ($aProductosDestinos as $product) {
-          ////var_dump($product);
-          ?>
+        foreach ($aProductosDestinos as $product) {?>
           <tr>
             <td class="fixed-column"><?=$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")"?></td>
             <td class="fixed-column-2"><?=$product['proveedor']?></td>
@@ -338,30 +346,38 @@ class cargas{
             }
 
             foreach ($destinos_unicos as $destino) {
-              $id_destino=$destino['id_destino'];
-              $cantidad_bultos=0;
-              $kilos=0;
-              $monto=0;
-              if (isset($destinos_actuales[$id_destino])) {
-                $cantidad_bultos=$destinos_actuales[$id_destino]['cantidad_bultos'];
-                $kilos=$destinos_actuales[$id_destino]['kilos'];
-                $monto=$destinos_actuales[$id_destino]['monto'];
-              }
-              
-              if (!isset($totals[$id_destino])) {
-                $totals[$id_destino] = ['bultos' => 0, 'kilos' => 0, 'monto' => 0];
-              }
-              $totals[$id_destino]['bultos'] += $cantidad_bultos;
-              $totals[$id_destino]['kilos'] += $kilos;
-              $totals[$id_destino]['monto'] += $monto;?>
+              if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){
+                $id_destino=$destino['id_destino'];
+                $cantidad_bultos=0;
+                $kilos=0;
+                $monto=0;
+                if (isset($destinos_actuales[$id_destino])) {
+                  $cantidad_bultos=$destinos_actuales[$id_destino]['cantidad_bultos'];
+                  $kilos=$destinos_actuales[$id_destino]['kilos'];
+                  if($tipo!="responsable" or $_SESSION["rowUsers"]["id_perfil"]==2){
+                    $monto=$destinos_actuales[$id_destino]['monto_valor_extra'];
+                  }else{
+                    $monto=$destinos_actuales[$id_destino]['monto'];
+                  }
+                }
+                
+                if (!isset($totals[$id_destino])) {
+                  $totals[$id_destino] = ['bultos' => 0, 'kilos' => 0, 'monto' => 0];
+                }
+                $totals[$id_destino]['bultos'] += $cantidad_bultos;
+                $totals[$id_destino]['kilos'] += $kilos;
+                $totals[$id_destino]['monto'] += $monto;?>
 
-              <td class="text-right destino-group destino-start"><?=number_format($cantidad_bultos,0,",",".")?></td>
-              <td class="text-right destino-group"><?=number_format($kilos,2,",",".")?></td>
-              <td class="text-right destino-group destino-end">$ <?=number_format($monto,2,",",".")?></td><?php
+                <td class="text-right destino-group destino-start"><?=number_format($cantidad_bultos,0,",",".")?></td>
+                <td class="text-right destino-group"><?=number_format($kilos,2,",",".")?></td>
+                <td class="text-right destino-group destino-end">$ <?=number_format($monto,2,",",".")?></td><?php
+              }
+            }
+            if($aDepositos==""){ ?>
+              <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_bultos'],0,",",".")?></td>
+              <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_kilos'],2,",",".")?></td>
+              <td class="text-right fixed-column font-weight-bold">$ <?=number_format($product['total_monto'],2,",",".")?></td><?php
             }?>
-            <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_bultos'],0,",",".")?></td>
-            <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_kilos'],2,",",".")?></td>
-            <td class="text-right fixed-column font-weight-bold">$ <?=number_format($product['total_monto'],2,",",".")?></td>
           </tr><?php
         }?>
       </tbody>
@@ -369,15 +385,18 @@ class cargas{
         <tr>
           <td colspan="4" class="text-right fixed-column" style="background: burlywood;">Totales</td><?php
           foreach ($destinos_unicos as $destino) {
-            $id_destino=$destino["id_destino"]?>
-            <td class="text-right destino-group"><?=number_format($totals[$id_destino]['bultos'], 0, ",", ".")?></td>
-            <td class="text-right destino-group"><?=number_format($totals[$id_destino]['kilos'], 2, ",", ".")?></td>
-            <td class="text-right destino-group">$ <?=number_format($totals[$id_destino]['monto'], 2, ",", ".")?></td><?php
-          } ?>
-          <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_bultos')),0,",",".")?></td>
-          <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_kilos')),2,",",".")?></td>
-          <td class="text-right fixed-column font-weight-bold">$ <?=number_format(array_sum(array_column($aProductosDestinos,'total_monto')),2,",",".")?></td>
-          <!-- <td colspan="3" class="text-right fixed-column font-weight-bold"></td> -->
+            if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){
+              $id_destino=$destino["id_destino"]?>
+              <td class="text-right destino-group"><?=number_format($totals[$id_destino]['bultos'], 0, ",", ".")?></td>
+              <td class="text-right destino-group"><?=number_format($totals[$id_destino]['kilos'], 2, ",", ".")?></td>
+              <td class="text-right destino-group">$ <?=number_format($totals[$id_destino]['monto'], 2, ",", ".")?></td><?php
+            }
+          }
+          if($aDepositos==""){ ?>
+            <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_bultos')),0,",",".")?></td>
+            <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_kilos')),2,",",".")?></td>
+            <td class="text-right fixed-column font-weight-bold">$ <?=number_format(array_sum(array_column($aProductosDestinos,'total_monto')),2,",",".")?></td>
+          <?php }?>
         </tr>
       </tfoot>
     </table><?php
@@ -424,9 +443,9 @@ class cargas{
       $id_deposito=$_SESSION["rowUsers"]["id_deposito"];
 
       //SUMAMOS LA INFORMACION DE LAS CARGAS DEL DEPOSITO LOGUEADO
-      $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,SUM(cpd.cantidad_bultos) AS total_bultos, SUM(cpd.kilos) AS total_kilos,SUM(cpd.monto_valor_extra) AS total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.fecha_hora_confirmacion,if(fecha_hora_confirmacion IS NULL,'No','Si') AS confirmada,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id WHERE 1 AND cpd.id_destino=$id_deposito $filtroEstado $filtroDesde $filtroHasta $filtroOrigen $filtroChofer GROUP BY c.id";//,c.total_bultos,c.total_kilos,c.total_monto
+      $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,SUM(cpd.cantidad_bultos) AS total_bultos, SUM(cpd.kilos) AS total_kilos,SUM(cpd.monto_valor_extra) AS total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.fecha_hora_confirmacion,if(fecha_hora_confirmacion IS NULL,'No','Si') AS confirmada,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id WHERE c.anulado = 0 AND cpd.id_destino=$id_deposito $filtroEstado $filtroDesde $filtroHasta $filtroOrigen $filtroChofer GROUP BY c.id";//,c.total_bultos,c.total_kilos,c.total_monto
     }else{
-      $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.fecha_hora_confirmacion,if(fecha_hora_confirmacion IS NULL,'No','Si') AS confirmada,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE 1 $filtroEstado $filtroDesde $filtroHasta $filtroOrigen $filtroChofer";
+      $sqltraerCargas = "SELECT c.id AS id_carga,c.fecha,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,total_bultos,total_kilos,total_monto,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado,c.fecha_hora_despacho,c.fecha_hora_confirmacion,if(fecha_hora_confirmacion IS NULL,'No','Si') AS confirmada,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id WHERE c.anulado = 0 $filtroEstado $filtroDesde $filtroHasta $filtroOrigen $filtroChofer";
     }
     //die($sqltraerCargas);
     $traerCargas = $this->conexion->consultaRetorno($sqltraerCargas);
@@ -501,7 +520,7 @@ class cargas{
     return json_encode($cargas);
   }
 
-  public function traerProductoDestinosCarga($id_carga_producto,$buscar="actual"){
+  public function getProductoDestinosCarga($id_carga_producto,$buscar="actual"){
 
     $auditoria="";
     if($buscar=="auditoria"){
@@ -537,7 +556,7 @@ class cargas{
       'total_monto'=> $row['total_monto'],
     ];
 
-    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.motivo_cambio_cantidad_bultos,cpd.monto,cpd.kilos FROM ".$auditoria."cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_".$auditoria."carga_producto = $id_carga_producto";
+    $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.motivo_cambio_cantidad_bultos,cpd.monto,cpd.monto_valor_extra,cpd.kilos FROM ".$auditoria."cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_".$auditoria."carga_producto = $id_carga_producto";
     //var_dump($sqlTraerProductoDestinosCarga);
     $traerProductoDestinosCarga = $this->conexion->consultaRetorno($sqlTraerProductoDestinosCarga);
     $productoDestinosCarga=[];
@@ -555,6 +574,7 @@ class cargas{
         'cantidad_bultos'=> $row['cantidad_bultos'],
         'motivo_cambio_cantidad_bultos'=> $motivo_cambio_cantidad_bultos,
         'monto'=> $row['monto'],
+        'monto_valor_extra'=> $row['monto_valor_extra'],
         'kilos'=> $row['kilos'],
       ];
     }
@@ -1089,7 +1109,7 @@ class cargas{
   public function exportar_excel($id_carga) {
     // Obtener datos de la carga
     $cargas = new Cargas($id_carga);
-    list($datosNecesarios, $aProductosDestinos) = $cargas->traerDatosVerDetalleCarga($id_carga);
+    list($datosNecesarios, $aProductosDestinos) = $cargas->getDatosVerDetalleCarga($id_carga);
     $destinos_unicos = $cargas->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
     // Crear nuevo objeto Spreadsheet
@@ -1370,7 +1390,7 @@ if (isset($_POST['accion'])) {
       }else{
         $buscar="actual";
       }
-      echo $cargas->traerProductoDestinosCarga($id_carga_producto,$buscar);
+      echo $cargas->getProductoDestinosCarga($id_carga_producto,$buscar);
     break;
     case 'updateCarga':
       $id_carga = $_POST['id_carga'];
@@ -1457,9 +1477,18 @@ if (isset($_POST['accion'])) {
     break;
     case 'traerDatosVerDetalleCarga':
       $id_carga=$_POST["id_carga"];
-      list($datosNecesarios,$aProductosDestinos)=$cargas->traerDatosVerDetalleCarga($id_carga);
+      list($datosNecesarios,$aProductosDestinos)=$cargas->getDatosVerDetalleCarga($id_carga);
 
-      $cargas->ordenarInfoProductosDestinos($aProductosDestinos);
+      $aDepositos=$_POST["aDepositos"];
+      if($aDepositos!=""){
+        $aDepositos=explode(",",$aDepositos);
+      }
+      $tipo="responsable";
+      if(isset($_POST["tipo"])){
+        $tipo=$_POST["tipo"];
+      }
+
+      $cargas->mostrarInfoProductosDestinos($aProductosDestinos,$aDepositos,$tipo);
       echo "%%";
       echo json_encode($datosNecesarios);
     break;

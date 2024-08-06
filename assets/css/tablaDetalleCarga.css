@@ -1,0 +1,66 @@
+.tablaDetalleCarga-container {
+  position: relative;
+  overflow: auto;
+  max-height: 400px; /* Ajusta esto según tus necesidades */
+}
+
+.tablaDetalleCarga thead th {
+  position: sticky;
+  top: 0;
+  background: burlywood;
+  z-index: 10;
+}
+
+.tablaDetalleCarga tbody td,
+.tablaDetalleCarga tfoot td,
+.tablaDetalleCarga thead th {
+  white-space: nowrap;
+  border: solid 1px black;
+}
+
+.tablaDetalleCarga .fixed-column {
+  position: sticky;
+  left: 0;
+  background: burlywood;
+  z-index: 20;
+}
+
+.tablaDetalleCarga .fixed-column-2 {
+  position: sticky;
+  left: 282px; /* Ajusta esto según el ancho de tus columnas */
+  background: burlywood;
+  z-index: 20;
+}
+
+.tablaDetalleCarga .fixed-column-3 {
+  position: sticky;
+  left: 282px; /* Ajusta esto según el ancho de tus columnas */
+  background: burlywood;
+  z-index: 20;
+}
+
+.tablaDetalleCarga .fixed-column-4 {
+  position: sticky;
+  left: 282px; /* Ajusta esto según el ancho de tus columnas */
+  background: burlywood;
+  z-index: 20;
+}
+
+.tablaDetalleCarga .fixed-column-header {
+  position: sticky;
+  top: 0;
+  background: burlywood;
+  z-index: 30; /* Más alto para asegurar que está sobre las celdas fijas */
+}
+
+.tablaDetalleCarga .destino-start {
+  background-color: #d0cece;
+}
+
+.tablaDetalleCarga .destino-end {
+  background-color: #d0cece;
+}
+
+.tablaDetalleCarga tfoot {
+  background: burlywood;
+}

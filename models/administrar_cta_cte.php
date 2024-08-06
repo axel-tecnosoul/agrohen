@@ -284,103 +284,6 @@ class ctacte{
     return json_encode($ctacte);
   }
 
-  public function exportar_excel2($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra) {
-    require_once 'PHPExcel/Classes/PHPExcel.php';
-    include_once('models/administrar_cta_cte.php');
-
-    // Obtener datos de la cuenta corriente
-    $ctacte = new ctacte();
-    $ctacteJson = $ctacte->getCtacte($desde, $hasta, $id_cuenta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
-
-    // Decodificar el JSON
-    $aCtaCte = json_decode($ctacteJson, true);
-
-    // Verificar si la decodificación fue exitosa
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        echo json_encode(['error' => 'Datos inválidos recibidos']);
-        exit;
-    }
-
-    // Filtrar solo los datos necesarios
-    $aCtaCte_filtrados = array();
-    foreach ($aCtaCte as $mov) {
-        // Verificar que los campos necesarios existen en cada movimiento
-        if (isset($mov['fecha_hora_formatted'], $mov['descripcion'], $mov['debe'], $mov['haber'], $mov['saldo'])) {
-            if (isset($mov['id_carga'])) {
-                $descripcion = "Carga #" . $mov['id_carga'];
-            } else if (isset($mov['id_movimiento'])) {
-                $descripcion = "Movimiento #" . $mov['id_movimiento'];
-            } else {
-                $descripcion = strip_tags($mov['descripcion']);
-            }
-
-            $aCtaCte_filtrados[] = array(
-                'fecha_hora_formatted' => $mov['fecha_hora_formatted'],
-                'descripcion' => $descripcion,
-                'debe' => (float) $mov['debe'],
-                'haber' => (float) $mov['haber'],
-                'saldo' => (float) $mov['saldo']
-            );
-        }
-    }
-
-    // Crear nuevo objeto PHPExcel
-    $objPHPExcel = new PHPExcel();
-
-    // Configuración del archivo
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', "ID Cuenta:");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', $id_cuenta);
-
-    // Encabezado de la tabla de movimientos
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A3', "Fecha y Hora");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', "Descripcion");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3', "Debe");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3', "Haber");
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E3', "Saldo");
-
-    // Añadir los datos de los movimientos
-    $row = 4; // Fila inicial para los datos
-    foreach ($aCtaCte_filtrados as $mov) {
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $row, $mov['fecha_hora_formatted']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B' . $row, $mov['descripcion']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C' . $row, $mov['debe']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D' . $row, $mov['haber']);
-        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E' . $row, $mov['saldo']);
-        $row++;
-    }
-
-    // Formatear celdas para valores numéricos
-    $objPHPExcel->getActiveSheet()->getStyle('C4:C' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-    $objPHPExcel->getActiveSheet()->getStyle('D4:D' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-    $objPHPExcel->getActiveSheet()->getStyle('E4:E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-
-    // Aplicar bordes a todas las celdas
-    $styleArray = [
-        'borders' => [
-            'allborders' => [
-                'style' => PHPExcel_Style_Border::BORDER_THIN,
-            ],
-        ],
-    ];
-    $objPHPExcel->getActiveSheet()->getStyle('A3:E' . ($row - 1))->applyFromArray($styleArray);
-
-    // Auto-ajustar columnas
-    foreach (range('A', 'E') as $col) {
-        $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension($col)->setAutoSize(true);
-    }
-
-    $objPHPExcel->getActiveSheet()->setTitle('Detalle Cuenta');
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="Detalle_Cuenta.xlsx"');
-    header('Cache-Control: max-age=0');
-
-    ob_end_clean();
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-    $objWriter->save('php://output');
-    exit();
-  }
-
   public function exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra) {
     include_once('models/administrar_cta_cte.php');
 
@@ -393,31 +296,58 @@ class ctacte{
 
     // Verificar si la decodificación fue exitosa
     if (json_last_error() !== JSON_ERROR_NONE) {
-        echo json_encode(['error' => 'Datos inválidos recibidos']);
-        exit;
+      echo json_encode(['error' => 'Datos inválidos recibidos']);
+      exit;
     }
+
+    if($tipo=="responsable"){
+      $query = "SELECT nombre FROM responsables_deposito WHERE id=$id_cuenta";
+    }else{
+      $query = "SELECT nombre FROM destinos WHERE id=$id_cuenta";
+    }
+    $get = $this->conexion->consultaRetorno($query);
+    $row = $get->fetch_array();
+    $cuenta=$row["nombre"];
+
+    $depositos=$id_cuenta;
+    if($tipo=="responsable"){;
+
+      if($id_deposito==""){
+        $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
+        $get = $this->conexion->consultaRetorno($query);
+        $row = $get->fetch_array();
+        $depositos=$row["depositos"];
+      }else{
+        $depositos=$id_deposito;
+      }
+    }
+
+    $query = "SELECT GROUP_CONCAT(nombre SEPARATOR ', ') AS depositos FROM destinos WHERE id IN ($depositos)";
+    $get = $this->conexion->consultaRetorno($query);
+    $row = $get->fetch_array();
+    $depositos=$row["depositos"];
 
     // Filtrar solo los datos necesarios
     $aCtaCte_filtrados = array();
     foreach ($aCtaCte as $row) {
-        // Verificar que los campos necesarios existen en cada movimiento
-        if (isset($row['fecha_hora_formatted'], $row['descripcion'], $row['debe'], $row['haber'], $row['saldo'])) {
-            if (isset($row['id_carga'])) {
-                $descripcion = "Carga #" . $row['id_carga'] . " - ". $row['chofer'];;
-            } else if (isset($row['id_movimiento'])) {
-                $descripcion = "Movimiento #" . $row['id_movimiento'];
-            } else {
-                $descripcion = strip_tags($row['descripcion']);
-            }
-
-            $aCtaCte_filtrados[] = array(
-                'fecha_hora_formatted' => $row['fecha_hora_formatted'],
-                'descripcion' => $descripcion,
-                'debe' => (float) $row['debe'],
-                'haber' => (float) $row['haber'],
-                'saldo' => (float) $row['saldo']
-            );
+      // Verificar que los campos necesarios existen en cada movimiento
+      if (isset($row['fecha_hora_formatted'], $row['descripcion'], $row['debe'], $row['haber'], $row['saldo'])) {
+        if (isset($row['id_carga'])) {
+          $descripcion = "Carga #" . $row['id_carga'] . " - ". $row['chofer'];;
+        } else if (isset($row['id_movimiento'])) {
+          $descripcion = "Movimiento #" . $row['id_movimiento'];
+        } else {
+          $descripcion = strip_tags($row['descripcion']);
         }
+
+        $aCtaCte_filtrados[] = array(
+          'fecha_hora_formatted' => $row['fecha_hora_formatted'],
+          'descripcion' => $descripcion,
+          'debe' => (float) $row['debe'],
+          'haber' => (float) $row['haber'],
+          'saldo' => (float) $row['saldo']
+        );
+      }
     }
 
     // Crear nuevo objeto Spreadsheet
@@ -425,25 +355,51 @@ class ctacte{
 
     // Configuración del archivo
     $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setCellValue('A1', "ID Cuenta:");
-    $sheet->setCellValue('B1', $id_cuenta);
+    $sheet->setCellValue('A1', "Cuenta");
+    $sheet->setCellValue('A2', $cuenta);
+    $sheet->setCellValue('B1', "Depositos");
+    $sheet->setCellValue('B2', $depositos);
 
     // Encabezado de la tabla de movimientos
-    $sheet->setCellValue('A3', "Fecha y Hora");
-    $sheet->setCellValue('B3', "Descripcion");
-    $sheet->setCellValue('C3', "Debe");
-    $sheet->setCellValue('D3', "Haber");
-    $sheet->setCellValue('E3', "Saldo");
+    $sheet->setCellValue('A4', "Fecha y Hora");
+    $sheet->setCellValue('B4', "Descripcion");
+    $sheet->setCellValue('C4', "Debe");
+    $sheet->setCellValue('D4', "Haber");
+    $sheet->setCellValue('E4', "Saldo");
+
+    $aStyleCenter = [
+      'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER,
+      ],
+    ];
+    $aStyleBold = [
+      'font' => [
+        'bold' => true,
+      ],
+    ];
+
+    $aStyleBorders = [
+      'borders' => [
+        'allBorders' => [
+          'borderStyle' => Border::BORDER_THIN,
+        ],
+      ],
+    ];
+
+    $sheet->getStyle('A4:E4')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
+    $sheet->getStyle('A1:B1')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
+    $sheet->getStyle('A1:B2')->applyFromArray($aStyleBorders);
 
     // Añadir los datos de los movimientos
-    $row = 4; // Fila inicial para los datos
+    $row = 5; // Fila inicial para los datos
     foreach ($aCtaCte_filtrados as $mov) {
-        $sheet->setCellValue('A' . $row, $mov['fecha_hora_formatted']);
-        $sheet->setCellValue('B' . $row, $mov['descripcion']);
-        $sheet->setCellValue('C' . $row, $mov['debe']);
-        $sheet->setCellValue('D' . $row, $mov['haber']);
-        $sheet->setCellValue('E' . $row, $mov['saldo']);
-        $row++;
+      $sheet->setCellValue('A' . $row, $mov['fecha_hora_formatted']);
+      $sheet->setCellValue('B' . $row, $mov['descripcion']);
+      $sheet->setCellValue('C' . $row, $mov['debe']);
+      $sheet->setCellValue('D' . $row, $mov['haber']);
+      $sheet->setCellValue('E' . $row, $mov['saldo']);
+      $row++;
     }
 
     // Formatear celdas para valores numéricos
@@ -452,18 +408,11 @@ class ctacte{
     $sheet->getStyle('E4:E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
     // Aplicar bordes a todas las celdas
-    $styleArray = [
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => Border::BORDER_THIN,
-            ],
-        ],
-    ];
-    $sheet->getStyle('A3:E' . ($row - 1))->applyFromArray($styleArray);
+    $sheet->getStyle('A4:E' . ($row - 1))->applyFromArray($aStyleBorders);
 
     // Auto-ajustar columnas
     foreach (range('A', 'E') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
+      $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
     $sheet->setTitle('Detalle Cuenta');

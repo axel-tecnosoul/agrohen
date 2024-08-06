@@ -12,6 +12,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 <html lang="en">
   <head>
     <?php include('./views/head_tables.php');?>
+    <link rel="stylesheet" type="text/css" href="assets/css/tablaDetalleCarga.css">
     <style>
       /* Estilo para que el borde del select2 sea igual al de los inputs form-control */
       .select2-container .select2-selection--single,
@@ -254,7 +255,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
     <!--Modal para ver la info de un producto-->
     <div class="modal fade" id="modalVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document" style="max-width: 1000px;">
+      <div class="modal-dialog modal-lg" role="document" style="max-width: 1200px;margin: 1rem auto;">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title mr-4" id="exampleModalLabel">Ver carga de producto</h5>
@@ -265,8 +266,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-12">
-                  <table id="tableProductosCarga" class="table table-striped">
+                <div class="col-lg-12 table-container tablaDetalleCarga" id="tableProductosVer" style="overflow-x: auto; overflow-y: auto; max-height: 50vh;padding-left: 0;">
+                  <!-- <table id="tableProductosCarga" class="table table-striped">
                     <thead>
                       <th class="text-center" style="width: 18%">Deposito</th>
                       <th class="text-center" style="width: 25%">Producto</th>
@@ -282,8 +283,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       <th class="text-right" id="total_kilos_ver">0</th>
                       <th class="text-right" id="total_monto_ver">0</th>
                     </tfoot>
-                  </table>
-                </div>
+                  </table> -->
               </div>
             </div>
             <div class="modal-footer">
@@ -356,8 +356,21 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $("#cuenta").on("change",filtrarDepositos)
 
         $(".filtraTabla").on("change",getCtacte)
+
+        // Llamar a la función después de cada cambio en el select2
+        $('#id_deposito').on('change', function() {
+            removeTooltipsFromSelect2();
+        });
+
+        // Llamar a la función inmediatamente después de la inicialización
+        removeTooltipsFromSelect2();
       
       });
+
+      // Función para eliminar tooltips de los elementos generados por select2
+      function removeTooltipsFromSelect2() {
+        $('.select2-selection__choice').tooltip('dispose');
+      }
 
       /*$(document).on('mouseenter','.select2-selection__choice',function () {
         console.log(this);
@@ -516,7 +529,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             $selectCuentaRegistrarNuevoMovimiento = document.getElementById("cuenta_registrar");
             
             //Genero los options del select choferes
-            if(selectCuenta.type=="select-one"){
+            if(selectCuenta!=undefined && selectCuenta.type=="select-one"){
               respuestaJson.cuentas.forEach((cuenta)=>{
                 
                 let $option1 = document.createElement("option");
@@ -545,31 +558,33 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             /*Identifico el select de destinos*/
             $selectDestino = document.getElementById("id_deposito");
             
-            //Genero los options del select destinos
-            allOptionsSelectDestino=respuestaJson.destinos;
-            allOptionsSelectDestino.forEach((destino)=>{
-              /*$option = document.createElement("option");
-              let optionText = document.createTextNode(destino.destino);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", destino.id_destino);
-              $option.setAttribute("data-id_responsable", destino.id_responsable);
-              $selectDestino.appendChild($option);
-              $selectCuentaRegistrarNuevoMovimiento.appendChild($option);*/
+            if($selectDestino!=undefined){
+              //Genero los options del select destinos
+              allOptionsSelectDestino=respuestaJson.destinos;
+              allOptionsSelectDestino.forEach((destino)=>{
+                /*$option = document.createElement("option");
+                let optionText = document.createTextNode(destino.destino);
+                $option.appendChild(optionText);
+                $option.setAttribute("value", destino.id_destino);
+                $option.setAttribute("data-id_responsable", destino.id_responsable);
+                $selectDestino.appendChild($option);
+                $selectCuentaRegistrarNuevoMovimiento.appendChild($option);*/
 
-              const $option = document.createElement("option");
-              const optionText1 = document.createTextNode(destino.destino);
-              $option.appendChild(optionText1);
-              $option.setAttribute("value", destino.id_destino);
-              $option.setAttribute("data-id_responsable", destino.id_responsable);
-              $selectDestino.appendChild($option);
-            })
-            
-            $($selectDestino).select2({
-              placeholder: "Seleccione...",
-              //allowClear: true
-            })
-            /*allOptionsSelectDestino = $($selectDestino).find('option');
-            console.log(allOptionsSelectDestino);*/
+                const $option = document.createElement("option");
+                const optionText1 = document.createTextNode(destino.destino);
+                $option.appendChild(optionText1);
+                $option.setAttribute("value", destino.id_destino);
+                $option.setAttribute("data-id_responsable", destino.id_responsable);
+                $selectDestino.appendChild($option);
+              })
+              
+              $($selectDestino).select2({
+                placeholder: "Seleccione...",
+                //allowClear: true
+              })
+              /*allOptionsSelectDestino = $($selectDestino).find('option');
+              console.log(allOptionsSelectDestino);*/
+            }
 
           }
         });
@@ -920,9 +935,39 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         var selectedIndex = $selectCuenta.prop('selectedIndex');
         var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
 
+        /*$depositos=$id_cuenta;
+        if($tipo=="responsable"){
+          if($id_deposito==""){
+            $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
+            $depositos=$row["depositos"];
+          }else{
+            $depositos=$id_deposito;
+          }
+        }*/
+
         var id_cuenta=selectedOption.data("id")
         var tipo=selectedOption.data("tipo")
-        let id_deposito=$("#id_deposito").val()
+        
+        let select_deposito=$("#id_deposito")
+        let id_deposito=select_deposito.val()
+        
+        let aDepositos=id_cuenta
+        console.log(aDepositos);
+        if(tipo=="responsable"){
+          if(id_deposito.length==0){
+            aDepositos=[]
+            select_deposito.find("option").each(function(){
+              aDepositos.push(this.value)
+            })
+          }else{
+            aDepositos=id_deposito;
+          }
+        }
+
+        console.log(aDepositos);
+        if(aDepositos==undefined){
+          aDepositos=$("#id_deposito_usuario").val()
+        }
 
         $(".modal-header").css( "background-color", "#007bff");
         $(".modal-header").css( "color", "white" );
@@ -930,14 +975,16 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $('#modalVer').modal('show');
 
         let datosUpdate = new FormData();
-        datosUpdate.append('accion', 'traerProductosCarga');
+        //datosUpdate.append('accion', 'traerProductosCarga');
+        datosUpdate.append('accion', 'traerDatosVerDetalleCarga');
         datosUpdate.append('id_carga', id_carga);
-        datosUpdate.append('id_cuenta', id_cuenta);
+        /*datosUpdate.append('id_cuenta', id_cuenta);
+        datosUpdate.append('id_deposito', id_deposito);*/
         datosUpdate.append('tipo', tipo);
-        datosUpdate.append('id_deposito', id_deposito);
+        datosUpdate.append('aDepositos', aDepositos);
         $.ajax({
           data: datosUpdate,
-          url: './models/administrar_cta_cte.php',
+          url: './models/administrar_cargas.php',
           method: "post",
           cache: false,
           contentType: false,
@@ -946,43 +993,19 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             //$('#procesando').modal('show');
           },
           success: function(response){
-            let datosInput = JSON.parse(response);
-            console.log(datosInput);
 
-            // Identifico la tabla de destinos
-            var tbody = document.querySelector('#tableProductosCarga tbody');
-            tbody.innerHTML="";
-            let cantidad_bulto_total = 0
-            let total_kilos = 0
-            let total_monto = 0
-            datosInput.forEach((row) => {
-              //console.log(row)
-              // Plantilla para cada fila
-              let tipo_aumento_extra=row.tipo_aumento_extra
-              let valor_extra=row.valor_extra
-              
-              cantidad_bulto_total += parseFloat(row.cantidad_bultos);
-              total_kilos += parseFloat(row.kilos);
-              total_monto += parseFloat(row.monto)
+            response=response.split("%%")
 
-              let contenidoFila = `
-                <td class="align-left">${row.deposito}</td>
-                <td class="align-left">${row.familia+" "+row.producto}</td>
-                <td class="align-right">${formatCurrency(row.precio)}</td>
-                <td style="text-align: right;">${formatNumber2Decimal(row.cantidad_bultos)}</td>
-                <td style="text-align: right;">${formatNumber2Decimal(row.kilos)}</td>
-                <td style="text-align: right;">${formatCurrency(row.monto)}</td>`;
-              // Crear una nueva fila
-              var newRow = document.createElement('tr');
-              // Insertar el contenido HTML en la nueva fila
-              newRow.innerHTML = contenidoFila;
-              // Agregar la fila al tbody
-              tbody.appendChild(newRow);
-            });
+            let tableProductosVer=$("#tableProductosVer")
+            tableProductosVer.html(response[0]);
 
-            $('#total_bultos_ver').text(formatNumber2Decimal(cantidad_bulto_total));
-            $('#total_kilos_ver').text(formatNumber2Decimal(total_kilos));
-            $('#total_monto_ver').text(formatCurrency(total_monto));
+            let ancho1=parseFloat(tableProductosVer.find("th.fixed-column").css("width"))
+            let ancho2=parseFloat(tableProductosVer.find("th.fixed-column-2").css("width"))
+            let ancho3=parseFloat(tableProductosVer.find("th.fixed-column-3").css("width"))
+
+            tableProductosVer.find(".fixed-column-2").css("left",ancho1)
+            tableProductosVer.find(".fixed-column-3").css("left",ancho1+ancho2)
+            tableProductosVer.find(".fixed-column-4").css("left",ancho1+ancho2+ancho3)
 
           }
         });
@@ -1029,7 +1052,29 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           .then(blob => {
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.download = "Cuenta_Exportada.xlsx";
+
+            // Obtener la fecha y hora actual
+            let now = new Date();
+            let year = now.getFullYear();
+            let month = String(now.getMonth() + 1).padStart(2, '0'); // Meses desde 0 a 11
+            let day = String(now.getDate()).padStart(2, '0');
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+
+            // Formato deseado: "YYYY-MM-DD_HH-MM-SS"
+            let formattedDate = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+
+            var cuenta = $('#cuenta option[value="' + id_cuenta + '"]').text();
+            var deposito="";
+            if(id_deposito>0){
+              deposito =' dep.'+ $('#id_deposito option[value="' + id_deposito + '"]').text();
+            }
+
+            // Nombre del archivo con fecha y hora
+            let filename = `Cuenta corriente ${cuenta+deposito}_${formattedDate}.xlsx`;
+
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

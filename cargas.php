@@ -12,6 +12,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 <html lang="en">
   <head>
     <?php include('./views/head_tables.php');?>
+    <link rel="stylesheet" type="text/css" href="assets/css/tablaDetalleCarga.css">
     <style>
       /* Estilo para que el borde del select2 sea igual al de los inputs form-control */
       .select2-container .select2-selection--single,
@@ -28,73 +29,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
       tr.child {
         background-color: beige !important;
-      }
-
-      .tablaDetalleCarga-container {
-        position: relative;
-        overflow: auto;
-        max-height: 400px; /* Ajusta esto según tus necesidades */
-      }
-
-      .tablaDetalleCarga thead th {
-        position: sticky;
-        top: 0;
-        background: burlywood;
-        z-index: 10;
-      }
-
-      .tablaDetalleCarga tbody td,
-      .tablaDetalleCarga tfoot td,
-      .tablaDetalleCarga thead th {
-        white-space: nowrap;
-        border: solid 1px black;
-      }
-
-      .tablaDetalleCarga .fixed-column {
-        position: sticky;
-        left: 0;
-        background: burlywood;
-        z-index: 20;
-      }
-
-      .tablaDetalleCarga .fixed-column-2 {
-        position: sticky;
-        left: 282px; /* Ajusta esto según el ancho de tus columnas */
-        background: burlywood;
-        z-index: 20;
-      }
-
-      .tablaDetalleCarga .fixed-column-3 {
-        position: sticky;
-        left: 282px; /* Ajusta esto según el ancho de tus columnas */
-        background: burlywood;
-        z-index: 20;
-      }
-
-      .tablaDetalleCarga .fixed-column-4 {
-        position: sticky;
-        left: 282px; /* Ajusta esto según el ancho de tus columnas */
-        background: burlywood;
-        z-index: 20;
-      }
-
-      .tablaDetalleCarga .fixed-column-header {
-        position: sticky;
-        top: 0;
-        background: burlywood;
-        z-index: 30; /* Más alto para asegurar que está sobre las celdas fijas */
-      }
-
-      .tablaDetalleCarga .destino-start {
-        background-color: #d0cece;
-      }
-
-      .tablaDetalleCarga .destino-end {
-        background-color: #d0cece;
-      }
-
-      .tablaDetalleCarga tfoot {
-        background: burlywood;
       }
 
       #destinos_default {
@@ -152,10 +86,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="card-header py-3">
                   <h5 style="display: inline-block;vertical-align: middle;">Administrar Cargas</h5>
                   <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
-                  <span id="id_perfil" class="d-none"><?=$_SESSION["rowUsers"]["id_perfil"]?></span>
+                  <span id="id_perfil" class="d-none"><?=$id_perfil?></span>
                 </div>
                 <div class="card-body py-1">
-                <input type="hidden" id="id_deposito_usuario" value="<?=$_SESSION["rowUsers"]["id_deposito"]?>">
+                  <input type="hidden" id="id_deposito_usuario" value="<?=$_SESSION["rowUsers"]["id_deposito"]?>">
                   <table id="tableFiltros" style="" class="table table-borderless mb-3">
                     <tr>
                       <td width="8%" class="text-right p-1">Desde: </td>
@@ -304,7 +238,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
     </div>
 
     <!--Modal para CRUD admin-->
-    <div class="modal fade" id="modalCRUDadminVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modalVer" tabindex="-1000000000000" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document" style="max-width: 1200px;margin: 1rem auto;">
         <div class="modal-content">
           <div class="modal-header">
@@ -366,12 +300,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-warning btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
-              <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
-              <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
-              <button type="button" id="btnConfirmar" class="btn btn-primary d-none">Confirmar</button>
-              <button type="button" id="btnExportar" class="btn btn-success">Exportar</button>
+            <div class="modal-footer"><?php
+              if($id_perfil==1){?>
+                <button type="submit" class="btn btn-warning btnImprimirOC" data-con-precio="1">Imprimir OC con precio</button>
+                <button type="submit" class="btn btn-dark btnImprimirOC" data-con-precio="0">Imprimir OC sin precio</button>
+                <button type="button" id="btnDespachar" class="btn btn-primary">Despachar</button>
+                <button type="button" id="btnConfirmar" class="btn btn-primary d-none">Confirmar</button>
+                <button type="button" id="btnExportar" class="btn btn-success">Exportar</button><?php
+              }?>
               <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             </div>
           </form>
@@ -502,8 +438,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       
                       $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
                       $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
-                      
-                      $btnGestionarCarga=''
+                      $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                       
                       //console.log(full);
                       let despachado=0;
@@ -511,21 +446,19 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                         despachado=1;
                         $btnEliminar=''
                         $btnEditar=''
-                        //$btnDespachar=`<button class='btn btn-primary btnDespachar'><i class='fa fa-truck'></i></button>`
-                      }
-
-                      if(id_perfil==2){
-                        $btnEliminar=''
-                        $btnEditar=''
                       }
 
                       $btnVer=`<button class='btn btn-primary btnVer' data-despachado='${despachado}'><i class='fa fa-eye'></i></button>`
 
+                      if(id_perfil==2){
+                        $btnEliminar=''
+                        $btnEditar=''
+                        $btnGestionarCarga=''
+                      }
+
                       if(full.total_bultos=="0.00" && full.total_kilos=="0.00" && full.total_monto=="0.00"){
                         $btnVer=''
                       }
-
-                      $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                       
                       $buttonsGroupEnd=`</div></div>`
 
@@ -781,7 +714,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         let id_proveedor_default = $.trim($('#id_proveedor_default').val());
         let datosDepositos = []
 
-        let destinos_check=$(".destinos_check:checked").each(function(){
+        $(".destinos_check:checked").each(function(){
           let id_deposito=this.value;
           datosDepositos.push(id_deposito);
         })
@@ -794,7 +727,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           success: function(respuesta) {
             respuestaJson = JSON.parse(respuesta);
             if(respuestaJson.ok=="1"){
-              //tablaCargas.ajax.reload(null, false);
               window.location.href="cargas_abm.php?id="+respuestaJson.id_carga;
             }else{
               swal({
@@ -843,31 +775,22 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             $('#id_proveedor_default').val(datosInput.id_proveedor).change()
             $('#id_carga').html(id_carga)
 
-            /*let destinos_check=$(".destinos_check").each(function(){
-              let id_deposito=this.value;
-              console.log(datosInput.destinos_preseleccionados);
-              //total_bultos
-              if (datosInput.destinos_preseleccionados.includes(id_deposito)){
-                this.checked=true;
+            $(".destinos_check").each(function() {
+              let id_deposito = this.value;
+
+              // Buscar el destino en el array de destinos preseleccionados
+              let destino = datosInput.destinos_preseleccionados.find(dest => dest.id_destino == id_deposito);
+
+              if (destino) {
+                // Marcar la casilla si el destino está en la lista
+                this.checked = true;
+
+                // Deshabilitar la casilla si total_bultos es mayor a 0
+                if (parseFloat(destino.total_bultos) > 0) {
+                  this.disabled = true;
+                }
               }
-            })*/
-
-            let destinos_check = $(".destinos_check").each(function() {
-            let id_deposito = this.value;
-
-            // Buscar el destino en el array de destinos preseleccionados
-            let destino = datosInput.destinos_preseleccionados.find(dest => dest.id_destino == id_deposito);
-
-            if (destino) {
-              // Marcar la casilla si el destino está en la lista
-              this.checked = true;
-
-              // Deshabilitar la casilla si total_bultos es mayor a 0
-              if (parseFloat(destino.total_bultos) > 0) {
-                this.disabled = true;
-              }
-            }
-          });
+            });
 
             accion = "updateCarga";
           }
@@ -880,7 +803,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $(".modal-header").css("background-color", "#007bff");
         $(".modal-header").css("color", "white");
         $(".modal-title").text("Ver Carga ID: ");
-        $('#modalCRUDadminVer').modal('show');
+        $('#modalVer').modal('show');
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();
 
@@ -902,9 +825,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           $("#btnImprimirSinPrecio").removeClass("disbaled d-none")
         }
 
+        let id_deposito_usuario=$("#id_deposito_usuario").val();
+
         let datosVer = new FormData();
         datosVer.append('accion', 'traerDatosVerDetalleCarga');
         datosVer.append('id_carga', id_carga);
+        datosVer.append('aDepositos', id_deposito_usuario);
         $.ajax({
           data: datosVer,
           url: './models/administrar_cargas.php',
@@ -992,13 +918,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               data:  {accion:accion, id_carga:id_carga},
               success: function() {
                 //tablaCargas.row(fila.parents('tr')).remove().draw();
-                //tablaCargas.ajax.reload(null, false);
+                getCargas()
+                $('#modalVer').modal('hide');
+                
                 swal({
                   icon: 'success',
                   title: 'Carga despachada correctamente'
                 }).then(() => {
-                  tablaCargas.ajax.reload(null, false);
-                  $('#modalCRUDadminVer').modal('hide');
+                  
                   //$("#btnDespachar").addClass("invisible");
                 });
                 // setTimeout(() => {
@@ -1036,9 +963,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   icon: 'success',
                   title: 'Carga confirmada correctamente'
                 }).then(() => {
-                  $('#modalCRUDadminVer').modal('hide');
+                  $('#modalVer').modal('hide');
                   getCargas()
-                  //tablaCargas.ajax.reload(null, false);
                 });
                 // setTimeout(() => {
                 //   location.reload();
@@ -1128,14 +1054,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       $(document).on("click", ".btnImprimirOC", function(event){
         event.preventDefault();
         let id_carga =  $('#id_carga').html();
-        
         let cp = this.dataset.conPrecio;
 
         datosEnviar = JSON.stringify(id_carga);
 
         let destinos=[]
         $(".check_destino:checked").each(function(){
-          //console.log(this);
           destinos.push(this.value)
         })
         str_destinos=destinos.join(',');
@@ -1166,7 +1090,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               data:  {accion:accion, id_carga:id_carga},
               success: function() {
                 //tablaCargas.row(fila.parents('tr')).remove().draw();
-                tablaCargas.ajax.reload(null, false);
+                getCargas()
                 swal({
                   icon: 'success',
                   title: 'Carga eliminada correctamente'
