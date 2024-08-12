@@ -129,24 +129,24 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="id_responsable" class="col-form-label">Responsable:</label>
-                    <select class="form-control" style="width: 100%;" id="id_responsable" required></select>
+                    <select class="form-control" style="width: 100%;" id="id_responsable"></select>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="col-form-label">Tipo de Aumento:</label>
                     <label class="d-block" for="porcentaje_extra">
-                      <input type="radio" class="radio_animated" id="porcentaje_extra" name="opcion" value="Porcentaje Extra" required checked> Porcentaje Extra
+                      <input type="radio" class="radio_animated" id="porcentaje_extra" name="opcion" value="Porcentaje Extra"> Porcentaje Extra
                     </label>
                     <label class="d-block" for="precio_fijo">
-                      <input type="radio" class="radio_animated" id="precio_fijo" name="opcion" value="Precio Fijo" required> Precio Fijo
+                      <input type="radio" class="radio_animated" id="precio_fijo" name="opcion" value="Precio Fijo"> Precio Fijo
                     </label>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="valor" class="col-form-label">Valor:</label>
-                    <input type="number" class="form-control" id="valor" required>
+                    <input type="number" class="form-control" id="valor">
                   </div>
                 </div>
               </div>
@@ -375,6 +375,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let nombre = $.trim($('#nombre').val());
         let id_responsable = $.trim($('#id_responsable').val());
         let opcion = $('input[name="opcion"]:checked').val();
+        if(opcion==undefined){
+          opcion="";
+        }
         let valor = $.trim($('#valor').val());
 
         $.ajax({
@@ -383,8 +386,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           datatype:"json",
           data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, opcion: opcion, valor: valor},
           success: function(data) {
+            tablaDeposito.ajax.reload(null, false);
             if(data=="1"){
-              tablaDeposito.ajax.reload(null, false);
+              $('#modalCRUDadmin').modal('hide');
+              swal({
+                icon: 'success',
+                title: 'Accion realizada correctamente'
+              });
             }else{
               swal({
                 icon: 'error',
@@ -392,11 +400,6 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               });
             }
           }
-        });
-        $('#modalCRUDadmin').modal('hide');
-        swal({
-          icon: 'success',
-          title: 'Accion realizada correctamente'
         });
       });
 
@@ -464,11 +467,23 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_deposito:id_deposito},
-              success: function() {
-                //tablaDeposito.row(fila.parents('tr')).remove().draw();
-                tablaDeposito.ajax.reload(null, false);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  //tablaDeposito.row(fila.parents('tr')).remove().draw();
+                  tablaDeposito.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
+                }
               }
-            }); 
+            });
           } else {
             swal("El registro no se eliminó!");
           }

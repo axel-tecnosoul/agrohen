@@ -288,7 +288,7 @@ if($datosCarga["despachado"]=="Si"){
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group" id="motivo_group">
-                    <label for="kg_x_bulto" class="col-form-label">Motivo de la modificacion del precio:</label>
+                    <label for="motivo_cambio_precio" class="col-form-label">Motivo de la modificacion del precio:</label>
                     <input type="text" class="form-control" id="motivo_cambio_precio">
                     <input type="hidden" class="form-control" id="precio_aux">
                   </div>
@@ -343,7 +343,7 @@ if($datosCarga["despachado"]=="Si"){
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Familia:</label>
                     <span id="lbl_familia"></span>
@@ -355,7 +355,7 @@ if($datosCarga["despachado"]=="Si"){
                     <span id="lbl_producto"></span>
                   </div>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-5">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Proveedor:</label>
                     <span id="lbl_proveedor"></span>
@@ -369,18 +369,38 @@ if($datosCarga["despachado"]=="Si"){
                     <span id="lbl_kg"></span>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-9">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label font-weight-bold">Precio:</label>
                     <span id="lbl_precio"></span>
                   </div>
                 </div>
-                <div class="col-lg-7">
+                <!-- <div class="col-lg-7">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label font-weight-bold">Motivo de la modificacion del precio:</label>
                     <span id="lbl_motivo_cambio_precio"></span>
                   </div>
+                </div> -->
+              </div>
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label for="lbl_usuario" class="col-form-label font-weight-bold">Usuario:</label>
+                    <span id="lbl_usuario"></span>
+                  </div>
                 </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label for="lbl_fecha_hora_alta" class="col-form-label font-weight-bold">Fecha y hora carga:</label>
+                    <span id="lbl_fecha_hora_alta"></span>
+                  </div>
+                </div>
+                <!-- <div class="col-lg-5">
+                  <div class="form-group">
+                    <label for="lbl_fecha_hora_ultima_modificacion" class="col-form-label font-weight-bold">Ultima modificacion:</label>
+                    <span id="lbl_fecha_hora_ultima_modificacion"></span>
+                  </div>
+                </div> -->
               </div>
               <div class="row">
                 <div class="col-lg-12">
@@ -1166,7 +1186,7 @@ if($datosCarga["despachado"]=="Si"){
           success: function(response){
             accion = "updateProductoCarga";
             let datosInput = JSON.parse(response);
-            //console.log("Datos Input: ", datosInput);
+            console.log("Datos Input: ", datosInput);
 
             //console.log(datosInput.historial.length);
             //debugger
@@ -1199,10 +1219,16 @@ if($datosCarga["despachado"]=="Si"){
             $('#lbl_proveedor').html(datosInput.proveedor);
             //$('#id_producto').val(datosInput.id_producto).change();
             $('#lbl_kg').html(formatNumber2Decimal(datosInput.kg_x_bulto));
-            $('#lbl_precio').html(formatCurrency(datosInput.precio));
-            $('#lbl_motivo_cambio_precio').html(datosInput.motivo_cambio_precio);
-            $('#id_proveedor').val(datosInput.id_proveedor).change();
-
+            let precio=formatCurrency(datosInput.precio);
+            if(datosInput.motivo_cambio_precio.length>0){
+              precio+=" (<span style='font-style: italic;'>"+datosInput.motivo_cambio_precio+"</span>)";
+            }
+            $('#lbl_precio').html(precio);
+            //$('#lbl_motivo_cambio_precio').html(datosInput.motivo_cambio_precio);
+            //$('#id_proveedor').val(datosInput.id_proveedor).change();
+            $('#lbl_usuario').html(datosInput.usuario)
+            $('#lbl_fecha_hora_alta').html(datosInput.fecha_hora_alta)
+            //$('#lbl_fecha_hora_ultima_modificacion').html(datosInput.fecha_hora_ultima_modificacion)
             let destinos=datosInput["destinos"];
             //console.log("Destinos: " + destinos);
             let tableDepositosRows = $("#tableDepositos tbody tr");

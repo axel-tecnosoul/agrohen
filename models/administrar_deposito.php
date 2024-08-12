@@ -76,11 +76,15 @@ class depositos{
 
     $this->id_deposito = $id_deposito;
     $this->nombre = $nombre;
-    $this->id_responsable = $id_responsable;
     $this->opcion = $opcion;
-    $this->valor = $valor;
+    if($valor==""){
+      $valor="NULL";
+    }
+    if($id_responsable==""){
+      $id_responsable="NULL";
+    }
 
-    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable ='$this->id_responsable',  tipo_aumento_extra ='$opcion', valor_extra ='$this->valor' WHERE id = $this->id_deposito";
+    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable =$id_responsable, tipo_aumento_extra ='$opcion', valor_extra = $valor WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -100,6 +104,18 @@ class depositos{
     /*ELIMINO ALMACEN*/
     $sqldeletedeposito = "DELETE FROM destinos WHERE id = $this->id_deposito";
     $deletedeposito = $this->conexion->consultaSimple($sqldeletedeposito);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_deposito, $estado){
@@ -117,12 +133,18 @@ class depositos{
 
   public function registrardeposito($nombre,$id_responsable,$opcion, $valor){
     $this->nombre = $nombre;
-    $this->id_responsable = $id_responsable;
     $this->opcion = $opcion;
     $this->valor = $valor;
-    $usuario = $_SESSION['rowUsers']['id_usuario'];
+    if($valor==""){
+      $valor="NULL";
+    }
+    if($id_responsable==""){
+      $id_responsable="NULL";
+    }
+    $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo) VALUES('$usuario', '$this->nombre', '$this->id_responsable', '$opcion','$this->valor', 1)";
+    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo) VALUES($id_usuario, '$this->nombre', $id_responsable, '$opcion',$valor, 1)";
+    //echo $queryInsertUser;
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -163,7 +185,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarDeposito':
       $id_deposito = $_POST['id_deposito'];
-      $depositos->deletedeposito($id_deposito);
+      echo $depositos->deletedeposito($id_deposito);
       break;
     case 'traerDatosIniciales':
       $depositos->traerDatosIniciales();

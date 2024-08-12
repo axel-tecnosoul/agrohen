@@ -25,6 +25,9 @@ class Conexion{
 
   public function consultaSimple($sql){
     $this->conectar->query($sql);
+    if ($this->conectar->error) {
+      //$this->conectar->error;
+    }
   }
 
   public function consultaSimpleM($sql){
