@@ -84,6 +84,18 @@ class presentaciones{
     /*ELIMINO ALMACEN*/
     $sqldeletepresentacion = "DELETE FROM presentaciones_productos WHERE id = $this->id_presentacion";
     $deletepresentacion = $this->conexion->consultaSimple($sqldeletepresentacion);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_presentacion, $estado){
@@ -138,7 +150,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarpresentacion':
         $id_presentacion = $_POST['id_presentacion'];
-        $presentaciones->deletepresentacion($id_presentacion);
+        echo $presentaciones->deletepresentacion($id_presentacion);
       break;
     case 'traerDatosIniciales':
       $presentaciones->traerDatosIniciales();

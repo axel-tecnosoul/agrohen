@@ -424,9 +424,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_proveedor:id_proveedor},
-              success: function() {
-                //tablaproveedor.row(fila.parents('tr')).remove().draw();
-                tablaproveedor.ajax.reload(null, false);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  tablaProducto.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
+                }
               }
             }); 
           } else {

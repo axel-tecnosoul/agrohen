@@ -99,6 +99,18 @@ class proveedores{
     /*ELIMINO ALMACEN*/
     $sqldeleteProveedor = "DELETE FROM proveedores WHERE id = $this->id_proveedor";
     $deleteProveedor = $this->conexion->consultaSimple($sqldeleteProveedor);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_proveedor, $estado){
@@ -139,7 +151,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarProveedor':
         $id_proveedor = $_POST['id_proveedor'];
-        $proveedores->deleteProveedor($id_proveedor);
+        echo $proveedores->deleteProveedor($id_proveedor);
       break;
     case 'traerDatosIniciales':
       $proveedores->traerDatosIniciales();
