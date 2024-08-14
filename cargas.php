@@ -94,7 +94,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     <tr>
                       <td width="8%" class="text-right p-1">Desde: </td>
                       <td width="15%" class="p-1 inputDate" style="">
-                        <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 year"))?>" class="form-control form-control-sm w-auto filtraTabla">
+                        <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 month"))?>" class="form-control form-control-sm w-auto filtraTabla">
                       </td>
                       <td width="8%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Estado:</td>
                       <td width="15%" rowspan="2" style="vertical-align: middle;" class="p-1">
@@ -397,7 +397,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 "url" : "./models/administrar_cargas.php?accion=traerCargas&desde="+desde+"&hasta="+hasta+"&id_origen="+id_origen+"&id_chofer="+id_chofer+"&estado="+estado,
                 "dataSrc": "",
               },
-              "responsive": true,
+              //"responsive": true,
+              "responsive": {
+                details: {
+                  // Impide que las columnas con responsivePriority 1 se muevan a la fila hija
+                  display: $.fn.dataTable.Responsive.display.childRow,
+                  //renderer: $.fn.dataTable.Responsive.renderer.tableAll()
+                }
+              },
               "order": [[0, "desc"]],
               "columns":[
                 {"data": "id_carga"},
@@ -441,14 +448,18 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
                       
                       //console.log(full);
-                      let despachado=0;
+                      let confirmada=despachado=0;
                       if(full.despachado=="Si"){
                         despachado=1;
                         $btnEliminar=''
                         $btnEditar=''
                       }
 
-                      $btnVer=`<button class='btn btn-primary btnVer' data-despachado='${despachado}'><i class='fa fa-eye'></i></button>`
+                      if(full.confirmada=="Si"){
+                        confirmada=1;
+                      }
+
+                      $btnVer=`<button class='btn btn-primary btnVer' data-idCarga='${full.id_carga}' data-despachado='${despachado}' data-confirmada='${confirmada}'><i class='fa fa-eye'></i></button>`
 
                       if(id_perfil==2){
                         $btnEliminar=''
@@ -482,6 +493,9 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 },{
                   "targets": [1],
                   "className": 'text-nowrap'
+                },{
+                  "responsivePriority": 1,
+                  "targets": 7 // Mantiene la primera columna siempre visible
                 }
               ],
               "language":  idiomaEsp,
@@ -719,6 +733,15 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           datosDepositos.push(id_deposito);
         })
 
+        console.log(datosDepositos.length);
+        if(datosDepositos.length==0){
+          swal({
+            icon: 'error',
+            title: 'Debe seleccionar al menos un deposito'
+          });
+          return false;
+        }
+
         $.ajax({
           url: "models/administrar_cargas.php",
           type: "POST",
@@ -805,15 +828,22 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         $(".modal-title").text("Ver Carga ID: ");
         $('#modalVer').modal('show');
         fila = $(this).closest("tr");
-        let id_carga = fila.find('td:eq(0)').text();
-
+        //let id_carga = fila.find('td:eq(0)').text();
+        console.log($(this).data());
+        let id_carga=$(this).data("idcarga");
         let despachado=$(this).data("despachado");
+        let confirmada=$(this).data("confirmada");
 
         if(despachado==1){
           $("#btnDespachar").addClass("disbaled d-none")
           $("#btnConfirmar").removeClass("disbaled d-none")
         }else{
           $("#btnDespachar").removeClass("disbaled d-none")
+          $("#btnConfirmar").addClass("disbaled d-none")
+        }
+
+        if(confirmada==1){
+          $("#btnDespachar").addClass("disbaled d-none")
           $("#btnConfirmar").addClass("disbaled d-none")
         }
 
@@ -920,7 +950,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 //tablaCargas.row(fila.parents('tr')).remove().draw();
                 getCargas()
                 $('#modalVer').modal('hide');
-                
+
                 swal({
                   icon: 'success',
                   title: 'Carga despachada correctamente'
