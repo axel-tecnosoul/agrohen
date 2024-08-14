@@ -423,9 +423,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_chofer:id_chofer},
-              success: function() {
-                //tablaChoferes.row(fila.parents('tr')).remove().draw();
-                tablaChoferes.ajax.reload(null, false);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  tablaChoferes.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
+                }
               }
             }); 
           } else {

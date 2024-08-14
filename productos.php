@@ -463,11 +463,19 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_producto:id_producto},
-              success: function(result) {
-                //tablaproducto.row(fila.parents('tr')).remove().draw();
-                tablaProducto.ajax.reload(null, false);
-                if(result!=""){
-                  swal("Ha ocurrido un error!\n\n"+result);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  tablaProducto.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
                 }
               }
             }); 

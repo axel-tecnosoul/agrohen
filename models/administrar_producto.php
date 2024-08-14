@@ -139,19 +139,18 @@ class producto{
     /*ELIMINO ALMACEN*/
     $sqldeleteProducto = "DELETE FROM productos WHERE id = $this->id_producto";
     $deleteProducto = $this->conexion->consultaSimple($sqldeleteProducto);
-    //$mensajeError=$this->conexion->conectar->error;
-    $error=$this->conexion->conectar;
-
-    $mensajeError=$error->error;
-    $respuesta=$mensajeError;
-    if($mensajeError!=""){
-      if($error->errno==1451){
-        echo "No es posible eliminar el producto ya que está siendo utilizado en otra tabla de la base de datos";
-      }else{
-        echo $respuesta."<br><br>".$sqldeleteProducto;
-        //var_dump($error);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
       }
     }
+    return json_encode($r);
   }
 
   public function registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia ){
@@ -225,7 +224,7 @@ if (isset($_POST['accion'])) {
     //   break;
     case 'eliminarProducto':
         $id_producto = $_POST['id_producto'];
-        $producto->deleteProducto($id_producto);
+        echo $producto->deleteProducto($id_producto);
       break;
     case 'traerDatosInicialesProducto':
       $producto->traerDatosIniciales();

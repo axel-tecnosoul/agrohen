@@ -85,6 +85,18 @@ class responsables_depositos{
     /*ELIMINO ALMACEN*/
     $sqldeleteResponsable = "DELETE FROM responsables_deposito WHERE id = $this->id_responsable";
     $deleteResponsable = $this->conexion->consultaSimple($sqldeleteResponsable);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_responsable, $estado){
@@ -122,7 +134,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarResponsable':
         $id_responsable = $_POST['id_responsable'];
-        $responsables_depositos->deleteResponsable($id_responsable);
+        echo $responsables_depositos->deleteResponsable($id_responsable);
       break;
     case 'traerDatosIniciales':
       $responsables_depositos->traerDatosIniciales();

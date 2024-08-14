@@ -89,6 +89,18 @@ class choferes{
     /*ELIMINO ALMACEN*/
     $sqlDeletechofer = "DELETE FROM choferes WHERE id = $this->id_chofer";
     $delchofer = $this->conexion->consultaSimple($sqlDeletechofer);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_chofer, $estado){
@@ -149,7 +161,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarChofer':
         $id_chofer = $_POST['id_chofer'];
-        $choferes->deleteChofer($id_chofer);
+        echo $choferes->deleteChofer($id_chofer);
       break;
     case 'traerDatosIniciales':
       $choferes->traerDatosIniciales();

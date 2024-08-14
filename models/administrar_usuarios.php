@@ -116,6 +116,18 @@ class Usuarios{
     /*ELIMINO ALMACEN*/
     $sqlDeleteUsuario = "DELETE FROM usuarios WHERE id = $this->id_usuario";
     $delUsuario = $this->conexion->consultaSimple($sqlDeleteUsuario);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_usuario, $estado){
@@ -184,7 +196,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarUsuario':
         $id_usuario = $_POST['id_usuario'];
-        $usuarios->deleteUsuario($id_usuario);
+        echo $usuarios->deleteUsuario($id_usuario);
       break;
     case 'traerDatosIniciales':
       $usuarios->traerDatosIniciales();

@@ -472,9 +472,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_responsable:id_responsable},
-              success: function() {
-                //tablaResponsables.row(fila.parents('tr')).remove().draw();
-                tablaResponsables.ajax.reload(null, false);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  tablaResponsables.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
+                }
               }
             }); 
           } else {

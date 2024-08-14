@@ -84,6 +84,18 @@ class origenes{
     /*ELIMINO ALMACEN*/
     $sqldeleteOrigen = "DELETE FROM origenes WHERE id = $this->id_origen";
     $deleteOrigen = $this->conexion->consultaSimple($sqldeleteOrigen);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError==""){
+      $r=1;
+    }else{
+      if (strpos($mensajeError, "Cannot delete or update a parent row") === 0) {
+        // La cadena comienza con "Cannot delete or update a parent row"
+        $r="El registro está siendo utilizado en la base de datos";
+      } else {
+        $r=$mensajeError;
+      }
+    }
+    return json_encode($r);
   }
 
   public function cambiarEstado($id_origen, $estado){
@@ -138,7 +150,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'eliminarOrigen':
         $id_origen = $_POST['id_origen'];
-        $origenes->deleteOrigen($id_origen);
+        echo $origenes->deleteOrigen($id_origen);
       break;
     case 'traerDatosIniciales':
       $origenes->traerDatosIniciales();

@@ -472,9 +472,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               type: "POST",
               datatype:"json",
               data:  {accion:accion, id_presentacion:id_presentacion},
-              success: function() {
-                //tablaPresentacion.row(fila.parents('tr')).remove().draw();
-                tablaPresentacion.ajax.reload(null, false);
+              success: function(response) {
+                response = JSON.parse(response);
+                if(response=="1"){
+                  tablaPresentacion.ajax.reload(null, false);
+                  swal({
+                    icon: 'success',
+                    title: 'Accion realizada correctamente'
+                  });
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: response
+                  });
+                }
               }
             }); 
           } else {
