@@ -105,13 +105,17 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               <div class="card">
                 <div class="card-header py-3">
                   <h5 style="display: inline-block;vertical-align: middle;">Cuenta Corriente</h5><?php
-                  if($id_perfil==1){?>
+                  $disabledBtnPdfExcel="";
+                  //var_dump($_SESSION);
+                  
+                  if($id_perfil==1){
+                    $disabledBtnPdfExcel="disabled";?>
                     <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar Movimiento</button><?php
                   }?>
-                  <button id="btnImprimir" type="button" class="btn btn-dark ml-2 disabled" data-toggle="modal">
+                  <button id="btnImprimir" type="button" class="btn btn-dark ml-2 <?=$disabledBtnPdfExcel?>" data-toggle="modal">
                     <i class="fa fa-file-pdf-o"></i> Imprimir
                   </button>
-                  <button id="btnExportar" type="button" class="btn btn-success ml-2 disabled" data-toggle="modal">
+                  <button id="btnExportar" type="button" class="btn btn-success ml-2 <?=$disabledBtnPdfExcel?>" data-toggle="modal">
                     <i class="fa fa-file-excel-o"></i> Exportar
                   </button>
                   <span id="id_perfil" class="d-none"><?=$id_perfil?></span>
@@ -119,6 +123,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 <div class="card-body py-1">
 
                   <input type="hidden" id="id_deposito_usuario" value="<?=$_SESSION["rowUsers"]["id_deposito"]?>">
+                  <input type="hidden" id="deposito_usuario" value="<?=$_SESSION["rowUsers"]["deposito"]?>">
                   <table id="tableFiltros" style="" class="table table-borderless mb-3">
                     <tr id="row1">
                       <td width="10%" class="text-right p-1">Desde: </td>
@@ -265,6 +270,53 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           </div>
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Fecha Carga:</label>
+                    <span id="lbl_fecha_carga"></span>
+                    <input type="hidden" id="lbl_id_carga">
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Despachado:</label>
+                    <span id="lbl_despachado"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Confirmado:</label>
+                    <span id="lbl_confirmado"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Origen:</label>
+                    <span id="lbl_origen"></span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Chofer:</label>
+                    <span id="lbl_chofer"></span>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Datos adicionales:</label>
+                    <span id="lbl_datos_adicionales_chofer"></span>
+                  </div>
+                </div>
+                <!-- <div class="col-lg-2">
+                  <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Proveedor:</label>
+                    <span id="lbl_proveedor"></span>
+                  </div>
+                </div> -->
+              </div>
               <div class="row">
                 <div class="col-lg-12 table-container tablaDetalleCarga" id="tableProductosVer" style="overflow-x: auto; overflow-y: auto; max-height: 50vh;padding-left: 0;">
                   <!-- <table id="tableProductosCarga" class="table table-striped">
@@ -602,13 +654,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
 
           //var id_cuenta=$selectCuenta.val()
-          console.log(selectedOption.data("id"))
           var id_cuenta=selectedOption.data("id")
           var tipo=selectedOption.data("tipo")
           var tipo_aumento_extra=selectedOption.data("tipo_aumento_extra")
           var valor_extra=selectedOption.data("valor_extra")
 
-          if(id_cuenta===undefined){
+          if(id_cuenta===undefined && id_perfil==1){
             $("#btnImprimir").addClass("disabled")
             $("#btnExportar").addClass("disabled")
           }else{
@@ -935,16 +986,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         var selectedIndex = $selectCuenta.prop('selectedIndex');
         var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
 
-        /*$depositos=$id_cuenta;
-        if($tipo=="responsable"){
-          if($id_deposito==""){
-            $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
-            $depositos=$row["depositos"];
-          }else{
-            $depositos=$id_deposito;
-          }
-        }*/
-
         var id_cuenta=selectedOption.data("id")
         var tipo=selectedOption.data("tipo")
         
@@ -996,6 +1037,38 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
             response=response.split("%%")
 
+            let datosInput = JSON.parse(response[1]);
+            console.log(datosInput);
+            $(".modal-title").html("Ver Carga ID: " + datosInput.id_carga);
+            $("#lbl_fecha_carga").html(datosInput.fecha_formatted);
+            let despachado;
+            if(datosInput.despacho==1){
+              despachado="Si"
+            }else{
+              despachado="No"
+            }
+            if(datosInput.fecha_hora_despacho!=""){
+              despachado+=" ("+datosInput.fecha_hora_despacho+")"
+            }
+            let confirmado;
+            if(datosInput.confirmada==1){
+              confirmado="Si"
+            }else{
+              confirmado="No"
+            }
+            if(datosInput.fecha_hora_confirmacion!=""){
+              confirmado+=" ("+datosInput.fecha_hora_confirmacion+")"
+            }
+            $("#lbl_despachado").html(despachado);
+            $("#lbl_confirmado").html(confirmado);
+            $("#lbl_id_carga").val(datosInput.id_carga);
+            $("#lbl_origen").html(datosInput.origen);
+            $("#lbl_proveedor").html(datosInput.proveedor);
+            $("#lbl_chofer").html(datosInput.chofer);
+            $('#lbl_datos_adicionales_chofer').html(datosInput.datos_adicionales_chofer)
+            //$('#lbl_proveedor_default').html(datosInput.proveedor)
+            $('#id_carga').html(id_carga)
+
             let tableProductosVer=$("#tableProductosVer")
             tableProductosVer.html(response[0]);
 
@@ -1016,7 +1089,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
         let desde = $('#desde').val();
         let hasta = $('#hasta').val();
-        let id_deposito = $('#id_deposito').val();
+        
+        let id_deposito=$("#id_deposito").val()
+        let id_deposito_usuario=$("#id_deposito_usuario").val()
+        if(id_deposito==undefined && id_deposito_usuario>0){
+          id_deposito=id_deposito_usuario
+        }
         var $selectCuenta = $('#cuenta');
         var selectedIndex = $selectCuenta.prop('selectedIndex');
         var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
@@ -1025,31 +1103,39 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         var tipo_aumento_extra = selectedOption.data("tipo_aumento_extra");
         var valor_extra = selectedOption.data("valor_extra");
 
+        // Deshabilitar el botón y mostrar el GIF de carga
+        $(this).prop('disabled', true).append('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>');
+
         // Identificar cuál botón fue presionado
         var botonPresionado = $(this).attr("id");
 
         if (botonPresionado === "btnImprimir") {
-          imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra);
+          imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra, $(this));
         } else if (botonPresionado === "btnExportar") {
-          exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra);
+          exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra, $(this));
         }
       });
 
-      function imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
-        const url = "./imprimirCuentaCorriente.php?id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
+      function imprimirCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra, $boton) {
+        const url = "./imprimirCuentaCorriente.php?id_cuenta="+id_cuenta+"&desde="+desde+"&hasta="+hasta+"&id_deposito="+id_deposito+"&tipo="+tipo+"&tipo_aumento_extra="+tipo_aumento_extra+"&valor_extra="+valor_extra;
         let win = window.open(url);
         win.focus();
+        
+        // Restaurar el botón después de la impresión
+        $boton.prop('disabled', false).find('.spinner-border').remove();
       }
 
-      function exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
-        const url = "./models/administrar_cta_cte.php?accion=exportar_excel&id_cuenta=" + id_cuenta + "&desde=" + desde + "&hasta=" + hasta + "&id_deposito=" + id_deposito + "&tipo=" + tipo + "&tipo_aumento_extra=" + tipo_aumento_extra + "&valor_extra=" + valor_extra;
+      function exportarCuenta2(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
+        const url = "./models/administrar_cta_cte.php?accion=exportar_excel&id_cuenta="+id_cuenta+"&desde="+desde+"&hasta="+hasta+"&id_deposito="+id_deposito+"&tipo="+tipo+"&tipo_aumento_extra="+tipo_aumento_extra+"&valor_extra="+valor_extra;
 
         fetch(url)
           .then(response => {
+            console.log(response);
             if (!response.ok) throw new Error('Error al exportar el Excel');
             return response.blob();
           })
           .then(blob => {
+            console.log(blob);
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
 
@@ -1065,14 +1151,25 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             // Formato deseado: "YYYY-MM-DD_HH-MM-SS"
             let formattedDate = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 
-            var cuenta = $('#cuenta option[value="' + id_cuenta + '"]').text();
+            var cuenta = $('#cuenta option[value="'+tipo+"-"+id_cuenta+'"]').text();
             var deposito="";
             if(id_deposito>0){
-              deposito =' dep.'+ $('#id_deposito option[value="' + id_deposito + '"]').text();
+              deposito=$('#id_deposito option[value="'+id_deposito+'"]').text();
+            }
+            if(deposito==""){
+              deposito=$('#deposito_usuario').val();
+            }
+            if(cuenta=="" && deposito!=""){
+              cuenta=deposito
+              deposito="";
+            }
+
+            if(deposito!=""){
+              deposito =' dep. '+ deposito;
             }
 
             // Nombre del archivo con fecha y hora
-            let filename = `Cuenta corriente ${cuenta+deposito}_${formattedDate}.xlsx`;
+            let filename = `Cuenta corriente ${cuenta+deposito} ${formattedDate}.xlsx`;
 
             link.download = filename;
             document.body.appendChild(link);
@@ -1080,6 +1177,77 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             document.body.removeChild(link);
           })
         .catch(error => console.error('Error exportando la cuenta:', error));
+      }
+
+      function exportarCuenta(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra, $boton) {
+        let datosUpdate = new FormData();
+        datosUpdate.append('accion', 'exportar_excel');
+        datosUpdate.append('id_cuenta', id_cuenta);
+        datosUpdate.append('desde', desde);
+        datosUpdate.append('hasta', hasta);
+        datosUpdate.append('id_deposito', id_deposito);
+        datosUpdate.append('tipo', tipo);
+        datosUpdate.append('tipo_aumento_extra', tipo_aumento_extra);
+        datosUpdate.append('valor_extra', valor_extra);
+        $.ajax({
+          data: datosUpdate,
+          url: './models/administrar_cta_cte.php',
+          method: "post",
+          cache: false,
+          contentType: false,
+          processData: false,
+          xhrFields: {
+            responseType: 'blob'
+          },
+          beforeSed: function(){
+            //$('#procesando').modal('show');
+          },
+          success: function(response){
+            console.log(response);
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(response);
+
+            // Obtener la fecha y hora actual
+            let now = new Date();
+            let year = now.getFullYear();
+            let month = String(now.getMonth() + 1).padStart(2, '0'); // Meses desde 0 a 11
+            let day = String(now.getDate()).padStart(2, '0');
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+
+            // Formato deseado: "YYYY-MM-DD_HH-MM-SS"
+            let formattedDate = `${year}-${month}-${day} ${hours+minutes+seconds}`;
+
+            var cuenta = $('#cuenta option[value="'+tipo+"-"+id_cuenta+'"]').text();
+            var deposito="";
+            if(id_deposito>0){
+              deposito=$('#id_deposito option[value="'+id_deposito+'"]').text();
+            }
+            if(deposito==""){
+              deposito=$('#deposito_usuario').val();
+            }
+            if(cuenta=="" && deposito!=""){
+              cuenta=deposito
+              deposito="";
+            }
+
+            if(deposito!=""){
+              deposito =' dep. '+ deposito;
+            }
+
+            // Nombre del archivo con fecha y hora
+            let filename = `Cuenta corriente ${cuenta+deposito} ${formattedDate}.xlsx`;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Restaurar el botón después de la descarga
+            $boton.prop('disabled', false).find('.spinner-border').remove();
+          }
+        });
       }
 
       //Borrar

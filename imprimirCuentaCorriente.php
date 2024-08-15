@@ -22,7 +22,7 @@ $valor_extra = $_GET['valor_extra'];
 
 include_once('models/administrar_cta_cte.php');
 
-if ($id_cuenta > 0) {
+//if ($id_cuenta > 0) {
   $ctacte = new ctacte($id_cuenta);
   $ctacteJson = $ctacte->getCtacte($desde, $hasta, $id_cuenta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
 
@@ -39,6 +39,47 @@ if ($id_cuenta > 0) {
   if (!is_array($aCtaCte)) {
     echo json_encode(['error' => 'Datos inválidos recibidos']);
     exit;
+  }
+
+  $conexion = new Conexion();
+
+  if($tipo=="responsable"){
+    $query = "SELECT nombre FROM responsables_deposito WHERE id=$id_cuenta";
+  }else{
+    $query = "SELECT nombre FROM destinos WHERE id=$id_cuenta";
+  }
+  $get = $conexion->consultaRetorno($query);
+  $row = $get->fetch_array();
+  $cuenta="";
+  if(isset($row["nombre"])){
+    $cuenta=$row["nombre"];
+  }
+
+  if($id_cuenta=="undefined"){
+    $id_cuenta=$id_deposito;//cuando el perfil del usuario es de tipo deposito, mostramos el monto con valor extra
+  }
+
+  $depositos=$id_cuenta;
+  if($tipo=="responsable"){;
+
+    if($id_deposito==""){
+      $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
+      $get = $conexion->consultaRetorno($query);
+      $row = $get->fetch_array();
+      $depositos=$row["depositos"];
+    }else{
+      $depositos=$id_deposito;
+    }
+  }
+
+  $query = "SELECT GROUP_CONCAT(nombre SEPARATOR ', ') AS depositos FROM destinos WHERE id IN ($depositos)";
+  $get = $conexion->consultaRetorno($query);
+  $row = $get->fetch_array();
+  $depositos=$row["depositos"];
+
+  if($cuenta=="" or $cuenta==$depositos){
+    $cuenta=$depositos;
+    $depositos="";
   }
 
   // Filtrar solo los datos necesarios
@@ -68,14 +109,25 @@ if ($id_cuenta > 0) {
   class PDF extends FPDF {
     // Encabezado
     function Header() {
-      global $id_cuenta;
+      global $cuenta,$depositos;
       $this->Image('assets/images/logo horizontal.png',12,7,48); // Logo
       $this->SetFont('Arial', '', 8);
       $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
       $this->SetY(10);
       $this->SetFont('Arial', 'B', 12);
-      $this->Cell(0, 10, 'Cuenta Corriente ID ' . $id_cuenta, 0, 1, 'C');
+      $this->Cell(0, 10, 'Detalle de cuenta Corriente', 0, 1, 'C');
       $this->Ln(5);
+      $this->SetFont('Arial', 'B', 11);
+      $this->Cell(20, 5, 'Cuenta:', 0, 0, 'R');
+      $this->SetFont('Arial', '', 10);
+      $this->Cell(40, 5, $cuenta, 0, 0, 'L');
+      if($depositos!=""){
+        $this->SetFont('Arial', 'B', 11);
+        $this->Cell(40, 5, 'Depositos:', 0, 0, 'R');
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(40, 5, $depositos, 0, 0, 'L');
+      }
+      $this->Ln(8);
       // Encabezado de la tabla
       $this->SetFont('Arial', 'B', 10);
       $this->SetFillColor(143, 143, 143); // Color de fondo gris
@@ -129,8 +181,8 @@ if ($id_cuenta > 0) {
   $pdf->TablaMovimientos($aCtaCte_filtrados);
   $pdf->Output();
   exit;
-} else {
+/*} else {
   echo json_encode(['error' => 'ID no válido']);
   exit;
-}
+}*/
 ?>

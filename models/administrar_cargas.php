@@ -315,7 +315,7 @@ class cargas{
               </th><?php
             }
           }
-          if($aDepositos==""){ ?>
+          if($aDepositos=="" or count($aDepositos)>1){ ?>
             <th rowspan="2" class="fixed-column-header align-middle">Total Bultos</th>
             <th rowspan="2" class="fixed-column-header align-middle">Total Kilos</th>
             <th rowspan="2" class="fixed-column-header align-middle">Total Monto</th><?php
@@ -373,7 +373,7 @@ class cargas{
                 <td class="text-right destino-group destino-end">$ <?=number_format($monto,2,",",".")?></td><?php
               }
             }
-            if($aDepositos==""){ ?>
+            if($aDepositos=="" or count($aDepositos)>1){ ?>
               <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_bultos'],0,",",".")?></td>
               <td class="text-right fixed-column font-weight-bold"><?=number_format($product['total_kilos'],2,",",".")?></td>
               <td class="text-right fixed-column font-weight-bold">$ <?=number_format($product['total_monto'],2,",",".")?></td><?php
@@ -392,7 +392,7 @@ class cargas{
               <td class="text-right destino-group">$ <?=number_format($totals[$id_destino]['monto'], 2, ",", ".")?></td><?php
             }
           }
-          if($aDepositos==""){ ?>
+          if($aDepositos=="" or count($aDepositos)>1){ ?>
             <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_bultos')),0,",",".")?></td>
             <td class="text-right fixed-column font-weight-bold"><?=number_format(array_sum(array_column($aProductosDestinos,'total_kilos')),2,",",".")?></td>
             <td class="text-right fixed-column font-weight-bold">$ <?=number_format(array_sum(array_column($aProductosDestinos,'total_monto')),2,",",".")?></td>

@@ -17,7 +17,7 @@ class validateUsers{
     $this->password = $password;
 
     /*Buscar usuario*/
-    $queryGetUser = "SELECT u.id AS id_usuario, u.usuario, u.email, u.password, u.activo, u.id_perfil, u.id_deposito FROM usuarios u WHERE usuario = '$this->usuario'";
+    $queryGetUser = "SELECT u.id AS id_usuario, u.usuario, u.email, u.password, u.activo, u.id_perfil, u.id_deposito, d.nombre AS deposito FROM usuarios u LEFT JOIN destinos d ON u.id_deposito=d.id WHERE usuario = '$this->usuario'";
     //echo $queryGetUser;
     $getUser = $this->conexion->consultaRetorno($queryGetUser);
     //var_dump($getUser);

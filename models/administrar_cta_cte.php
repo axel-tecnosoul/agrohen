@@ -284,8 +284,8 @@ class ctacte{
     return json_encode($ctacte);
   }
 
-  public function exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra) {
-    include_once('models/administrar_cta_cte.php');
+  public function exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra) {    
+    //include_once('models/administrar_cta_cte.php');
 
     // Obtener datos de la cuenta corriente
     $ctacte = new ctacte();
@@ -293,6 +293,7 @@ class ctacte{
 
     // Decodificar el JSON
     $aCtaCte = json_decode($ctacteJson, true);
+    //var_dump($aCtaCte);
 
     // Verificar si la decodificación fue exitosa
     if (json_last_error() !== JSON_ERROR_NONE) {
@@ -300,26 +301,30 @@ class ctacte{
       exit;
     }
 
-    if($tipo=="responsable"){
-      $query = "SELECT nombre FROM responsables_deposito WHERE id=$id_cuenta";
-    }else{
-      $query = "SELECT nombre FROM destinos WHERE id=$id_cuenta";
-    }
-    $get = $this->conexion->consultaRetorno($query);
-    $row = $get->fetch_array();
-    $cuenta=$row["nombre"];
-
-    $depositos=$id_cuenta;
-    if($tipo=="responsable"){;
-
-      if($id_deposito==""){
-        $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
-        $get = $this->conexion->consultaRetorno($query);
-        $row = $get->fetch_array();
-        $depositos=$row["depositos"];
+    if($_SESSION["rowUsers"]["id_perfil"]==1){
+      if($tipo=="responsable"){
+        $query = "SELECT nombre FROM responsables_deposito WHERE id=$id_cuenta";
       }else{
-        $depositos=$id_deposito;
+        $query = "SELECT nombre FROM destinos WHERE id=$id_cuenta";
       }
+      $get = $this->conexion->consultaRetorno($query);
+      $row = $get->fetch_array();
+      $cuenta=$row["nombre"];
+
+      $depositos=$id_cuenta;
+      if($tipo=="responsable"){;
+
+        if($id_deposito==""){
+          $query = "SELECT GROUP_CONCAT(id SEPARATOR ',') AS depositos FROM destinos WHERE id_responsable = ".$id_cuenta;
+          $get = $this->conexion->consultaRetorno($query);
+          $row = $get->fetch_array();
+          $depositos=$row["depositos"];
+        }else{
+          $depositos=$id_deposito;
+        }
+      }
+    }else{
+      $depositos=$_SESSION["rowUsers"]["id_deposito"];
     }
 
     $query = "SELECT GROUP_CONCAT(nombre SEPARATOR ', ') AS depositos FROM destinos WHERE id IN ($depositos)";
@@ -350,6 +355,11 @@ class ctacte{
       }
     }
 
+    if($cuenta=="" or $cuenta==$depositos){
+      $cuenta=$depositos;
+      $depositos="";
+    }
+
     // Crear nuevo objeto Spreadsheet
     $spreadsheet = new Spreadsheet();
 
@@ -357,8 +367,10 @@ class ctacte{
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setCellValue('A1', "Cuenta");
     $sheet->setCellValue('A2', $cuenta);
-    $sheet->setCellValue('B1', "Depositos");
-    $sheet->setCellValue('B2', $depositos);
+    if($depositos!=""){
+      $sheet->setCellValue('B1', "Depositos");
+      $sheet->setCellValue('B2', $depositos);
+    }
 
     // Encabezado de la tabla de movimientos
     $sheet->setCellValue('A4', "Fecha y Hora");
@@ -415,12 +427,15 @@ class ctacte{
       $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
+    // Establecer la celda seleccionada
+    $sheet->setSelectedCell('A1');
+
     $sheet->setTitle('Detalle Cuenta');
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="Detalle_Cuenta.xlsx"');
     header('Cache-Control: max-age=0');
-
+    
     $writer = new Xlsx($spreadsheet);
     ob_end_clean(); // Limpiar el búfer de salida para evitar errores de codificación
     $writer->save('php://output');
@@ -596,6 +611,18 @@ if (isset($_POST['accion'])) {
       $id_deposito = $_POST['id_deposito'];
       echo $ctacte->traerProductosCarga($id_carga,$id_cuenta,$tipo,$id_deposito);
     break;
+    case 'exportar_excel':
+      $id_cuenta = $_POST['id_cuenta'];
+      $desde = $_POST['desde'];
+      $hasta = $_POST['hasta'];
+      $id_deposito = $_POST['id_deposito'];
+      $tipo = $_POST['tipo'];
+      $tipo_aumento_extra = $_POST['tipo_aumento_extra'];
+      $valor_extra = $_POST['valor_extra'];
+      //var_dump("id_cuenta: " . $id_cuenta, "desde: " . $desde, " hasta: " . $hasta, " tipo: " . $tipo, " tipo_ aumento_extra : " . $tipo_aumento_extra, " id_deposito: " . $id_deposito, " valor_extra: " . $valor_extra);
+      //die();
+      $ctacte->exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
+    break;
   }
 }elseif(isset($_GET['accion'])){
   $ctacte = new ctacte();
@@ -612,6 +639,8 @@ if (isset($_POST['accion'])) {
       echo $ctacte->getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra);
     break;
     case 'exportar_excel':
+      var_dump($_GET);
+      die();
       $id_cuenta = $_GET['id_cuenta'];
       $desde = $_GET['desde'];
       $hasta = $_GET['hasta'];
@@ -619,8 +648,8 @@ if (isset($_POST['accion'])) {
       $tipo = $_GET['tipo'];
       $tipo_aumento_extra = $_GET['tipo_aumento_extra'];
       $valor_extra = $_GET['valor_extra'];
-      // var_dump("id_cuenta: " . $id_cuenta, "desde: " . $desde, " hasta: " . $hasta, " tipo: " . $tipo, " tipo_ aumento_extra : " . $tipo_aumento_extra, " id_deposito: " . $id_deposito, " valor_extra: " . $valor_extra);
-      // die;
+      var_dump("id_cuenta: " . $id_cuenta, "desde: " . $desde, " hasta: " . $hasta, " tipo: " . $tipo, " tipo_ aumento_extra : " . $tipo_aumento_extra, " id_deposito: " . $id_deposito, " valor_extra: " . $valor_extra);
+      die();
       $ctacte->exportar_excel($id_cuenta, $desde, $hasta, $id_deposito, $tipo, $tipo_aumento_extra, $valor_extra);
     break;
   }

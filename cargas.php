@@ -84,8 +84,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             <div class="col-sm-12">
               <div class="card">
                 <div class="card-header py-3">
-                  <h5 style="display: inline-block;vertical-align: middle;">Administrar Cargas</h5>
-                  <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button>
+                  <h5 style="display: inline-block;vertical-align: middle;">Administrar Cargas</h5><?php
+                  if($id_perfil==1){?>
+                    <button id="btnNuevo" type="button" class="btn btn-warning ml-2" data-toggle="modal"><i class="fa fa-plus-square"></i> Agregar</button><?php
+                  }?>
                   <span id="id_perfil" class="d-none"><?=$id_perfil?></span>
                 </div>
                 <div class="card-body py-1">
@@ -904,8 +906,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             //$('#lbl_proveedor_default').html(datosInput.proveedor)
             $('#id_carga').html(id_carga)
 
-            accion = "verCarga";
-
             let tableProductosVer=$("#tableProductosVer")
             tableProductosVer.html(response[0]);
 
@@ -1051,7 +1051,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               let seconds = String(now.getSeconds()).padStart(2, '0');
 
               // Formato deseado: "YYYY-MM-DD_HH-MM-SS"
-              let formattedDate = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+              let formattedDate = `${year}-${month}-${day} ${hours+minutes+seconds}`;
               
               // Nombre del archivo con fecha y hora
               let filename = `Carga ID ${id_carga}_${formattedDate}.xlsx`;
