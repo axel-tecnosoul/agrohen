@@ -156,6 +156,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -361,6 +363,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -389,12 +392,14 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let usuario = $.trim($('#usuario').val());
         let id_usuario = $.trim($('#id_usuario').html());
         let id_perfil = $.trim($('#id_perfil').val());
         let id_deposito = $.trim($('#id_deposito').val());
         let email = $.trim($('#email').val());
         let clave = $.trim($('#clave').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_usuarios.php",
@@ -410,6 +415,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 title: 'El registro no se insertó!'
               });
             }
+            restaurarBoton($boton);
           }
         });
         $('#modalCRUDadmin').modal('hide');
@@ -417,9 +423,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           icon: 'success',
           title: 'Accion realizada correctamente'
         });
+        restaurarBoton($boton);
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar usuario");
@@ -430,6 +438,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerUsuarioUpdate');
         datosUpdate.append('id_usuario', id_usuario);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_usuarios.php',
@@ -452,6 +461,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateUsuario";
+            restaurarBoton($boton);
           }
         });
 

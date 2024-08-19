@@ -142,6 +142,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -322,6 +324,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -336,11 +339,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_proveedor = $.trim($('#id_proveedor').html());
         let nombre = $.trim($('#nombre').val());
         let cuit = $.trim($('#cuit').val());
         let email = $.trim($('#email').val());
         let telefono = $.trim($('#telefono').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_proveedores.php",
@@ -357,17 +362,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               });
 
               $('#modalCRUDadmin').modal('hide');
+              restaurarBoton($boton);
             }else{
               swal({
                 icon: 'error',
                 title: 'El registro no se insertó!'
               });
+              restaurarBoton($boton);
             }
           }
         });
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
@@ -379,6 +387,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerProveedorUpdate');
         datosUpdate.append('id_proveedor', id_proveedor);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_proveedores.php',
@@ -399,6 +408,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             $("#telefono").val(datosInput.telefono);
 
             accion = "updateProveedor";
+            restaurarBoton($boton);
           }
         });
 
@@ -427,7 +437,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               success: function(response) {
                 response = JSON.parse(response);
                 if(response=="1"){
-                  tablaProducto.ajax.reload(null, false);
+                  tablaproveedor.ajax.reload(null, false);
                   swal({
                     icon: 'success',
                     title: 'Accion realizada correctamente'

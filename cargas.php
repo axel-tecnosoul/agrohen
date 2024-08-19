@@ -319,6 +319,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!-- Funciones -->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -359,7 +361,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
     <!-- Theme js-->
     <script src="assets/js/script.js"></script>
     <!--<script src="assets/js/theme-customizer/customizer.js"></script>-->
-    <script src="assets/js/funciones.js"></script>
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
@@ -708,6 +709,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -722,6 +724,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_carga = $.trim($('#id_carga').html());
         let fecha_carga = $.trim($('#fecha_carga').val());
         let id_origen = $.trim($('#id_origen').val());
@@ -729,6 +732,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         let datos_adicionales_chofer = $.trim($('#datos_adicionales_chofer').val());
         let id_proveedor_default = $.trim($('#id_proveedor_default').val());
         let datosDepositos = []
+        mostrarSpinner($boton);
 
         $(".destinos_check:checked").each(function(){
           let id_deposito=this.value;
@@ -759,6 +763,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                 title: 'El registro no se insertó!'
               });
             }
+            restaurarBoton($boton);
           }
         });
 
@@ -770,6 +775,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar Carga");
@@ -780,6 +786,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'getDatosCarga');
         datosUpdate.append('id_carga', id_carga);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_cargas.php',
@@ -818,6 +825,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             });
 
             accion = "updateCarga";
+            restaurarBoton($boton);
           }
         });
 
@@ -930,6 +938,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       $(document).on("click", "#btnDespachar", function(event){
         event.preventDefault();
         let id_carga = $("#lbl_id_carga").val();
+        $boton = $(this);
         //console.log("id_carga: " + id_carga);
         swal({
           title: "Estas seguro?",
@@ -941,6 +950,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         .then((willDelete) => {
           if (willDelete) {
             accion = "despacharCarga";
+            mostrarSpinner($boton);
             $.ajax({
               url: "models/administrar_cargas.php",
               type: "POST",
@@ -955,13 +965,14 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   icon: 'success',
                   title: 'Carga despachada correctamente'
                 }).then(() => {
-                  
+                  restaurarBoton($boton);
                   //$("#btnDespachar").addClass("invisible");
                 });
-                // setTimeout(() => {
-                //   location.reload();
-                // }, 3000);
-              }
+              },
+                error: function() {
+                    restaurarBoton($boton);
+                    swal("Error al despachar la carga, intenta nuevamente.");
+                }
             });
           } else {
             swal("La carga no se despachó!");
@@ -973,6 +984,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         event.preventDefault();
         let id_carga = $("#lbl_id_carga").val();
         //console.log("id_carga: " + id_carga);
+        // Deshabilitar el botón y mostrar el GIF de carga
+        $(this).prop('disabled', true).append('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>');
+        $boton = $(this);
+
         swal({
           title: "Estas seguro?",
           text: "Una vez confirmada esta carga, no se podrá modificar",
@@ -996,6 +1011,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   $('#modalVer').modal('hide');
                   getCargas()
                 });
+                // Restaurar el botón 
+                 $boton.prop('disabled', false).find('.spinner-border').remove();
                 // setTimeout(() => {
                 //   location.reload();
                 // }, 3000);
@@ -1016,15 +1033,18 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       $(document).on('click', '#btnExportar', function() {
         let id_carga = $('#lbl_id_carga').val();
         console.log('id_carga: '+id_carga);
-        exportarExcel(id_carga);
+        var $boton = $(this);
+        console.log($boton);
+        exportarExcel(id_carga, $boton);
       });
 
-      function exportarExcel(id_carga) {
+      function exportarExcel(id_carga, $boton) {
         let datosExportar = new FormData();
         datosExportar.append('accion', 'exportar_excel');
         datosExportar.append('id_carga', id_carga);
         console.log(datosExportar);
-
+        
+        mostrarSpinner($boton);
         $.ajax({
           url: './models/administrar_cargas.php',
           method: 'POST',
@@ -1063,6 +1083,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               a.click();
               //a.remove();
               window.URL.revokeObjectURL(url);
+              // Restaurar el botón después de la impresión
+              restaurarBoton($boton);
             } else {
               console.error('La respuesta no es un Blob:', response);
               alert('Error al exportar los datos. La respuesta no es un archivo válido.');

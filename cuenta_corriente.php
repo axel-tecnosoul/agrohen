@@ -1104,7 +1104,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         var valor_extra = selectedOption.data("valor_extra");
 
         // Deshabilitar el botón y mostrar el GIF de carga
-        $(this).prop('disabled', true).append('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>');
+        //$(this).prop('disabled', true).append('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>');
+        mostrarSpinner($(this));
 
         // Identificar cuál botón fue presionado
         var botonPresionado = $(this).attr("id");
@@ -1122,7 +1123,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         win.focus();
         
         // Restaurar el botón después de la impresión
-        $boton.prop('disabled', false).find('.spinner-border').remove();
+        //$boton.prop('disabled', false).find('.spinner-border').remove();
+        restaurarBoton($boton);
       }
 
       function exportarCuenta2(id_cuenta, desde, hasta, id_deposito, tipo, tipo_aumento_extra, valor_extra) {
@@ -1245,7 +1247,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             document.body.removeChild(link);
 
             // Restaurar el botón después de la descarga
-            $boton.prop('disabled', false).find('.spinner-border').remove();
+            //$boton.prop('disabled', false).find('.spinner-border').remove();
+            restaurarBoton($boton);
           }
         });
       }
