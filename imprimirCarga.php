@@ -2,10 +2,8 @@
 session_start();
 require_once('models/fpdf/fpdf.php');
 include_once('models/conexion.php');
-date_default_timezone_set("America/Buenos_Aires");
+//date_default_timezone_set("America/Buenos_Aires");
 
-$hora = date('Hi');
-$hoy = date('Y-m-d');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
   header("location:./models/redireccionar.php");
   exit;
@@ -61,7 +59,8 @@ if ($id_carga > 0) {
         $this->Image('assets/images/logo horizontal.png',12,7,48);
 
         $this->SetFont('Arial', '', 8);
-        $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
+        // $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
+        $this->Cell(0, 10, strftime("%A, %d de %B de %Y", strtotime(date("d M Y H:i"))), 0, 1, 'R');
         $this->SetY(10);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(0, 10, 'Orden de Carga ID ' . $_GET['id_carga'], 0, 1, 'C');

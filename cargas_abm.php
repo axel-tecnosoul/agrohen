@@ -240,13 +240,13 @@ if($datosCarga["despachado"]=="Si"){
           <form id="formAdmin" style="display: contents;">
             <div class="modal-body">
               <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="id_familia" class="col-form-label">Familia:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
                   </div>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="id_producto" class="col-form-label">Producto:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
@@ -254,38 +254,20 @@ if($datosCarga["despachado"]=="Si"){
                     </select>
                   </div>
                 </div>
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label for="id_proveedor" class="col-form-label">Proveedor:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_proveedor" required></select>
-                  </div>
-                </div>
-                <!-- <div class="col-lg-2">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label">Kg x bulto:</label>
                     <input type="number" class="form-control" id="kg_x_bulto" step="0.1" min="0" required>
                   </div>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label">Precio:</label>
                     <input type="number" class="form-control" id="precio" step="0.1" min="0" required>
                   </div>
-                </div> -->
+                </div>
               </div>
-              <div class="row">
-                <div class="col-lg-3">
-                  <div class="form-group">
-                    <label for="kg_x_bulto" class="col-form-label">Kg x bulto:</label>
-                    <input type="number" class="form-control" id="kg_x_bulto" step="0.1" min="0" required>
-                  </div>
-                </div>
-                <div class="col-lg-3">
-                  <div class="form-group">
-                    <label for="kg_x_bulto" class="col-form-label">Precio:</label>
-                    <input type="number" class="form-control" id="precio" step="0.1" min="0" required>
-                  </div>
-                </div>
+              <!-- <div class="row">
                 <div class="col-lg-6">
                   <div class="form-group" id="motivo_group">
                     <label for="motivo_cambio_precio" class="col-form-label">Motivo de la modificacion del precio:</label>
@@ -293,14 +275,15 @@ if($datosCarga["despachado"]=="Si"){
                     <input type="hidden" class="form-control" id="precio_aux">
                   </div>
                 </div>
-              </div>
+              </div> -->
               <div class="row">
                 <div class="col-lg-12">
                   <table id="tableDepositos" class="table table-striped">
                     <thead>
-                      <th style="width: 30%">Deposito</th>
-                      <th style="width: 20%">Cantidad de bultos</th>
+                      <th style="width: 20%">Deposito</th>
+                      <th style="width: 15%">Cantidad de bultos</th>
                       <th style="width: 15%">Kg Total</th>
+                      <th style="width: 15%">Precio</th>
                       <th style="width: 15%">Monto Total</th><?php
                       if($mostrarMotivo==1){?>
                         <th style="width: 20%">Motivo</th><?php
@@ -311,6 +294,7 @@ if($datosCarga["despachado"]=="Si"){
                       <th style="text-align:right">Totales</th>
                       <th class="text-right" id="total_bultos">0</th>
                       <th class="text-right" id="total_kilos">0</th>
+                      <th class="text-right"></th>
                       <th class="text-right" id="total_monto">0</th><?php
                       if($mostrarMotivo==1){?>
                         <th style="width: 20%"></th><?php
@@ -406,9 +390,10 @@ if($datosCarga["despachado"]=="Si"){
                 <div class="col-lg-12">
                   <table id="tableDepositosVer" class="table table-striped">
                     <thead>
-                      <th class="text-center" style="width: 30%">Deposito</th>
-                      <th class="text-center" style="width: 20%">Cantidad de bultos</th>
+                      <th class="text-center" style="width: 20%">Deposito</th>
+                      <th class="text-center" style="width: 15%">Cantidad de bultos</th>
                       <th class="text-center" style="width: 15%">Kg Total</th>
+                      <th class="text-center" style="width: 15%">Precio</th>
                       <th class="text-center" style="width: 15%">Monto Total</th><?php
                       if($mostrarMotivo==1){?>
                         <th class="text-center" style="width: 20%">Motivo</th><?php
@@ -429,6 +414,7 @@ if($datosCarga["despachado"]=="Si"){
                       <th style="text-align:right">Totales</th>
                       <th class="text-right" id="total_bultos_ver">0</th>
                       <th class="text-right" id="total_kilos_ver">0</th>
+                      <th class="text-right"></th>
                       <th class="text-right" id="total_monto_ver">0</th><?php
                       if($mostrarMotivo==1){?>
                         <th style="width: 20%"></th><?php
@@ -661,16 +647,16 @@ if($datosCarga["despachado"]=="Si"){
           $("#btnGuardarCargarOtro").removeClass("d-none")
           $("#btnGuardarCerrar").text("Guardar y cerrar")
 
-          let id_proveedor_default=$("#id_proveedor_default").val()
+          //let id_proveedor_default=$("#id_proveedor_default").val()
           //console.log(id_proveedor_default);
-          $("#id_proveedor").val(id_proveedor_default).change();
+          //$("#id_proveedor").val(id_proveedor_default).change();
           $('#id_familia').val("").change();
           $('#id_producto').val("").change();
 
           $("#motivo_group").addClass("d-none");
           $('#id_familia').attr("disabled",false)
           $('#kg_x_bulto').attr("disabled",false)
-          $('#id_proveedor').attr("disabled",false)
+          //$('#id_proveedor').attr("disabled",false)
 
           calcularTotales()
 
@@ -693,7 +679,7 @@ if($datosCarga["despachado"]=="Si"){
           let id_carga_producto = $.trim($('#id_carga_producto').html());
           let id_carga = $.trim($('#id_carga').val());
           let id_producto = $.trim($('#id_producto').val());
-          let id_proveedor = $.trim($('#id_proveedor').val());
+          let id_proveedor = $.trim($('#id_proveedor_default').val());
           let kg_x_bulto = $.trim($('#kg_x_bulto').val());
           let precio = $.trim($('#precio').val());
           let motivo_cambio_precio = $.trim($('#motivo_cambio_precio').val());
@@ -772,8 +758,8 @@ if($datosCarga["despachado"]=="Si"){
                   // La función dentro del then se ejecutará después de que el alert se cierre automáticamente
                   if (cargarOtro) {
                     $("#btnNuevo").click();
-                    let id_proveedor_default = $("#id_proveedor_default").val();
-                    $('#id_proveedor').val(id_proveedor_default).change();
+                    //let id_proveedor_default = $("#id_proveedor_default").val();
+                    //$('#id_proveedor').val(id_proveedor_default).change();
                   }
                 });
 
@@ -836,13 +822,13 @@ if($datosCarga["despachado"]=="Si"){
               $('#kg_x_bulto').val(datosInput.kg_x_bulto);
               $('#precio').val(datosInput.precio);
               $('#precio_aux').val(datosInput.precio);
-              $('#id_proveedor').val(datosInput.id_proveedor).change();
+              //$('#id_proveedor').val(datosInput.id_proveedor).change();
 
               $("#motivo_group").addClass("d-none");
               if(despachado=="Si"){
                 $('#id_familia').attr("disabled",true)
                 $('#kg_x_bulto').attr("disabled",true)
-                $('#id_proveedor').attr("disabled",true)
+                //$('#id_proveedor').attr("disabled",true)
                 $("#motivo_group").removeClass("d-none");
               }
 
@@ -937,6 +923,10 @@ if($datosCarga["despachado"]=="Si"){
             }
           })
         });
+
+        $(document).on("input", "#precio", function(){
+          $("#tableDepositos .precio").val(this.value);
+        })
 
         $(document).on("input", "#kg_x_bulto, #precio, .cantidad_bultos", function(){
           calcularTotales()
@@ -1374,7 +1364,7 @@ if($datosCarga["despachado"]=="Si"){
 
       function calcularTotales(){
         let kg_x_bulto = $("#kg_x_bulto").val();
-        let precio = $("#precio").val();
+        //let precio = $("#precio").val();
 
         console.log(despachado);
         //si la carga está despachada verificamos si hay cambios en la cantidad de bultos y pedimos que sea obligatorio el motivo
@@ -1400,6 +1390,11 @@ if($datosCarga["despachado"]=="Si"){
             cantidad_bultos=0;
           }
           sumaBultos+=parseFloat(cantidad_bultos);
+
+          let precio=fila.find(".precio").val()
+          if(isNaN(precio) || precio==""){
+            precio=0;
+          }
 
           let subtotal_kilos=cantidad_bultos*kg_x_bulto;
           let subtotal_monto=cantidad_bultos*precio;
@@ -1477,7 +1472,7 @@ if($datosCarga["despachado"]=="Si"){
             $($selectFamilia).select2()
 
             /*Identifico el select de proveedores*/
-            $selectProveedor = document.getElementById("id_proveedor");
+            /*$selectProveedor = document.getElementById("id_proveedor");
             //Genero los options del select proveedores
             respuestaJson.proveedores.forEach((proveedor)=>{
               $option = document.createElement("option");
@@ -1486,7 +1481,7 @@ if($datosCarga["despachado"]=="Si"){
               $option.setAttribute("value", proveedor.id_proveedor);
               $selectProveedor.appendChild($option);
             })
-            $($selectProveedor).select2()
+            $($selectProveedor).select2()*/
 
             // Identifico la tabla de destinos
             var tbody = document.querySelector('#tableDepositos tbody');
@@ -1517,6 +1512,11 @@ if($datosCarga["despachado"]=="Si"){
                   <td class="align-middle">
                     <input type="hidden" name="subtotal_kilos" class="subtotal_kilos">
                     <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted">
+                  </td>
+                  <td class="align-middle">
+                    <div class="input-group">
+                      <input type="number" class="form-control precio" value="">
+                    </div>
                   </td>
                   <td class="align-middle">
                     <input type="hidden" name="subtotal_monto" class="subtotal_monto">

@@ -1,5 +1,9 @@
 <?php
 error_reporting(E_ALL);
+// Configurar el locale y la zona horaria
+setlocale(LC_TIME, 'es-ES');
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 class Conexion{
   //LOCALHOST
   private $host = "localhost";
@@ -26,7 +30,7 @@ class Conexion{
   public function consultaSimple($sql){
     $this->conectar->query($sql);
     if ($this->conectar->error) {
-      //$this->conectar->error;
+      //die("Error en la consulta: " . $this->conectar->error);
     }
   }
 

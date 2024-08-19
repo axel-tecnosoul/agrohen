@@ -128,7 +128,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     <tr id="row1">
                       <td width="10%" class="text-right p-1">Desde: </td>
                       <td width="10%" class="p-1 inputDate" style="">
-                        <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 year"))?>" class="form-control form-control-sm w-auto filtraTabla">
+                        <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 month"))?>" class="form-control form-control-sm w-auto filtraTabla">
                       </td><?php
                       if($id_perfil==1){?>
                         <td width="10%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Cuenta:</td>
