@@ -136,6 +136,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -323,6 +325,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -337,11 +340,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_chofer = $.trim($('#id_chofer').html());
         let nombre = $.trim($('#nombre').val());
         let telefono = $.trim($('#telefono').val());
         let email = $.trim($('#email').val());
         //let usuario = $.trim($('#id_usuario').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_choferes.php",
@@ -356,6 +361,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 icon: 'error',
                 title: 'El registro no se insertó!'
               });
+              restaurarBoton($boton);
             }
           }
         });
@@ -364,9 +370,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           icon: 'success',
           title: 'Accion realizada correctamente'
         });
+        restaurarBoton($boton);
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar Chofer");
@@ -377,6 +385,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerChoferUpdate');
         datosUpdate.append('id_chofer', id_chofer);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_choferes.php',
@@ -398,6 +407,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateChofer";
+            restaurarBoton($boton);
           }
         });
 

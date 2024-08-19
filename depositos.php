@@ -162,6 +162,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -356,6 +358,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -371,6 +374,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_deposito = $.trim($('#id_deposito').html());
         let nombre = $.trim($('#nombre').val());
         let id_responsable = $.trim($('#id_responsable').val());
@@ -379,6 +383,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           opcion="";
         }
         let valor = $.trim($('#valor').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_deposito.php",
@@ -393,17 +398,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 icon: 'success',
                 title: 'Accion realizada correctamente'
               });
+              restaurarBoton($boton);
             }else{
               swal({
                 icon: 'error',
                 title: 'El registro no se insertó!'
               });
+              restaurarBoton($boton);
             }
           }
         });
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar deposito");
@@ -414,6 +422,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerDepositoUpdate');
         datosUpdate.append('id_deposito', id_deposito);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_deposito.php',
@@ -442,6 +451,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateDeposito";
+            restaurarBoton($boton);
           }
         });
 

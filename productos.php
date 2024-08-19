@@ -158,6 +158,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -357,6 +359,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -374,11 +377,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_producto = $.trim($('#id_producto').html());
         let id_familia = $.trim($('#id_familia').val());
         let nombre = $.trim($('#nombre').val());
         let id_presentacion = $.trim($('#id_presentacion').val());
         let id_unidad_medida = $.trim($('#id_unidad_medida').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_producto.php",
@@ -401,11 +406,20 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 title: 'El registro no se insertó!'
               });
             }
+            restaurarBoton($boton);
+          },
+          error: function() {
+              restaurarBoton($boton);
+              swal({
+                  icon: 'error',
+                  title: 'Error al realizar la operación'
+              });
           }
         });
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar Producto");
@@ -416,6 +430,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerProductoUpdate');
         datosUpdate.append('id_producto', id_producto);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_producto.php',
@@ -438,6 +453,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateProducto";
+            restaurarBoton($boton);
           }
         });
 

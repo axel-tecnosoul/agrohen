@@ -634,6 +634,7 @@ if($datosCarga["despachado"]=="Si"){
         })
 
         $("#btnNuevo").click(function(){
+          var $boton = $(this);
           $("#formAdmin").trigger("reset");
           let modal=$('#modalCRUD')
           modal.find(".modal-header").css("background-color", "#17a2b8");
@@ -665,7 +666,7 @@ if($datosCarga["despachado"]=="Si"){
 
         $('#formAdmin').submit(function(e){
           e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
-
+          var $boton = $(this).find(':submit');
           //throw new Error("my error message");
 
           let cargarOtro=false;
@@ -683,6 +684,7 @@ if($datosCarga["despachado"]=="Si"){
           let kg_x_bulto = $.trim($('#kg_x_bulto').val());
           let precio = $.trim($('#precio').val());
           let motivo_cambio_precio = $.trim($('#motivo_cambio_precio').val());
+          mostrarSpinner($boton);
 
           let datosDepositos = []; // Array para almacenar los datos de las filas seleccionadas
 
@@ -762,7 +764,7 @@ if($datosCarga["despachado"]=="Si"){
                     //$('#id_proveedor').val(id_proveedor_default).change();
                   }
                 });
-
+                restaurarBoton($boton);
 
                 /*if (cargarOtro) {
                   $(this).reset();
@@ -775,6 +777,7 @@ if($datosCarga["despachado"]=="Si"){
                   icon: 'error',
                   title: 'El registro no se insertó!'
                 });
+                restaurarBoton($boton);
               }
 
               $("#btnGuardarCargarOtro").removeClass("disabled")
@@ -784,6 +787,7 @@ if($datosCarga["despachado"]=="Si"){
         });
 
         $(document).on("click", ".btnEditar", function(){
+          $boton = $(this);
           bandera_buscar_producto=false
           $(".modal-header").css( "background-color", "#22af47");
           $(".modal-header").css( "color", "white" );
@@ -800,6 +804,7 @@ if($datosCarga["despachado"]=="Si"){
           let datosUpdate = new FormData();
           datosUpdate.append('accion', 'traerProductoDestinosCarga');
           datosUpdate.append('id_carga_producto', id_carga_producto);
+          mostrarSpinner($boton);
           $.ajax({
             data: datosUpdate,
             url: './models/administrar_cargas.php',
@@ -853,6 +858,7 @@ if($datosCarga["despachado"]=="Si"){
                 }
               })
               calcularTotales()
+              restaurarBoton($boton);
             }
           });
 

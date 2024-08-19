@@ -192,6 +192,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
  
     <!-- latest jquery-->
     <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!--Funciones-->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -377,6 +379,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       }
 
       $("#btnNuevo").click(function(){
+        var $boton = $(this);
         $("#formAdmin").trigger("reset");
         $(".modal-header").css( "background-color", "#17a2b8");
         $(".modal-header").css( "color", "white" );
@@ -391,8 +394,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       $('#formAdmin').submit(function(e){
         e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+        var $boton = $(this).find(':submit');
         let id_origen = $.trim($('#id_origen').html());
         let nombre = $.trim($('#nombre').val());
+        mostrarSpinner($boton);
 
         $.ajax({
           url: "models/administrar_origen.php",
@@ -407,6 +412,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 icon: 'error',
                 title: 'El registro no se insertó!'
               });
+              restaurarBoton($boton);
             }
           }
         });
@@ -415,9 +421,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           icon: 'success',
           title: 'Accion realizada correctamente'
         });
+        restaurarBoton($boton);
       });
 
       $(document).on("click", ".btnEditar", function(){
+        $boton = $(this);
         $(".modal-header").css( "background-color", "#22af47");
         $(".modal-header").css( "color", "white" );
         $(".modal-title").text("Editar Origen");
@@ -428,6 +436,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let datosUpdate = new FormData();
         datosUpdate.append('accion', 'traerOrigenUpdate');
         datosUpdate.append('id_origen', id_origen);
+        mostrarSpinner($boton);
         $.ajax({
           data: datosUpdate,
           url: './models/administrar_origen.php',
@@ -447,6 +456,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             //$('#id_usuario').html(datosInput.id_usuario)
 
             accion = "updateOrigen";
+            restaurarBoton($boton);
           }
         });
 
