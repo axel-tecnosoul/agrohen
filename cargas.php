@@ -745,6 +745,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             icon: 'error',
             title: 'Debe seleccionar al menos un deposito'
           });
+          restaurarBoton($boton);
           return false;
         }
 
