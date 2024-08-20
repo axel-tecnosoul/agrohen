@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once('models/fpdf/fpdf.php');
+//require_once('models/fpdf/fpdf.php');
+require_once('models/fpdf/multicellTable.php');
 include_once('models/conexion.php');
 //date_default_timezone_set("America/Buenos_Aires");
 
@@ -51,7 +52,7 @@ if ($id_carga > 0) {
 
     $ancho_destino=$ancho_repartir_destinos/$cant_destinos;
 
-    class PDF extends FPDF {
+    class PDF extends PDF_MC_Table {
       // Encabezado
       function Header() {
         global $destinos_unicos,$con_precio,$ancho_destino;
@@ -60,6 +61,7 @@ if ($id_carga > 0) {
 
         $this->SetFont('Arial', '', 8);
         // $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
+
         $this->Cell(0, 10, strftime("%A, %d de %B de %Y, %H:%M", strtotime(date("d M Y H:i"))) , 0, 1, 'R');
         $this->SetY(10);
         $this->SetFont('Arial', 'B', 10);
@@ -68,18 +70,39 @@ if ($id_carga > 0) {
         // Encabezado de la tabla
         $this->SetFont('Arial', 'B', 8);
         $this->SetFillColor(143, 143, 143); // Color de fondo gris
+        $fill=1;
+        $height=6;
+        $data=$anchos=$aligns=[];
 
-        $this->Cell(50, 6, 'Producto', 1, 0, 'C', true);
+        //$this->Cell(50, $height, 'Producto', $fill, 0, 'C', true);
+        $anchos[]=50;
+        $aligns[]="C";
+        $data[]='Producto';
         if ($con_precio) {
-          $this->Cell(20, 6, 'Precio', 1, 0, 'C', true);
+          //$this->Cell(20, $height, 'Precio', $fill, 0, 'C', true);
+          $anchos[]=20;
+          $aligns[]="C";
+          $data[]='Precio';
         }
 
-        $cant_caracteres=$ancho_destino/2;
+        //$cant_caracteres=$ancho_destino/2;
         foreach ($destinos_unicos as $destino) {
-          $this->Cell($ancho_destino, 6, $this->cortarTexto(utf8_decode($destino["destino"]), $cant_caracteres), 1, 0, 'C', true);
+          $anchos[]=$ancho_destino;
+          $aligns[]="C";
+          $data[]=$destino["destino"];
+          //$this->Cell($ancho_destino, 6, $this->cortarTexto(utf8_decode($destino["destino"]), $cant_caracteres), 1, 0, 'C', true);
         }
 
-        $this->Cell(20, 6, 'Total Bultos', 1, 1, 'C', true);
+        //$this->Cell(20, $height, 'Total Bultos', $fill, 1, 'C', true);
+        $anchos[]=20;
+        $aligns[]="C";
+        $data[]='Total Bultos';
+
+        $this->SetWidths($anchos);
+        $this->SetAligns($aligns);
+        $this->Row($data,$height,$fill,$textColors="empty");
+
+        $fill=0;
       }
 
       // Pie de página
@@ -106,14 +129,28 @@ if ($id_carga > 0) {
         // Datos de la tabla
         $totals = [];
         $total_precio = 0;
+        $fill=0;
+        $height=6;
+
         foreach ($aProductosDestinos as $product) {
-          $nombre_producto=$this->cortarTexto($product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")", 30);
-          $this->Cell(50,6,utf8_decode($nombre_producto),1);
+          
+          $data=$anchos=$aligns=[];
+
+
+          //$nombre_producto=$this->cortarTexto($product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")", 30);
+          $nombre_producto=$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")";
+          //$this->Cell(50,6,utf8_decode($nombre_producto),1);
+          $anchos[]=50;
+          $aligns[]="L";
+          $data[]=$nombre_producto;
 
           if ($con_precio) {
             $precio = $product['precio'];
             $total_precio += $precio;
-            $this->Cell(20, 6, '$ ' . number_format($precio, 2, ",", "."), 1, 0, 'R');
+            //$this->Cell(20, 6, '$ ' . number_format($precio, 2, ",", "."), 1, 0, 'R');
+            $anchos[]=20;
+            $aligns[]="R";
+            $data[]='$ ' . number_format($precio, 2, ",", ".");
           }
 
           $destinos_actuales = [];
@@ -137,10 +174,20 @@ if ($id_carga > 0) {
             $sumaBultos+=$cantidad_bultos;
 
 
-            $this->Cell($ancho_destino, 6, number_format($cantidad_bultos, 0, ",", "."), 1, 0, 'R');
+            //$this->Cell($ancho_destino, 6, number_format($cantidad_bultos, 0, ",", "."), 1, 0, 'R');
+            $anchos[]=$ancho_destino;
+            $aligns[]="R";
+            $data[]=number_format($cantidad_bultos, 0, ",", ".");
           }
 
-          $this->Cell(20, 6, number_format($sumaBultos, 0, ",", "."), 1, 1, 'R');
+          //$this->Cell(20, 6, number_format($sumaBultos, 0, ",", "."), 1, 1, 'R');
+          $anchos[]=20;
+          $aligns[]="R";
+          $data[]=number_format($sumaBultos, 0, ",", ".");
+
+          $this->SetWidths($anchos);
+          $this->SetAligns($aligns);
+          $this->Row($data,$height,$fill,$textColors="empty");
         }
 
         // Totales

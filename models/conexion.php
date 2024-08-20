@@ -2,7 +2,21 @@
 error_reporting(E_ALL);
 // Configurar el locale y la zona horaria
 setlocale(LC_TIME, 'es-ES');
+//setlocale(LC_TIME, 'es_AR.utf8');
 date_default_timezone_set('America/Argentina/Buenos_Aires');
+
+/*$locales = shell_exec('locale -a');
+echo nl2br($locales);
+
+$locale = setlocale(LC_TIME, 'es_AR.UTF-8', 'es_ES.UTF-8', 'es_ES', 'Spanish_Spain', 'es');
+if ($locale === false) {
+    echo "No se pudo establecer el locale.";
+} else {
+    echo "Locale configurado: $locale";
+}
+$currentLocale = setlocale(LC_ALL, 0);
+echo $currentLocale;
+die();*/
 
 include_once('funciones.php');
 
