@@ -4,6 +4,8 @@ error_reporting(E_ALL);
 setlocale(LC_TIME, 'es-ES');
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
+include_once('funciones.php');
+
 class Conexion{
   //LOCALHOST
   private $host = "localhost";

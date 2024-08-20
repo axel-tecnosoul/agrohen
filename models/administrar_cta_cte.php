@@ -161,7 +161,7 @@ class ctacte{
 
       $aSaldoInicial[]= array(
         'fecha_hora' => $desde,
-        'fecha_hora_formatted' => date("d M Y H:i",strtotime($desde)),
+        'fecha_hora_formatted' => formatFechaHora($desde),
         'deposito' => '',
         'origen' => '',
         'descripcion' => "Saldo inicial",
@@ -186,7 +186,7 @@ class ctacte{
       while ($row = $get->fetch_array()) {
         $ctacte[]= array(
           'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
-          'fecha_hora_formatted' =>date("d M Y H:i",strtotime($fecha_hora)),
+          'fecha_hora_formatted' =>formatFechaHora($fecha_hora),
           'id_carga' =>$row['id_carga'],
           'monto' =>$row['monto'],
           //'monto_valor_extra' =>$row['monto_valor_extra'],
@@ -218,9 +218,9 @@ class ctacte{
       while ($row = $get->fetch_array()) {
         $ctacte[]= array(
           'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
-          'fecha_hora_formatted' =>(!is_null($fecha_hora)) ? date("d M Y H:i",strtotime($fecha_hora)) : "",
+          'fecha_hora_formatted' =>(!is_null($fecha_hora)) ? formatFechaHora($fecha_hora) : "",
           'fecha_hora_alta' =>$fecha_hora_alta=$row['fecha_hora_alta'],
-          'fecha_hora_alta_formatted' =>date("d M Y H:i",strtotime($fecha_hora_alta)),
+          'fecha_hora_alta_formatted' =>formatFechaHora($fecha_hora_alta),
           'id_movimiento' =>$row['id_movimiento'],
           'monto' =>$row['monto'],
           'id_destino' =>$row['id_destino'],
@@ -232,7 +232,7 @@ class ctacte{
           'id_usuario_ultima_modificacion' =>$row['id_usuario_ultima_modificacion'],
           'usuario_ultima_modificacion' =>$row['usuario_ultima_modificacion'],
           'fecha_hora_ultima_modificacion' =>$fecha_hora_ultima_modificacion=$row['fecha_hora_ultima_modificacion'],
-          'fecha_hora_ultima_modificacion_formatted' =>(!is_null($fecha_hora_ultima_modificacion)) ? date("d M Y H:i",strtotime($fecha_hora_ultima_modificacion)) : "",
+          'fecha_hora_ultima_modificacion_formatted' =>(!is_null($fecha_hora_ultima_modificacion)) ? formatFechaHora($fecha_hora_ultima_modificacion) : "",
         );
       }
 
@@ -475,7 +475,7 @@ class ctacte{
       $row = $traerMovimientoCtaCte->fetch_array();
       $cargas = array(
         'fecha_hora'=>$fecha_hora=$row['fecha_hora'],
-        'fecha_hora_formatted' => date("d M Y",strtotime($fecha_hora)),
+        'fecha_hora_formatted' => formatFecha($fecha_hora),
         'id_destino'=>$row['id_destino'],
         'id_responsable'=>$row['id_responsable'],
         'destino'=>$row['destino'],

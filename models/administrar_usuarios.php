@@ -59,7 +59,7 @@ class Usuarios{
         'usuario'=>$row['usuario'],
         'email'=>$row['email'],
         'activo'=>$row['activo'],
-        'fecha_alta'=>date("d/m/Y H:i",strtotime($row['fecha_hora_alta'])),
+        'fecha_alta'=>formatFechaHora($row['fecha_hora_alta']),
         'id_perfil'=>$row['id_perfil'],
         'perfil'=>$row['perfil'],
         'deposito'=>$row['deposito']

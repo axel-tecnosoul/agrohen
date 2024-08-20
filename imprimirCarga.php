@@ -60,7 +60,7 @@ if ($id_carga > 0) {
 
         $this->SetFont('Arial', '', 8);
         // $this->Cell(0, 10, date("d M Y H:i"), 0, 1, 'R');
-        $this->Cell(0, 10, strftime("%A, %d de %B de %Y", strtotime(date("d M Y H:i"))), 0, 1, 'R');
+        $this->Cell(0, 10, strftime("%A, %d de %B de %Y, %H:%M", strtotime(date("d M Y H:i"))) , 0, 1, 'R');
         $this->SetY(10);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(0, 10, 'Orden de Carga ID ' . $_GET['id_carga'], 0, 1, 'C');

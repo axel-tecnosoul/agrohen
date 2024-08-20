@@ -179,12 +179,14 @@ class cargas{
     $fecha_hora_despacho=$fecha_hora_confirmacion="";
     //$estado="<span class='badge badge-warning'>Pendiente</span>";
     if($rowCarga['fecha_hora_despacho']){
-      $fecha_hora_despacho=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_despacho']));
+      //$fecha_hora_despacho=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_despacho']));
+      $fecha_hora_despacho=formatFechaHora($rowCarga['fecha_hora_despacho']);
       $despacho = 1;
       //$estado="<span class='badge badge-primary'>Despachado</span>";
     }
     if($rowCarga['fecha_hora_confirmacion']){
-      $fecha_hora_confirmacion=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_confirmacion']));
+      //$fecha_hora_confirmacion=date("d-m-Y H:i",strtotime($rowCarga['fecha_hora_confirmacion']));
+      $fecha_hora_confirmacion=formatFechaHora($rowCarga['fecha_hora_confirmacion']);
       //$estado="<span class='badge badge-primary'>Despachado</span>";
     }
 
@@ -193,7 +195,7 @@ class cargas{
       'id_proveedor' =>$rowCarga['id_proveedor'],
       'proveedor' =>$rowCarga['proveedor'],
       'fecha' =>$fecha=$rowCarga['fecha'],
-      'fecha_formatted' =>date("d-m-Y",strtotime($fecha)),
+      'fecha_formatted' =>formatFecha($fecha),
       'id_origen' =>$rowCarga['id_origen'],
       'origen' =>$rowCarga['origen'],
       'id_chofer' =>$rowCarga['id_chofer'],
@@ -465,7 +467,7 @@ class cargas{
       $cargas[] = array(
         'id_carga'=>$row['id_carga'],
         'fecha'=>$fecha=$row['fecha'],
-        'fecha_formatted'=>date("d-m-Y",strtotime($fecha)),
+        'fecha_formatted'=>formatFecha($fecha),
         'id_origen'=>$row['id_origen'],
         'origen'=>$row['origen'],
         'id_chofer'=>$row['id_chofer'],
@@ -474,8 +476,8 @@ class cargas{
         'total_bultos'=>$row['total_bultos'],
         'total_kilos'=>$row['total_kilos'],
         'total_monto'=>$row['total_monto'],
-        'fecha_hora_despacho'=>date("d-m-Y H:i",strtotime($row['fecha_hora_despacho'])),
-        'fecha_hora_confirmacion'=>date("d-m-Y H:i",strtotime($row['fecha_hora_confirmacion'])),
+        'fecha_hora_despacho'=>formatFechaHora($row['fecha_hora_despacho']),
+        'fecha_hora_confirmacion'=>formatFechaHora($row['fecha_hora_confirmacion']),
         'despachado'=>$row['despachado'],
         'confirmada'=>$row['confirmada'],
         'estado' => $estado,
@@ -556,8 +558,8 @@ class cargas{
       'total_monto'=> $row['total_monto'],
       'id_usuario'=> $row["id_usuario"],
       'usuario'=> $row["usuario"],
-      'fecha_hora_alta'=> date("d-M-Y H:i",strtotime($row["fecha_hora_alta"])),
-      'fecha_hora_ultima_modificacion'=> date("d-M-Y H:i",strtotime($row["fecha_hora_alta"])),
+      'fecha_hora_alta'=> formatFechaHora($row["fecha_hora_alta"]),
+      'fecha_hora_ultima_modificacion'=> formatFechaHora($row["fecha_hora_alta"]),
     ];
 
     $sqlTraerProductoDestinosCarga = "SELECT cpd.id AS id_producto_destino,cpd.id_destino,d.nombre AS destino,d.tipo_aumento_extra,d.valor_extra,cpd.cantidad_bultos,cpd.motivo_cambio_cantidad_bultos,cpd.monto,cpd.monto_valor_extra,cpd.kilos FROM ".$auditoria."cargas_productos_destinos cpd INNER JOIN destinos d ON cpd.id_destino=d.id WHERE cpd.id_".$auditoria."carga_producto = $id_carga_producto";
@@ -591,7 +593,7 @@ class cargas{
     while ($row = $traerAuditoriaProductoDestinosCarga->fetch_array()) {
       $productoDestinosCarga[] = [
         'id_auditoria_producto_destino'=> $row['id_auditoria_producto_destino'],
-        'fecha_hora'=> date("d-M-Y H:i",strtotime($row['fecha_hora_alta'])),
+        'fecha_hora'=> formatFechaHora($row['fecha_hora_alta']),
         'usuario'=> $row['usuario'],
       ];
     }
