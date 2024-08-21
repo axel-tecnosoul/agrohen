@@ -37,7 +37,7 @@ class depositos{
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.tipo_aumento_extra, valor_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.tipo_aumento_extra, saldo_maximo_permitido ,d.valor_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     
@@ -47,6 +47,7 @@ class depositos{
         'nombre'=>$row['nombre'],
         'responsable'=>$row['responsable'],
         'tipo_aumento_extra'=>$row['tipo_aumento_extra'],
+        'saldo_max'=>$row['saldo_maximo_permitido'],
         'valor_extra'=>$row['valor_extra'],
         'activo'=>$row['activo'],
       );
@@ -56,7 +57,7 @@ class depositos{
 
   public function traerDepositoUpdate($id_deposito){
     $this->id_deposito = $id_deposito;
-    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo FROM destinos WHERE id = $this->id_deposito";
+    $sqlTraerdeposito = "SELECT id as id_deposito, nombre, id_responsable, tipo_aumento_extra, saldo_maximo_permitido, valor_extra, activo FROM destinos WHERE id = $this->id_deposito";
     $traerdeposito = $this->conexion->consultaRetorno($sqlTraerdeposito);
 
     $depositos = array(); //creamos un array
@@ -66,16 +67,18 @@ class depositos{
         'nombre'=> $row['nombre'],
         'id_responsable'=> $row['id_responsable'],
         'tipo_aumento_extra'=> $row['tipo_aumento_extra'],
+        'saldo_max'=>$row['saldo_maximo_permitido'],
         'valor_extra'=> $row['valor_extra'],
       );
     }
     return json_encode($depositos);
   }
 
-  public function depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion, $valor){
+  public function depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion,$saldo_max, $valor){
 
     $this->id_deposito = $id_deposito;
     $this->nombre = $nombre;
+    $this->saldo_max = $saldo_max;
     $this->opcion = $opcion;
     if($valor==""){
       $valor="NULL";
@@ -83,8 +86,11 @@ class depositos{
     if($id_responsable==""){
       $id_responsable="NULL";
     }
+    if($saldo_max==""){
+      $saldo_max="NULL";
+    }
 
-    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable =$id_responsable, tipo_aumento_extra ='$opcion', valor_extra = $valor WHERE id = $this->id_deposito";
+    $sqlUpdateDeposito = "UPDATE destinos SET nombre ='$this->nombre',  id_responsable =$id_responsable, tipo_aumento_extra ='$opcion',  saldo_maximo_permitido = $saldo_max, valor_extra = $valor WHERE id = $this->id_deposito";
     $updateDeposito = $this->conexion->consultaSimple($sqlUpdateDeposito);
     $mensajeError=$this->conexion->conectar->error;
     
@@ -131,19 +137,23 @@ class depositos{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrardeposito($nombre,$id_responsable,$opcion, $valor){
+  public function registrardeposito($nombre,$id_responsable,$opcion, $saldo_max, $valor){
     $this->nombre = $nombre;
     $this->opcion = $opcion;
     $this->valor = $valor;
+    $this->saldo_max = $saldo_max;
     if($valor==""){
       $valor="NULL";
     }
     if($id_responsable==""){
       $id_responsable="NULL";
     }
+    if($saldo_max==""){
+      $saldo_max="NULL";
+    }
     $id_usuario = $_SESSION['rowUsers']['id_usuario'];
 
-    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, valor_extra, activo) VALUES($id_usuario, '$this->nombre', $id_responsable, '$opcion',$valor, 1)";
+    $queryInsertUser = "INSERT INTO destinos (id_usuario, nombre, id_responsable, tipo_aumento_extra, saldo_maximo_permitido, valor_extra, activo) VALUES($id_usuario, '$this->nombre', $id_responsable, '$opcion', $saldo_max, $valor, 1)";
     //echo $queryInsertUser;
     $insertUser = $this->conexion->consultaSimple($queryInsertUser);
     $mensajeError=$this->conexion->conectar->error;
@@ -175,8 +185,9 @@ if (isset($_POST['accion'])) {
       $nombre = $_POST['nombre'];
       $id_responsable = $_POST['id_responsable'];
       $opcion = $_POST['opcion'];
+      $saldo_max = $_POST['saldo_max'];
       $valor = $_POST['valor'];
-      echo $depositos->depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion, $valor);
+      echo $depositos->depositoUpdate($id_deposito, $nombre, $id_responsable, $opcion, $saldo_max, $valor);
       break;
     case 'cambiarEstado':
       $id_deposito = $_POST['id_deposito'];
@@ -198,8 +209,9 @@ if (isset($_POST['accion'])) {
       $nombre = $_POST['nombre'];
       $id_responsable = $_POST['id_responsable'];
       $opcion = $_POST['opcion'];
+      $saldo_max = $_POST['saldo_max'];
       $valor = $_POST['valor'];
-      echo $depositos->registrardeposito($nombre,$id_responsable,$opcion, $valor);
+      echo $depositos->registrardeposito($nombre,$id_responsable,$opcion, $saldo_max, $valor);
       break;
   }
 }else{

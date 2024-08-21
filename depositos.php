@@ -78,6 +78,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Responsable</th>
                           <th>Tipo de Aumento</th>
                           <th>Valor</th>
+                          <th>Saldo Maximo</th>
                           <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
@@ -149,6 +150,12 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <input type="number" class="form-control" id="valor">
                   </div>
                 </div>
+                <div class="col-lg-12">
+                  <div class="form-group">
+                    <label for="valor" class="col-form-label">Saldo Maximo Permitido:</label>
+                    <input type="number" class="form-control" id="saldo_max">
+                  </div>
+                </div>
               </div>
             </div>
             <div class="modal-footer">
@@ -200,6 +207,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {data: "responsable"},
             {data: "tipo_aumento_extra"},
             {data: "valor_extra"},
+            {data: "saldo_max"},
             {
               render: function(data, type, full, meta) {
                 const estados = {
@@ -377,6 +385,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         var $boton = $(this).find(':submit');
         let id_deposito = $.trim($('#id_deposito').html());
         let nombre = $.trim($('#nombre').val());
+        let saldo_max = $.trim($('#saldo_max').val());
         let id_responsable = $.trim($('#id_responsable').val());
         let opcion = $('input[name="opcion"]:checked').val();
         if(opcion==undefined){
@@ -389,7 +398,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           url: "models/administrar_deposito.php",
           type: "POST",
           datatype:"json",
-          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, opcion: opcion, valor: valor},
+          data:  {accion: accion, id_deposito: id_deposito, nombre: nombre, id_responsable: id_responsable, opcion: opcion, valor: valor, saldo_max: saldo_max},
           success: function(data) {
             tablaDeposito.ajax.reload(null, false);
             if(data=="1"){
@@ -445,6 +454,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             } else if (datosInput.tipo_aumento_extra === "Precio Fijo") {
                 $("#precio_fijo").prop("checked", true);
             }
+            $("#saldo_max").val(datosInput.saldo_max);
             $("#valor").val(datosInput.valor_extra);
             
             //$('#usuario').val(datosInput.usuario)
