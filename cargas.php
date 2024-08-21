@@ -446,9 +446,9 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     return ()=>{
                       $buttonsGroup="<div class='text-center'><div class='btn-group'>";
                       
-                      $btnEditar=`<button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button>`
-                      $btnEliminar=`<button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button>`
-                      $btnGestionarCarga=`<button class='btn btn-warning btnGestionar'><i class='fa fa-cogs'></i></button>`
+                      $btnEditar=`<button class='btn btn-success btnEditar' title="Editar"><i class='fa fa-edit'></i></button>`
+                      $btnEliminar=`<button class='btn btn-danger btnBorrar' title="Borrar"><i class='fa fa-trash-o'></i></button>`
+                      $btnGestionarCarga=`<button class='btn btn-warning btnGestionar' title="Gestionar"><i class='fa fa-cogs'></i></button>`
                       
                       //console.log(full);
                       let confirmada=despachado=0;
@@ -462,7 +462,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                         confirmada=1;
                       }
 
-                      $btnVer=`<button class='btn btn-primary btnVer' data-idCarga='${full.id_carga}' data-despachado='${despachado}' data-confirmada='${confirmada}'><i class='fa fa-eye'></i></button>`
+                      $btnVer=`<button class='btn btn-primary btnVer' title="Ver" data-idCarga='${full.id_carga}' data-despachado='${despachado}' data-confirmada='${confirmada}'><i class='fa fa-eye'></i></button>`
 
                       if(id_perfil==2){
                         $btnEliminar=''

@@ -267,15 +267,15 @@ if($datosCarga["despachado"]=="Si"){
                   </div>
                 </div>
               </div>
-              <!-- <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group" id="motivo_group">
-                    <label for="motivo_cambio_precio" class="col-form-label">Motivo de la modificacion del precio:</label>
-                    <input type="text" class="form-control" id="motivo_cambio_precio">
+              <div class="row" id="motivo_group">
+                <div class="col-lg-12">
+                  <div class="form-group">
+                    <label for="motivo_cambio_producto" class="col-form-label">Motivo de la modificacion en el producto:</label>
+                    <input type="text" class="form-control" id="motivo_cambio_producto">
                     <input type="hidden" class="form-control" id="precio_aux">
                   </div>
                 </div>
-              </div> -->
+              </div>
               <div class="row">
                 <div class="col-lg-12">
                   <table id="tableDepositos" class="table table-striped">
@@ -333,39 +333,39 @@ if($datosCarga["despachado"]=="Si"){
                     <span id="lbl_familia"></span>
                   </div>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label class="col-form-label font-weight-bold">Nombre:</label>
                     <span id="lbl_producto"></span>
                   </div>
                 </div>
-                <div class="col-lg-5">
-                  <div class="form-group">
-                    <label class="col-form-label font-weight-bold">Proveedor:</label>
-                    <span id="lbl_proveedor"></span>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label font-weight-bold">Kg x bulto:</label>
                     <span id="lbl_kg"></span>
                   </div>
                 </div>
-                <div class="col-lg-9">
+                <div class="col-lg-3">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label font-weight-bold">Precio:</label>
                     <span id="lbl_precio"></span>
                   </div>
                 </div>
-                <!-- <div class="col-lg-7">
+                <!-- <div class="col-lg-5">
                   <div class="form-group">
-                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Motivo de la modificacion del precio:</label>
-                    <span id="lbl_motivo_cambio_precio"></span>
+                    <label class="col-form-label font-weight-bold">Proveedor:</label>
+                    <span id="lbl_proveedor"></span>
                   </div>
                 </div> -->
               </div>
+              <!--<div class="row">
+                 <div class="col-lg-7">
+                  <div class="form-group">
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Motivo de la modificacion del precio:</label>
+                    <span id="lbl_motivo_cambio_producto"></span>
+                  </div>
+                </div> 
+              </div>-->
               <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
@@ -683,7 +683,7 @@ if($datosCarga["despachado"]=="Si"){
           let id_proveedor = $.trim($('#id_proveedor_default').val());
           let kg_x_bulto = $.trim($('#kg_x_bulto').val());
           let precio = $.trim($('#precio').val());
-          let motivo_cambio_precio = $.trim($('#motivo_cambio_precio').val());
+          let motivo_cambio_producto = $.trim($('#motivo_cambio_producto').val());
           mostrarSpinner($boton);
 
           let datosDepositos = []; // Array para almacenar los datos de las filas seleccionadas
@@ -694,22 +694,24 @@ if($datosCarga["despachado"]=="Si"){
             let cantidad_bultos=fila.find(".cantidad_bultos").val()
             if(cantidad_bultos>0){
               
+              let id_deposito=fila.find(".id_deposito").val()
               let id_producto_destino=fila.find(".id_producto_destino").val()
               let tipo_aumento_extra=fila.find(".tipo_aumento_extra").val()
               let valor_extra=fila.find(".valor_extra").val()
-              let motivo_cambio_cantidad_bultos=fila.find(".motivo_cambio_cantidad_bultos").val()
-              let id_deposito=fila.find(".id_deposito").val()
               let subtotal_kilos=fila.find(".subtotal_kilos").val()
-              //console.log(motivo_cambio_cantidad_bultos);
+              let precio=fila.find(".precio").val()
+              let motivo_cambio_deposito=fila.find(".motivo_cambio_deposito").val()
+              //console.log(motivo_cambio_deposito);
 
               datosDepositos.push({
+                id_deposito: id_deposito,
                 id_producto_destino: id_producto_destino,
                 tipo_aumento_extra: tipo_aumento_extra,
                 valor_extra: valor_extra,
                 cantidad_bultos: cantidad_bultos,
-                motivo_cambio_cantidad_bultos: motivo_cambio_cantidad_bultos,
-                id_deposito: id_deposito,
-                subtotal_kilos: subtotal_kilos
+                subtotal_kilos: subtotal_kilos,
+                precio: precio,
+                motivo_cambio_deposito: motivo_cambio_deposito,
               });
             }
 
@@ -720,6 +722,7 @@ if($datosCarga["despachado"]=="Si"){
               icon: 'error',
               title: 'Ingrese la cantidad de bultos para al menos un deposito'
             });
+            restaurarBoton($boton);
             return false;
           }
 
@@ -730,7 +733,7 @@ if($datosCarga["despachado"]=="Si"){
             url: "models/administrar_cargas.php",
             type: "POST",
             datatype:"json",
-            data:  {accion:accion, id_carga_producto:id_carga_producto, id_carga:id_carga, id_producto:id_producto, id_proveedor:id_proveedor, kg_x_bulto:kg_x_bulto, precio:precio, motivo_cambio_precio:motivo_cambio_precio, datosDepositos:datosDepositos},
+            data:  {accion:accion, id_carga_producto:id_carga_producto, id_carga:id_carga, id_producto:id_producto, id_proveedor:id_proveedor, kg_x_bulto:kg_x_bulto, precio:precio, motivo_cambio_producto:motivo_cambio_producto, datosDepositos:datosDepositos},
             success: function(data) {
               //console.log(data);
               data = JSON.parse(data);
@@ -738,19 +741,6 @@ if($datosCarga["despachado"]=="Si"){
               if(data.ok==1){
                 tablaProductosCarga.ajax.reload(null, false);
                 
-                /*swal({
-                  icon: 'success',
-                  title: 'Accion realizada correctamente'
-                }).then(function() {
-                  // Esta función se ejecutará después de que el usuario presione el botón "OK"
-                  //console.log('El usuario presionó OK');
-                  // Puedes agregar aquí la lógica que deseas ejecutar después de presionar OK
-                  if (cargarOtro) {
-                    $("#btnNuevo").click()
-                    let id_proveedor_default=$("#id_proveedor_default").val();
-                    $('#id_proveedor').val(id_proveedor_default).change();
-                  }
-                });*/
                 swal({
                   icon: 'success',
                   title: 'Accion realizada correctamente',
@@ -766,12 +756,8 @@ if($datosCarga["despachado"]=="Si"){
                 });
                 restaurarBoton($boton);
 
-                /*if (cargarOtro) {
-                  $(this).reset();
-                  $('#id_proveedor').val(id_proveedor).change();
-                }else{*/
-                  $('#modalCRUD').modal('hide');
-                //}
+                $('#modalCRUD').modal('hide');
+
               }else{
                 swal({
                   icon: 'error',
@@ -854,6 +840,7 @@ if($datosCarga["despachado"]=="Si"){
                   fila.find(".cantidad_bultos").val(data.cantidad_bultos)
                   fila.find(".cantidad_bultos_aux").val(data.cantidad_bultos)
                   fila.find(".subtotal_kilos").val(data.subtotal)
+                  fila.find(".precio").val(data.precio)
                   fila.find(".subtotal_monto").val(data.subtotal)
                 }
               })
@@ -1180,7 +1167,7 @@ if($datosCarga["despachado"]=="Si"){
             //$('#procesando').modal('show');
           },
           success: function(response){
-            accion = "updateProductoCarga";
+            //accion = "updateProductoCarga";
             let datosInput = JSON.parse(response);
             console.log("Datos Input: ", datosInput);
 
@@ -1211,16 +1198,22 @@ if($datosCarga["despachado"]=="Si"){
             }
 
             $('#lbl_familia').html(datosInput.familia);
-            $('#lbl_producto').html(datosInput.producto);
+            let presentacion=datosInput.presentacion
+            let unidad_medida=datosInput.unidad_medida
+            let text=datosInput.producto;
+            if(presentacion!=undefined && unidad_medida!=undefined){
+              text+=" x "+presentacion+" - "+unidad_medida;
+            }
+            $('#lbl_producto').html(text);
             $('#lbl_proveedor').html(datosInput.proveedor);
             //$('#id_producto').val(datosInput.id_producto).change();
             $('#lbl_kg').html(formatNumber2Decimal(datosInput.kg_x_bulto));
             let precio=formatCurrency(datosInput.precio);
-            if(datosInput.motivo_cambio_precio.length>0){
-              precio+=" (<span style='font-style: italic;'>"+datosInput.motivo_cambio_precio+"</span>)";
+            if(datosInput.motivo_cambio_producto.length>0){
+              precio+=" (<span style='font-style: italic;'>"+datosInput.motivo_cambio_producto+"</span>)";
             }
             $('#lbl_precio').html(precio);
-            //$('#lbl_motivo_cambio_precio').html(datosInput.motivo_cambio_precio);
+            //$('#lbl_motivo_cambio_producto').html(datosInput.motivo_cambio_producto);
             //$('#id_proveedor').val(datosInput.id_proveedor).change();
             $('#lbl_usuario').html(datosInput.usuario)
             $('#lbl_fecha_hora_alta').html(datosInput.fecha_hora_alta)
@@ -1262,30 +1255,19 @@ if($datosCarga["despachado"]=="Si"){
               }
               
               cantidad_bulto_total += parseFloat(destino.cantidad_bultos);
-              total_kilos += parseFloat(destino.kilos);
+              total_kilos += parseFloat(destino.subtotal_kilos);
               total_monto += parseFloat(destino.monto)
 
-              /*let contenidoFila = `
-                <td class="align-middle">
-                  <input type='text' readonly tabindex="-1"class="form-control destino" value='${destino.destino}'>
-                </td>
-                <td class="align-middle">
-                  <div class="input-group">
-                    <input type="text" readonly tabindex="-1" class="form-control cantidad_bultos" value="${destino.cantidad_bultos}" placeholder="Deje en blanco si no desea cargar este producto al destino">
-                  </div>
-                </td>
-                <td class="align-middle">
-                  <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_kilos_formatted" value='${destino.kilos}'>
-                </td>
-                <td class="align-middle">
-                  <input type="text" readonly tabindex="-1" class="form-control text-right subtotal_monto_formatted" value='${destino.monto}'>
-                </td>`;*/
               let contenidoFila = `
                 <td class="align-middle">${destino.destino}</td>
                 <td style="text-align: right;">${formatNumber2Decimal(destino.cantidad_bultos)}</td>
-                <td style="text-align: right;">${formatNumber2Decimal(destino.kilos)}</td>
-                <td style="text-align: right;">${formatCurrency(destino.monto)}</td>
-                <td class="align-middle">${destino.motivo_cambio_cantidad_bultos}</td>`;
+                <td style="text-align: right;">${formatNumber2Decimal(destino.subtotal_kilos)}</td>
+                <td style="text-align: right;">${formatCurrency(destino.precio)}</td>
+                <td style="text-align: right;">${formatCurrency(destino.monto)}</td>`;
+
+              if(despachado==1){
+                contenidoFila+= `<td>${destino.motivo_cambio_deposito}</td>`;
+              }
               // Crear una nueva fila
               var newRow = document.createElement('tr');
               // Insertar el contenido HTML en la nueva fila
@@ -1333,7 +1315,7 @@ if($datosCarga["despachado"]=="Si"){
                 let unidad_medida=producto.unidad_medida
                 let text=producto.producto
                 if(presentacion!=undefined && unidad_medida!=undefined){
-                  text+=" x "+producto.presentacion+" - "+producto.unidad_medida;
+                  text+=" x "+presentacion+" - "+unidad_medida;
                 }
                 if(producto.ultimo_precio && despachado=="No"){
                   text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
@@ -1379,7 +1361,7 @@ if($datosCarga["despachado"]=="Si"){
           /*console.log(precio_aux);
           console.log(precio);*/
           if(precio_aux!=undefined && precio_aux!=precio){
-            $("#motivo_cambio_precio").attr("required",true)
+            $("#motivo_cambio_producto").attr("required",true)
           }
         }
 
@@ -1435,7 +1417,7 @@ if($datosCarga["despachado"]=="Si"){
           if(despachado=="Si"){
             let cantidad_bultos_aux=fila.find(".cantidad_bultos_aux").val()
             if(cantidad_bultos_aux!=undefined && cantidad_bultos_aux!=cantidad_bultos){
-              fila.find(".motivo_cambio_cantidad_bultos").attr("required",true)
+              fila.find(".motivo_cambio_deposito").attr("required",true)
             }
           }
 
@@ -1512,7 +1494,7 @@ if($datosCarga["despachado"]=="Si"){
                   </td>
                   <td class="align-middle">
                     <div class="input-group">
-                      <input type="number" class="form-control cantidad_bultos" value="" title="Deje en blanco si no desea cargar este producto al destino">
+                      <input type="number" class="form-control text-right cantidad_bultos" value="" title="Deje en blanco si no desea cargar este producto al destino">
                     </div>
                   </td>
                   <td class="align-middle">
@@ -1521,7 +1503,7 @@ if($datosCarga["despachado"]=="Si"){
                   </td>
                   <td class="align-middle">
                     <div class="input-group">
-                      <input type="number" class="form-control precio" value="">
+                      <input type="number" class="form-control text-right precio" value="">
                     </div>
                   </td>
                   <td class="align-middle">
@@ -1532,7 +1514,7 @@ if($datosCarga["despachado"]=="Si"){
                     contenidoFila+=`
                     <td class="align-middle">
                       <input type="hidden" name="cantidad_bultos_aux" class="cantidad_bultos_aux">
-                      <input type="text" class="form-control motivo_cambio_cantidad_bultos">
+                      <input type="text" class="form-control motivo_cambio_deposito">
                     </td>`
                   }
                 // Crear una nueva fila
