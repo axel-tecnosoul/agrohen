@@ -206,8 +206,27 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {data: "nombre"},
             {data: "responsable"},
             {data: "tipo_aumento_extra"},
-            {data: "valor_extra"},
-            {data: "saldo_max"},
+            //{data: "valor_extra"},
+            {render: function(data, type, full, meta) {
+              let mostrar="";
+              if(full.valor_extra>0){
+                if(full.tipo_aumento_extra=="Porcentaje Extra"){
+                  mostrar=formatNumber2Decimal(full.valor_extra)+"%"
+                }else{
+                  mostrar="$ "+formatNumber2Decimal(full.valor_extra)
+                }
+              }
+              
+              return mostrar;
+            }},
+            //{data: "saldo_max"},
+            {render: function(data, type, full, meta) {
+              if(full.saldo_max>0){
+                return formatCurrency(full.saldo_max);
+              }else{
+                return "";
+              }
+            }},
             {
               render: function(data, type, full, meta) {
                 const estados = {

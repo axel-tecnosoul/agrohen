@@ -47,8 +47,8 @@ class depositos{
         'nombre'=>$row['nombre'],
         'responsable'=>$row['responsable'],
         'tipo_aumento_extra'=>$row['tipo_aumento_extra'],
-        'saldo_max'=>$row['saldo_maximo_permitido'],
         'valor_extra'=>$row['valor_extra'],
+        'saldo_max'=>$row['saldo_maximo_permitido'],
         'activo'=>$row['activo'],
       );
     }
