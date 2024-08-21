@@ -137,7 +137,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Presentacion:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required></select>
+                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required>
+                    </select>
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -184,6 +185,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
+      var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
       $(document).ready(function(){
         tablaProducto = $('#tablaProducto').DataTable({
           "ajax": {
@@ -299,6 +301,23 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         }
       }
 
+      //detectamos los tipeos en la busqueda de presentaciones para permitir dar de alta uno nuevo
+      $('#id_presentacion').on('select2:open', function() {
+        let searchField = $('.select2-search__field');
+        let noResultsShown = false;
+
+        searchField.on('keydown', function(e) {
+          if ($('.select2-results__option').text()==select2ProductoNoResultText){
+            noResultsShown = true;
+          }
+          if (e.key === 'Enter' && noResultsShown) {
+            let searchTerm = $(this).val();
+            //Alta de Presentacion
+            console.log("Apretaste Enter!")
+          }
+        });
+      });
+
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
         datosIniciales.append('accion', 'traerDatosInicialesProducto');
@@ -339,7 +358,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               $selectPresentacion.appendChild($option);
             })
 
-            $($selectPresentacion).select2()
+            //$($selectPresentacion).select2()
+            $($selectPresentacion).select2({
+              language: {
+                noResults: function() {
+                  return select2ProductoNoResultText;
+                }
+              }
+            })
+            console.log($selectPresentacion);
 
             /*Identifico el select de perfiles*/
             $selectUnidadMedida = document.getElementById("id_unidad_medida");
