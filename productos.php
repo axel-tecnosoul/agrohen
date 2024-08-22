@@ -137,7 +137,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Presentacion:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required>
+                    <select class="form-control" style="width: 100%;" id="id_presentacion" required>
                     </select>
                   </div>
                 </div>
@@ -306,7 +306,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         let searchField = $('.select2-search__field');
         let noResultsShown = false;
 
+        console.log(searchField);
         searchField.on('keydown', function(e) {
+          console.log($('.select2-results__option').text());
           if ($('.select2-results__option').text()==select2ProductoNoResultText){
             noResultsShown = true;
           }
