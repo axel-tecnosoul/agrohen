@@ -114,17 +114,23 @@ class presentaciones{
   public function registrarpresentacion( $nombre ){
     $this->nombre = $nombre;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertUser = "INSERT INTO presentaciones_productos (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
-    $insertUser = $this->conexion->consultaSimple($queryInsertUser);
+    $queryInsertPresentacion = "INSERT INTO presentaciones_productos (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
+    $insertPresentacion = $this->conexion->consultaSimple($queryInsertPresentacion);
     $mensajeError=$this->conexion->conectar->error;
+    $id_presentacion=$this->conexion->conectar->insert_id;
     
     $respuesta=$mensajeError;
     if($mensajeError!=""){
-      $respuesta.="<br><br>".$queryInsertUser;
+      $respuesta.="<br><br>".$queryInsertPresentacion;
     }else{
-      $respuesta=1;
+      $respuesta=[
+        "ok"=>1,
+        "id_key" => "id_presentacion",
+        "id_value"=>$id_presentacion,
+      ];
+      $respuesta=json_encode($respuesta);
     }
-    
+  
     return $respuesta;
   }
 		

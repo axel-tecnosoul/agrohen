@@ -405,7 +405,8 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           datatype:"json",
           data:  {accion: accion, id_presentacion: id_presentacion, nombre: nombre},
           success: function(data) {
-            if(data=="1"){
+            respuestaJson = JSON.parse(data);
+            if(respuestaJson.ok=="1"){
               tablaPresentacion.ajax.reload(null, false);
             }else{
               swal({

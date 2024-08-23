@@ -459,13 +459,13 @@ if($datosCarga["despachado"]=="Si"){
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Presentacion:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_presentacion" required></select>
+                    <select class="form-control" style="width: 100%;" id="id_presentacion" required></select>
                   </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label for="" class="col-form-label">Unidad de Medida:</label>
-                    <select class="form-control js-example-basic-single" style="width: 100%;" id="id_unidad_medida" required></select>
+                    <select class="form-control" style="width: 100%;" id="id_unidad_medida" required></select>
                   </div>
                 </div>
             </div>
@@ -531,11 +531,13 @@ if($datosCarga["despachado"]=="Si"){
       var bandera_buscar_producto=true;
       var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
 
-      cargarDatosComponentes();
-      cargarDatosComponentesNuevoProducto()
       //getDatosCarga();
 
       $(document).ready(function(){
+        console.log("document ready");
+
+        cargarDatosComponentes();
+        cargarDatosComponentesNuevoProducto()
 
         tablaProductosCarga= $('#tablaProductosCarga').DataTable({
           "ajax": {
@@ -962,6 +964,20 @@ if($datosCarga["despachado"]=="Si"){
               id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
               $('#id_presentacion').val("").change();
               $('#id_unidad_medida').val("").change();
+
+              agregarOpcionSelect(
+                'id_presentacion', 
+                'presentaciones', 
+                'addpresentacion', 
+                "No hay resultados. Presione ENTER para agregar"
+              );
+
+              agregarOpcionSelect(
+                'id_unidad_medida', 
+                'unidad_medida', 
+                'addUnidad_medida', 
+                "No hay resultados. Presione ENTER para agregar"
+              );
 
               //alert('Buscar: ' + searchTerm);
               noResultsShown = false; // Reset the flag after showing the alert
@@ -1570,7 +1586,15 @@ if($datosCarga["despachado"]=="Si"){
               $selectPresentacion.appendChild($option);
             })
 
-            $($selectPresentacion).select2({dropdownParent: $('#modalNuevoProducto')})
+            //$($selectPresentacion).select2({dropdownParent: $('#modalNuevoProducto')})
+            $($selectPresentacion).select2({
+              language: {
+                noResults: function() {
+                  return select2ProductoNoResultText;
+                }
+              },
+              dropdownParent: $('#modalNuevoProducto')
+            })
 
             /*Identifico el select de perfiles*/
             $selectUnidadMedida = document.getElementById("id_unidad_medida");

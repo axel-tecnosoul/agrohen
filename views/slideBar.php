@@ -26,6 +26,7 @@
         <ul class="sidebar-submenu">
           <li><a href="productos.php"><i class="fa fa-circle"></i> Productos</a></li>
           <li><a href="presentaciones.php"><i class="fa fa-circle"></i>Pres. Productos</a></li>
+          <li><a href="unidades_medidas.php"><i class="fa fa-circle"></i>Unidades Med.</a></li>
           <li><a href="proveedores.php"><i class="fa fa-circle"></i> Proveedores</a></li>
           <li><a href="depositos.php"><i class="fa fa-circle"></i> Depositos</a></li>
           <li><a href="origenes.php"><i class="fa fa-circle"></i> Origenes</a></li>
