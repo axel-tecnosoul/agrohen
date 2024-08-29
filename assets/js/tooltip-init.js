@@ -7,7 +7,7 @@
 			$("input").tooltip();
 			$("img").tooltip();
 
-      $('[data-toggle="tooltip"]').tooltip({
+      /*$('[data-toggle="tooltip"]').tooltip({
         //placement: 'top',
         placement: 'auto',
         delay: { "show": 500, "hide": 100 },
@@ -16,7 +16,7 @@
 
       $('[data-toggle="tooltip"]').on('show.bs.tooltip', function () {
         $('[data-toggle="tooltip"]').not(this).tooltip('hide');
-      });
+      });*/
 		}
 	};
   tooltip_init.init()

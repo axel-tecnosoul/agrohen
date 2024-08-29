@@ -19,3 +19,8 @@ function mostrarSpinner($boton) {
 function restaurarBoton($boton) {
   $boton.prop('disabled', false).find('.spinner-border').remove();
 }
+
+$(document).on('show.bs.modal','.modal', function () {
+  //$('[data-toggle="tooltip"]').tooltip('hide');
+  $('.tooltip').tooltip('hide');
+});

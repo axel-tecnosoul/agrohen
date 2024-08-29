@@ -130,13 +130,13 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                           <th>Chofer</th>
                           <th>Bultos</th>
                           <th>Kilos</th>
-                          <!-- <th>Monto</th> -->
                           <th>Estado</th>
                           <!-- <th>Datos adicionales del chofer</th> -->
                           <th class="text-center">Acciones</th>
-                          <th class="none">Datos adicionales del chofer:</th>
-                          <th class="none">Despachado:</th>
-                          <th class="none">Usuario:</th>
+                          <th class="none">Monto: </th>
+                          <th class="none">Datos adicionales del chofer: </th>
+                          <th class="none">Despachado: </th>
+                          <th class="none">Usuario: </th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -148,6 +148,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                           <!-- <th style="text-align:right">Total Monto</th> -->
                           <th style="text-align:right"></th>
                           <th class="text-center">Acciones</th>
+                          <th class="none"></th>
                           <th class="none"></th>
                           <th class="none"></th>
                           <th class="none"></th>
@@ -434,9 +435,6 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   return formatNumber2Decimal(full.total_kilos);
                 }},
                 //{"data": "total_monto"},
-                /*{render: function(data, type, full, meta) {
-                  return formatCurrency(full.total_monto);
-                }},*/
                 {render: function(data, type, full, meta) {
                   //console.log(full);
                   return full.estado;
@@ -482,6 +480,9 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     };
                   }
                 },
+                {render: function(data, type, full, meta) {
+                  return formatCurrency(full.total_monto);
+                }},
                 {"data": "datos_adicionales_chofer"},
                 {"data": "despachado"},
                 {"data": "usuario"},

@@ -13,7 +13,7 @@
     <div class="nav-right col p-0">
       <ul class="nav-menus">
         <li style="text-align: left;width:100%"><?php
-          $vencimientoCRT="2024-09-26 10:55:18";
+          /*$vencimientoCRT="2024-09-26 10:55:18";
           //$vencimientoCRT="2023-04-26 10:55:18";//pruebas
           $fechaActual=date("Y-m-d");
           $fechaVencimiento=date("Y-m-d",strtotime($vencimientoCRT."- 1 month"));
@@ -33,7 +33,7 @@
             </div><?php
           }else{
             //echo "$fechaActual NO es mayor a $fechaVencimiento";
-          }
+          }*/
           ?>
         </li>
         <li class="onhover-dropdown">

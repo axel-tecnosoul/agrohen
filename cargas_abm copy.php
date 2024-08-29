@@ -55,9 +55,6 @@ if($datosCarga["despachado"]=="Si"){
         min-width: 300px; /* Ajusta este valor según sea necesario */
       }
 
-      .select2-container--default .select2-results__option[aria-disabled=true] {
-        display: none;
-      }
 
       #tableDepositos tbody td{
         padding: 0.3rem;
@@ -81,10 +78,6 @@ if($datosCarga["despachado"]=="Si"){
 
       .select2-container {
         z-index: 2000 !important; /* Ajusta según sea necesario */
-      }
-
-      .required{
-        border: 1px solid red;
       }
     </style>
   </head>
@@ -270,33 +263,29 @@ if($datosCarga["despachado"]=="Si"){
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label for="precio_general" class="col-form-label">Precio:</label>
+                    <label for="kg_x_bulto" class="col-form-label">Precio:</label>
                     <input type="number" class="form-control" id="precio_general" step="1" min="0" required>
                   </div>
                 </div>
-              </div><?php
-              if($mostrarMotivo==1){?>
-                
-                <div class="row" id="motivo_group">
-                  <div class="col-lg-12">
-                    <div class="form-group row align-items-center">
-                      <label for="motivo_cambio_producto" class="col-form-label col-sm-4 col-md-3">Motivo de la modificación:</label>
-                      <div class="col-sm-8 col-md-9">
-                        <input type="text" class="form-control" id="motivo_cambio_producto">
-                        <input type="hidden" class="form-control" id="id_producto_aux">
-                        <input type="hidden" class="form-control" id="kg_x_bulto_aux">
-                        <input type="hidden" class="form-control" id="precio_general_aux">
-                      </div>
-                    </div>
+              </div>
+              <div class="row" id="motivo_group">
+                <div class="col-lg-12">
+                  <div class="form-group">
+                    <label for="motivo_cambio_producto" class="col-form-label">Motivo de la modificacion en el producto:</label>
+                    <!-- <textarea class="form-control" id="motivo_cambio_producto"></textarea> -->
+                    <input type="text" class="form-control" id="motivo_cambio_producto">
+                    <input type="hidden" class="form-control" id="id_producto_aux">
+                    <input type="hidden" class="form-control" id="kg_x_bulto_aux">
+                    <input type="hidden" class="form-control" id="precio_general_aux">
                   </div>
-                </div><?php
-              }?>
+                </div>
+              </div>
               <div class="row">
                 <div class="col-lg-12">
                   <table id="tableDepositos" class="table table-striped">
                     <thead>
                       <th style="width: 20%">Deposito</th>
-                      <th style="width: 15%">Bultos</th>
+                      <th style="width: 15%">Cantidad de bultos</th>
                       <th style="width: 15%">Kg Total</th>
                       <th style="width: 15%">Precio</th>
                       <th style="width: 15%">Monto Total</th><?php
@@ -350,19 +339,19 @@ if($datosCarga["despachado"]=="Si"){
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label for="lbl_producto" class="col-form-label font-weight-bold">Nombre:</label>
+                    <label class="col-form-label font-weight-bold">Nombre:</label>
                     <span id="lbl_producto"></span>
                   </div>
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label for="lbl_kg" class="col-form-label font-weight-bold">Kg x bulto:</label>
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Kg x bulto:</label>
                     <span id="lbl_kg"></span>
                   </div>
                 </div>
                 <div class="col-lg-3">
                   <div class="form-group">
-                    <label for="lbl_precio_general" class="col-form-label font-weight-bold">Precio:</label>
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Precio:</label>
                     <span id="lbl_precio_general"></span>
                   </div>
                 </div>
@@ -373,14 +362,14 @@ if($datosCarga["despachado"]=="Si"){
                   </div>
                 </div> -->
               </div>
-              <div class="row">
+              <!--<div class="row">
                  <div class="col-lg-7">
                   <div class="form-group">
-                    <label for="lbl_motivo_cambio_producto" class="col-form-label font-weight-bold">Motivo de la modificacion en el producto:</label>
+                    <label for="kg_x_bulto" class="col-form-label font-weight-bold">Motivo de la modificacion del precio:</label>
                     <span id="lbl_motivo_cambio_producto"></span>
                   </div>
                 </div> 
-              </div>
+              </div>-->
               <div class="row">
                 <div class="col-lg-3">
                   <div class="form-group">
@@ -406,12 +395,12 @@ if($datosCarga["despachado"]=="Si"){
                   <table id="tableDepositosVer" class="table table-striped">
                     <thead>
                       <th class="text-center" style="width: 20%">Deposito</th>
-                      <th class="text-center" style="width: 12%">Bultos</th>
-                      <th class="text-center" style="width: 13%">Kg Total</th>
-                      <th class="text-center" style="width: 13%">Precio</th>
+                      <th class="text-center" style="width: 15%">Cantidad de bultos</th>
+                      <th class="text-center" style="width: 15%">Kg Total</th>
+                      <th class="text-center" style="width: 15%">Precio</th>
                       <th class="text-center" style="width: 15%">Monto Total</th><?php
                       if($mostrarMotivo==1){?>
-                        <th class="text-center" style="width: 27%">Motivo</th><?php
+                        <th class="text-center" style="width: 20%">Motivo</th><?php
                       }?>
 
                       <!-- <th style="width: 30%">Deposito</th>
@@ -545,7 +534,6 @@ if($datosCarga["despachado"]=="Si"){
       var confirmada = $("#confirmada").val()
       var bandera_buscar_producto=true;
       var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
-      var aProductos = []
 
       cargarDatosComponentes();
       cargarDatosComponentesNuevoProducto()
@@ -668,9 +656,9 @@ if($datosCarga["despachado"]=="Si"){
           //console.log(id_proveedor_default);
           //$("#id_proveedor").val(id_proveedor_default).change();
           $('#id_familia').val("").change();
-          //$('#id_producto').val("").change();
+          $('#id_producto').val("").change();
 
-          //$("#motivo_group").addClass("d-none");
+          $("#motivo_group").addClass("d-none");
           $('#id_familia').attr("disabled",false)
           $('#kg_x_bulto').attr("disabled",false)
           //$('#id_proveedor').attr("disabled",false)
@@ -696,7 +684,6 @@ if($datosCarga["despachado"]=="Si"){
           let id_carga_producto = $.trim($('#id_carga_producto').html());
           let id_carga = $.trim($('#id_carga').val());
           let id_producto = $.trim($('#id_producto').val());
-          console.log(id_producto);
           let id_proveedor = $.trim($('#id_proveedor_default').val());
           let kg_x_bulto = $.trim($('#kg_x_bulto').val());
           let precio_general = $.trim($('#precio_general').val());
@@ -709,7 +696,7 @@ if($datosCarga["despachado"]=="Si"){
           tableDepositosRows.each(function(){
             let fila=$(this);
             let cantidad_bultos=fila.find(".cantidad_bultos").val()
-            if(cantidad_bultos>0){
+            //if(cantidad_bultos>0){
               
               let id_deposito=fila.find(".id_deposito").val()
               let id_producto_destino=fila.find(".id_producto_destino").val()
@@ -730,7 +717,8 @@ if($datosCarga["despachado"]=="Si"){
                 precio_destino: precio_destino,
                 motivo_cambio_deposito: motivo_cambio_deposito,
               });
-            }
+            //}
+
           })
 
           if (datosDepositos.length==0) {
@@ -791,11 +779,10 @@ if($datosCarga["despachado"]=="Si"){
         $(document).on("click", ".btnEditar", function(){
           $boton = $(this);
           bandera_buscar_producto=false
-          let modalCrud=$('#modalCRUD');
-          modalCrud.find(".modal-header").css( "background-color", "#22af47");
-          modalCrud.find(".modal-header").css( "color", "white" );
-          modalCrud.find(".modal-title").text("Editar carga de producto");
-          //modalCrud.modal('show');
+          $(".modal-header").css( "background-color", "#22af47");
+          $(".modal-header").css( "color", "white" );
+          $(".modal-title").text("Editar carga de producto");
+          $('#modalCRUD').modal('show');
           $("#formAdmin").trigger("reset");
           fila = $(this).closest("tr");
           let id_carga_producto = fila.find('td:eq(0)').text();
@@ -824,27 +811,26 @@ if($datosCarga["despachado"]=="Si"){
               //console.log(datosInput);
 
               $('#id_familia').val(datosInput.id_familia).change();
-              $('#id_producto_aux').val(datosInput.id_producto);
+              $('#id_producto_aux').val(datosInput.id_producto).change();
               //$('#id_producto').val(datosInput.id_producto).change();
-              console.log(datosInput.kg_x_bulto);
+              bandera_buscar_producto=true
+              getProductosByFamilia(datosInput.id_familia,datosInput.id_producto)
               $('#kg_x_bulto').val(datosInput.kg_x_bulto);
               $('#kg_x_bulto_aux').val(datosInput.kg_x_bulto);
-              console.log($('#kg_x_bulto'));
-              //$('').val(datosInput.kg_x_bulto);
-              $('#precio_general, #precio_general_aux').val(datosInput.precio_general);
-              //$('').val(datosInput.precio_general);
+              $('#precio_general').val(datosInput.precio_general);
+              $('#precio_general_aux').val(datosInput.precio_general);
               //$('#id_proveedor').val(datosInput.id_proveedor).change();
 
-              /*$("#motivo_group").addClass("d-none");
+              $(document).on("change", "#id_producto", toggleSolicitarMotivo)
+
+              $("#motivo_group").addClass("d-none");
               if(despachado=="Si"){
+                //toggleSolicitarMotivo()
                 //$('#id_familia').attr("disabled",true)
                 //$('#kg_x_bulto').attr("disabled",true)
                 //$('#id_proveedor').attr("disabled",true)
                 $("#motivo_group").removeClass("d-none");
-              }*/
-
-              bandera_buscar_producto=true
-              getProductosByFamilia(datosInput.id_familia,datosInput.id_producto)
+              }
 
               let destinos=datosInput["destinos"];
               //console.log(destinos);
@@ -884,7 +870,7 @@ if($datosCarga["despachado"]=="Si"){
             }
           });
 
-          modalCrud.modal('show');
+          $('#modalCRUD').modal('show');
         });
 
         $(document).on("click", ".btnVer", function(){
@@ -956,12 +942,7 @@ if($datosCarga["despachado"]=="Si"){
           $("#tableDepositos .precio_destino").val(this.value);
         })
 
-        $(document).on("input", "#kg_x_bulto, #precio_general, .cantidad_bultos, .precio_destino", function(){
-          toggleSolicitarMotivo();
-          calcularTotales();
-        })
-
-        $(document).on("change", "#id_producto", toggleSolicitarMotivo)
+        $(document).on("input", "#kg_x_bulto, #precio_general, .cantidad_bultos, .precio_destino", calcularTotales)
 
         // Función para rotar el ícono cuando se abre el acordeón
         $('#collapseOne').on('show.bs.collapse', function () {
@@ -1087,30 +1068,6 @@ if($datosCarga["despachado"]=="Si"){
         $('.js-example-basic-single').on('select2:select', function (e) {
           $(this).next('.select2-container').find('.select2-selection').focus(); // Restablecer el foco en el elemento select2
         });
-
-        //si es un campo requerido por algun cambio que haya realizado el usuario, se valida cuando ingresa algo
-        $(document).on("input","#motivo_cambio_producto",function(){
-          //let t=$(this);
-          if(this.required){
-            //t.removeClass("is-invalid")
-            requerirMotivoCambioProducto(false)
-          }else{
-            requerirMotivoCambioProducto(true)
-            //t.addClass("is-invalid")
-          }
-        })
-
-        //si es un campo requerido por algun cambio que haya realizado el usuario, se valida cuando ingresa algo
-        $(document).on("input",".motivo_cambio_deposito",function(){
-          //let t=$(this);
-          if(this.value.length>0 && this.required){
-            //t.removeClass("is-invalid")
-            requerirMotivoCambioDeposito(this,false)
-          }else{
-            //t.addClass("is-invalid")
-            requerirMotivoCambioDeposito(this,true)
-          }
-        })
 
       });
 
@@ -1247,12 +1204,9 @@ if($datosCarga["despachado"]=="Si"){
               //$option.setAttribute("selected", true);
               selectHistorial.appendChild($option);
 
-              let cant=datosInput.historial.length;
               datosInput.historial.forEach((registro)=>{
                 $option = document.createElement("option");
-                //let text=registro.id_auditoria_producto_destino+" - "+registro.usuario+" ("+registro.fecha_hora+")"
-                let text=cant+" - "+registro.usuario+" ("+registro.fecha_hora+")";
-                cant--
+                let text=registro.id_auditoria_producto_destino+" - "+registro.usuario+" ("+registro.fecha_hora+")"
                 let optionText = document.createTextNode(text);
                 $option.appendChild(optionText);
                 $option.setAttribute("value", registro.id_auditoria_producto_destino);
@@ -1273,11 +1227,11 @@ if($datosCarga["despachado"]=="Si"){
             //$('#id_producto').val(datosInput.id_producto).change();
             $('#lbl_kg').html(formatNumber2Decimal(datosInput.kg_x_bulto));
             let precio_general=formatCurrency(datosInput.precio_general);
-            /*if(datosInput.motivo_cambio_producto.length>0){
+            if(datosInput.motivo_cambio_producto.length>0){
               precio_general+=" (<span style='font-style: italic;'>"+datosInput.motivo_cambio_producto+"</span>)";
-            }*/
+            }
             $('#lbl_precio_general').html(precio_general);
-            $('#lbl_motivo_cambio_producto').html(datosInput.motivo_cambio_producto);
+            //$('#lbl_motivo_cambio_producto').html(datosInput.motivo_cambio_producto);
             //$('#id_proveedor').val(datosInput.id_proveedor).change();
             $('#lbl_usuario').html(datosInput.usuario)
             $('#lbl_fecha_hora_alta').html(datosInput.fecha_hora_alta)
@@ -1285,7 +1239,7 @@ if($datosCarga["despachado"]=="Si"){
             //$('#lbl_fecha_hora_ultima_modificacion').html(datosInput.fecha_hora_ultima_modificacion)
             let destinos=datosInput["destinos"];
             //console.log("Destinos: " + destinos);
-            /*let tableDepositosRows = $("#tableDepositos tbody tr");
+            let tableDepositosRows = $("#tableDepositos tbody tr");
             tableDepositosRows.each(function(){
               let fila=$(this);
               //console.log("fila: "+ fila);
@@ -1301,7 +1255,7 @@ if($datosCarga["despachado"]=="Si"){
                 fila.find(".subtotal_kilos").val(formatNumber2Decimal(data.subtotal))
                 fila.find(".subtotal_monto").val(formatCurrency(data.subtotal))
               }
-            })*/
+            })
 
             // Identifico la tabla de destinos
             var tbody = document.querySelector('#tableDepositosVer tbody');
@@ -1330,8 +1284,7 @@ if($datosCarga["despachado"]=="Si"){
                 <td style="text-align: right;">${formatCurrency(destino.precio_destino)}</td>
                 <td style="text-align: right;">${formatCurrency(destino.monto)}</td>`;
 
-              //console.log(despachado);
-              if(despachado=="Si"){
+              if(despachado==1){
                 contenidoFila+= `<td>${destino.motivo_cambio_deposito}</td>`;
               }
               // Crear una nueva fila
@@ -1351,67 +1304,7 @@ if($datosCarga["despachado"]=="Si"){
         });
       }
 
-      function getProductosByFamilia(id_familia_selected,id_producto){
-
-        /*Identifico el select de productos*/
-        $selectProducto = document.getElementById("id_producto");
-        $selectProducto.innerHTML="";
-        //Genero los options del select productos
-        
-        aProductos.forEach((producto)=>{
-          let id_familia=producto.id_familia
-          
-          if(id_familia_selected==id_familia){
-            
-            $option = document.createElement("option");
-
-            let presentacion=producto.presentacion
-            let unidad_medida=producto.unidad_medida
-
-            let text=producto.producto
-            if(presentacion!=undefined && unidad_medida!=undefined){
-              text+=" x "+presentacion+" - "+unidad_medida;
-            }
-            if(producto.ultimo_precio && despachado=="No"){
-              text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
-            }
-
-            let optionText = document.createTextNode(text);
-            $option.appendChild(optionText);
-            $option.setAttribute("value", producto.id_producto);
-            $option.setAttribute("data-idFamilia", id_familia);
-
-            if(id_producto>0 && producto.id_producto==id_producto){
-              $option.setAttribute("selected", true);
-            }
-            $selectProducto.appendChild($option);
-          }
-        })
-        //$($selectProducto).select2()
-        if(id_familia_selected>0){
-          //$('#id_producto option[value=""]').text("Seleccione...")
-          $('#id_producto').select2({
-            language: {
-              noResults: function() {
-                return select2ProductoNoResultText;
-              }
-            },
-            placeholder: "Seleccione..."
-          });
-        }else{
-          $('#id_producto').select2({
-            placeholder: "Seleccione una familia..."
-          })
-        }
-
-        if(id_producto==undefined){
-          id_producto=0;
-        }
-        $("#id_producto").val(id_producto).change();
-
-      }
-
-      function getProductosByFamilia2(id_familia,id_producto){
+      function getProductosByFamilia(id_familia,id_producto){
         if(bandera_buscar_producto){
           //console.log("BUSCAMOS LOS PRODUCTOS");
           let datosIniciales = new FormData();
@@ -1479,16 +1372,9 @@ if($datosCarga["despachado"]=="Si"){
 
       function haCambiadoProducto(){
         let id_producto = $("#id_producto").val()
-        if(isNaN(id_producto) || !id_producto){
-          id_producto=0;
-        }
-        console.log("id_producto",id_producto);
+        //console.log("id_producto",id_producto);
         let id_producto_aux = $("#id_producto_aux").val()
-        if(isNaN(id_producto_aux) || !id_producto_aux){
-          id_producto_aux=0;
-        }
-        console.log("id_producto_aux",id_producto_aux);
-        console.log("");
+        //console.log("id_producto_aux",id_producto_aux);
         if(id_producto_aux!=undefined && id_producto_aux!=id_producto && id_producto!="Seleccione una familia"){
           return true;
         }else{
@@ -1498,20 +1384,9 @@ if($datosCarga["despachado"]=="Si"){
 
       function haCambiadoKgPorBulto(){
         let kg_x_bulto = $("#kg_x_bulto").val()
-        console.log("kg_x_bulto",kg_x_bulto);
-        kg_x_bulto = parseFloat(kg_x_bulto)
-        console.log("kg_x_bulto",kg_x_bulto);
-        if(isNaN(kg_x_bulto)){
-          kg_x_bulto=0;
-        }
-        console.log("kg_x_bulto",kg_x_bulto);
-        let kg_x_bulto_aux = parseFloat($("#kg_x_bulto_aux").val())
-        if(isNaN(kg_x_bulto_aux)){
-          kg_x_bulto_aux=0;
-        }
-        console.log("kg_x_bulto_aux",kg_x_bulto_aux);
-        console.log("");
-
+        //console.log("kg_x_bulto",kg_x_bulto);
+        let kg_x_bulto_aux = $("#kg_x_bulto_aux").val()
+        //console.log("kg_x_bulto_aux",kg_x_bulto_aux);
         if(kg_x_bulto_aux!=undefined && kg_x_bulto_aux!=kg_x_bulto){
           return true;
         }else{
@@ -1521,20 +1396,9 @@ if($datosCarga["despachado"]=="Si"){
 
       function haCambiadoPrecioGeneral(){
         let precio_general = $("#precio_general").val()
-        console.log("precio_general",precio_general);
-        precio_general = parseFloat(precio_general)
-        console.log("precio_general",precio_general);
-        if(isNaN(precio_general)){
-          precio_general=0;
-        }
-        console.log("precio_general",precio_general);
-        let precio_general_aux = parseFloat($("#precio_general_aux").val())
-        if(isNaN(precio_general_aux)){
-          precio_general_aux=0;
-        }
-        console.log("precio_general_aux",precio_general_aux);
-        console.log("");
-
+        //console.log("precio_general",precio_general);
+        let precio_general_aux = $("#precio_general_aux").val()
+        //console.log("precio_general_aux",precio_general_aux);
         if(precio_general_aux!=undefined && precio_general_aux!=precio_general){
           return true;
         }else{
@@ -1543,18 +1407,11 @@ if($datosCarga["despachado"]=="Si"){
       }
 
       function haCambiadoCantidadBultos(fila){
-        let cantidad_bultos = parseFloat(fila.find(".cantidad_bultos").val())
-        if(isNaN(cantidad_bultos)){
-          cantidad_bultos=0;
-        }
-        //console.log("cantidad_bultos",cantidad_bultos);
-        let cantidad_bultos_aux = parseFloat(fila.find(".cantidad_bultos_aux").val())
-        if(isNaN(cantidad_bultos_aux)){
-          cantidad_bultos_aux=0;
-        }
-        //console.log("cantidad_bultos_aux",cantidad_bultos_aux);
-
-        if(cantidad_bultos_aux!=undefined && cantidad_bultos_aux!=cantidad_bultos){
+        let cantidad_bultos = fila.find(".cantidad_bultos").val()
+        //console.log("cantidad_bultos",parseFloat(cantidad_bultos));
+        let cantidad_bultos_aux = fila.find(".cantidad_bultos_aux").val()
+        //console.log("cantidad_bultos_aux",parseFloat(cantidad_bultos_aux));
+        if(cantidad_bultos_aux!=undefined && parseFloat(cantidad_bultos_aux)!=parseFloat(cantidad_bultos)){
           return true;
         }else{
           return false;
@@ -1562,70 +1419,40 @@ if($datosCarga["despachado"]=="Si"){
       }
 
       function haCambiadoPrecioDestino(fila){
-        let precio_destino = parseFloat(fila.find(".precio_destino").val())
-        if(isNaN(precio_destino)){
-          precio_destino=0;
-        }
-        //console.log("precio_destino",precio_destino);
-        let precio_destino_aux = parseFloat(fila.find(".precio_destino_aux").val())
-        if(isNaN(precio_destino_aux)){
-          precio_destino_aux=0;
-        }
-        //console.log("precio_destino_aux",precio_destino_aux);
-
-        if(precio_destino_aux!=undefined && precio_destino_aux!=precio_destino){
+        let precio_destino = fila.find(".precio_destino").val()
+        //console.log("precio_destino",parseFloat(precio_destino));
+        let precio_destino_aux = fila.find(".precio_destino_aux").val()
+        //console.log("precio_destino_aux",parseFloat(precio_destino_aux));
+        if(precio_destino_aux!=undefined && parseFloat(precio_destino_aux)!=parseFloat(precio_destino)){
           return true;
         }else{
           return false;
         }
       }
 
-      function requerirMotivoCambioProducto(siNo){
-        console.log("siNo",siNo);
-        let motivo_cambio_producto=$("#motivo_cambio_producto")
-        if(motivo_cambio_producto.length>0){
-          let valor_motivo_cambio_producto=motivo_cambio_producto.val()
-          if(siNo && valor_motivo_cambio_producto.length<=0){
-            motivo_cambio_producto.attr("required",true).addClass("is-invalid")
-          }else{
-            motivo_cambio_producto.attr("required",false).removeClass("is-invalid")
-          }
-        }
-      }
-
-      function requerirMotivoCambioDeposito(elemento,siNo){
-        let motivo_cambio_deposito=$(elemento)
-        if(motivo_cambio_deposito.length>0){
-          let valor_motivo_cambio_deposito=motivo_cambio_deposito.val()
-          if(siNo && valor_motivo_cambio_deposito.length<=0){
-            motivo_cambio_deposito.attr("required",true).addClass("is-invalid")
-          }else{
-            motivo_cambio_deposito.attr("required",false).removeClass("is-invalid")
-          }
-        }
-      }
-
       function toggleSolicitarMotivo(){
-        //console.log("entramos a toggleSolicitarMotivo");
-
-        let precio_general=$("#precio_general").val();
-
-        let varHaCambiadoProducto=haCambiadoProducto()
-        let varHaCambiadoKgPorBulto=haCambiadoKgPorBulto()
-        let varHaCambiadoPrecioGeneral=haCambiadoPrecioGeneral()
-
-        console.log("haCambiadoProducto",varHaCambiadoProducto)
-        console.log("haCambiadoKgPorBulto",varHaCambiadoKgPorBulto)
-        console.log("haCambiadoPrecioGeneral",varHaCambiadoPrecioGeneral);
-        if(varHaCambiadoProducto || varHaCambiadoKgPorBulto || varHaCambiadoPrecioGeneral){
-          requerirMotivoCambioProducto(true)
-          //$("#motivo_cambio_producto").css("border","1px solid red")
+        console.log("entramos a toggleSolicitarMotivo");
+        
+        /*if(haCambiadoProducto() || haCambiadoKgPorBulto() || haCambiadoPrecioGeneral()){
+          console.log("Si cambia algo");
         }else{
-          requerirMotivoCambioProducto(false)
-          //$("#motivo_cambio_producto").css("border","1px solid black")
+          console.log("No cambia nada");
+        }*/
+        /*console.log(precio_general_aux);
+        console.log(precio_general);*/
+        if(haCambiadoProducto() || haCambiadoKgPorBulto() || haCambiadoPrecioGeneral()){
+          $("#motivo_cambio_producto").attr("required",true)
+          $("#motivo_cambio_producto").css("border","1px solid red")
+        }else{
+          $("#motivo_cambio_producto").attr("required",false)
+          $("#motivo_cambio_producto").css("border","1px solid black")
         }
+
 
         let tableDepositosRows = $("#tableDepositos tbody tr");
+        let sumaBultos=0;
+        let sumaKilos=0;
+        let sumaMonto=0;
         //console.log(kg_x_bulto);
         tableDepositosRows.each(function(){
           let fila=$(this);
@@ -1633,63 +1460,33 @@ if($datosCarga["despachado"]=="Si"){
           let cantidad_bultos = fila.find(".cantidad_bultos").val()
           let precio_destino = fila.find(".precio_destino").val()
 
-          let varHaCambiadoCantidadBultos=haCambiadoCantidadBultos(fila);
-          //console.log(varHaCambiadoCantidadBultos);
-          let varHaCambiadoPrecioDestino=haCambiadoPrecioDestino(fila);
+          let haCambiadoCantidadBultos=haCambiadoCantidadBultos(fila)
+          let haCambiadoPrecioDestino=haCambiadoPrecioDestino(fila)
 
-          requerirMotivoCambioEnDeposito=false;
-          if(cantidad_bultos>0 && precio_destino>0){
-            
-            if(varHaCambiadoCantidadBultos || varHaCambiadoPrecioDestino){
-              if(precio_destino==precio_general){
-                if(varHaCambiadoCantidadBultos){
-                  requerirMotivoCambioEnDeposito=true;
-                  //console.log("1.3");
-                }else{
-                  requerirMotivoCambioEnDeposito=false;
-                  //console.log("1.1");
-                }
-              }else{
-                requerirMotivoCambioEnDeposito=true;
-                //console.log("1.2");
-              }
+          if((cantidad_bultos>0 && precio_destino>0) && (haCambiadoCantidadBultos|| haCambiadoPrecioDestino)){
+            if(haCambiadoPrecioGeneral() && haCambiadoCantidadBultos && !haCambiadoPrecioDestino){
+              fila.find(".motivo_cambio_deposito").attr("required",true)
+              fila.find(".motivo_cambio_deposito").css("border","1px solid red")
             }
-            
-            if(haCambiadoPrecioGeneral() && varHaCambiadoCantidadBultos && !varHaCambiadoPrecioDestino){
-              requerirMotivoCambioEnDeposito=true;
-              //console.log("2");
+            if(haCambiadoPrecioDestino && haCambiadoPrecioGeneral()){
+              fila.find(".motivo_cambio_deposito").attr("required",true)
+              fila.find(".motivo_cambio_deposito").css("border","1px solid red")
             }
-            
-            if(haCambiadoPrecioGeneral() && !varHaCambiadoCantidadBultos && !varHaCambiadoPrecioDestino){
-              requerirMotivoCambioEnDeposito=false;
-              //console.log("3");
-            }
-
-            if(!haCambiadoPrecioGeneral() && !varHaCambiadoCantidadBultos && varHaCambiadoPrecioDestino){
-              requerirMotivoCambioEnDeposito=true;
-              //console.log("5");
-            }
-
           }else{
-            requerirMotivoCambioEnDeposito=false;
-            //console.log("4");
+            fila.find(".motivo_cambio_deposito").attr("required",false)
+            fila.find(".motivo_cambio_deposito").css("border","1px solid black")
           }
-
-          let elemento=fila.find(".motivo_cambio_deposito")
-          requerirMotivoCambioDeposito(elemento,requerirMotivoCambioEnDeposito)
-          /*if(requerirMotivoCambioEnDeposito){
-            //fila.find(".motivo_cambio_deposito").attr("required",true).addClass("is-invalid")
-            
-          }else{
-            //fila.find(".motivo_cambio_deposito").attr("required",false).removeClass("is-invalid")
-            requerirMotivoCambioDeposito(elemento,siNo)
-          }*/
         })
       }
 
       function calcularTotales(){
         let kg_x_bulto = $("#kg_x_bulto").val();
         //let precio_general = $("#precio_general").val();
+
+        /*//si la carga está despachada verificamos si hay cambios y pedimos que sea obligatorio el motivo
+        if(despachado=="Si"){
+          toggleSolicitarMotivo()
+        }*/
 
         let tableDepositosRows = $("#tableDepositos tbody tr");
         let sumaBultos=0;
@@ -1776,40 +1573,6 @@ if($datosCarga["despachado"]=="Si"){
               $selectFamilia.appendChild($option);
             })
             $($selectFamilia).select2()
-
-            /*Identifico el select de productos*/
-            //$selectProducto = document.getElementById("id_producto");
-            //Genero los options del select productos
-            respuestaJson.productos.forEach((producto)=>{
-              aProductos.push(producto)
-              /*$option = document.createElement("option");
-
-              let id_producto=producto.id_producto
-              let presentacion=producto.presentacion
-              let unidad_medida=producto.unidad_medida
-
-              let text=producto.producto
-              if(presentacion!=undefined && unidad_medida!=undefined){
-                text+=" x "+presentacion+" - "+unidad_medida;
-              }
-              if(producto.ultimo_precio && despachado=="No"){
-                text+=" ($"+producto.ultimo_precio+" | "+producto.ultimo_kg_x_bulto+" Kgs.)"
-              }*/
-
-              //console.log(id_producto);
-              /*if(id_producto==""){
-                //console.log("id_producto no es numerico");
-                id_producto=0;
-              }*/
-              //console.log(id_producto);
-
-              /*let optionText = document.createTextNode(text);
-              $option.appendChild(optionText);
-              $option.setAttribute("value", id_producto);
-              $option.setAttribute("data-idFamilia", producto.id_familia);
-              $selectProducto.appendChild($option);*/
-            })
-            //$($selectProducto).select2()
 
             /*Identifico el select de proveedores*/
             /*$selectProveedor = document.getElementById("id_proveedor");
