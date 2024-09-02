@@ -196,50 +196,65 @@ class producto{
 
     return $respuesta;
   }
+
+  public function traerDatosUltimaFamilia($id_familia){
+    $sqlTraerProducto = "SELECT id_presentacion, id_unidad_medida FROM productos WHERE id_familia = $id_familia ORDER BY fecha_hora_alta DESC LIMIT 1";
+    $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
+    $row = $traerProducto->fetch_array();
+    $id_presentacion=$row['id_presentacion'];
+    if($id_presentacion<0){
+      $id_presentacion="";
+    }
+    $id_unidad_medida=$row['id_unidad_medida'];
+    if($id_unidad_medida<0){
+      $id_unidad_medida="";
+    }
+    $datosFamilia=[
+      'id_presentacion'=> $id_presentacion,
+      'id_unidad_medida'=> $id_unidad_medida,
+    ];
+
+    return json_encode($datosFamilia);
+  }
 }	
 
 if (isset($_POST['accion'])) {
   $producto = new producto();
   switch ($_POST['accion']) {
-    /*case 'traerProducto':
-      $producto->traerTodosProducto();
-      break;*/
     case 'traerProductoUpdate':
-        $id_producto = $_POST['id_producto'];
-        echo $producto->traerProductoUpdate($id_producto);
-      break;
+      $id_producto = $_POST['id_producto'];
+      echo $producto->traerProductoUpdate($id_producto);
+    break;
     case 'updateProducto':
-        $id_producto = $_POST['id_producto'];
-        $nombre = $_POST['nombre'];
-        $id_presentacion = $_POST['id_presentacion'];
-        $id_unidad_medida = $_POST['id_unidad_medida'];
-        $id_familia = $_POST['id_familia'];
-        echo $producto->productoUpdate($id_producto, $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
-      break;
-    // case 'cambiarEstado':
-    //     $id_producto = $_POST['id_producto'];
-    //     $estado = $_POST['estado'];
-    //     $producto->cambiarEstado($id_producto, $estado);
-        
-    //   break;
+      $id_producto = $_POST['id_producto'];
+      $nombre = $_POST['nombre'];
+      $id_presentacion = $_POST['id_presentacion'];
+      $id_unidad_medida = $_POST['id_unidad_medida'];
+      $id_familia = $_POST['id_familia'];
+      echo $producto->productoUpdate($id_producto, $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
+    break;
     case 'eliminarProducto':
-        $id_producto = $_POST['id_producto'];
-        echo $producto->deleteProducto($id_producto);
-      break;
+      $id_producto = $_POST['id_producto'];
+      echo $producto->deleteProducto($id_producto);
+    break;
     case 'traerDatosInicialesProducto':
       $producto->traerDatosIniciales();
-      break;
+    break;
     case 'verificarCuenta':
       $email = $_POST['email'];
       $producto->verificarCuentaExitente($email);
-      break;
+    break;
     case 'addProducto':
       $nombre = $_POST['nombre'];
       $id_presentacion = $_POST['id_presentacion'];
       $id_unidad_medida = $_POST['id_unidad_medida'];
       $id_familia = $_POST['id_familia'];
       echo $producto->registrarProducto( $nombre, $id_presentacion, $id_unidad_medida, $id_familia);
-      break;
+    break;
+    case 'traerDatosUltimaFamilia':
+      $id_familia = $_POST['id_familia'];
+      echo $producto->traerDatosUltimaFamilia($id_familia);
+    break;
   }
 }elseif(isset($_GET['accion'])){
   $producto = new producto();

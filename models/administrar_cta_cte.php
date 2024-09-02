@@ -173,13 +173,15 @@ class ctacte{
 
       //$query = "SELECT c.fecha,c.id AS id_carga,SUM(cpd.monto) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT('+ $',FORMAT(cpd.monto, 2, 'de_DE'),' | ',fp.familia,' ',p.nombre,' (',pp.nombre,' - ',um.unidad_medida,')' SEPARATOR '<br>') AS detalle_productos,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE id_destino IN ($depositos) GROUP BY c.id";
 
-      $query = "SELECT c.fecha_hora_despacho AS fecha_hora,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT(
+      /*$query = "SELECT c.fecha_hora_despacho AS fecha_hora,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT(
         '<div class=\"detalle-producto\">',
         '<span class=\"simbolo\">+</span>',
         '<span class=\"precio\">$', FORMAT($columna_utilizar, 2, 'de_DE'), '</span>',
         '<span class=\"descripcion\">', fp.familia, ' ', p.nombre, ' (', pp.nombre, ' - ', um.unidad_medida, ') | $', cpd.cantidad_bultos,' x ', FORMAT(cp.precio, 2, 'de_DE'),'</span>',
         '</div>' SEPARATOR ''
-      ) AS detalle_productos,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,cpd.id_destino,d.nombre AS deposito,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN destinos d ON cpd.id_destino=d.id WHERE c.fecha_hora_despacho IS NOT NULL AND c.anulado=0 AND cpd.id_destino IN ($depositos) $filtroDesde $filtroHasta GROUP BY c.id";
+      ) AS detalle_productos,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,cpd.id_destino,d.nombre AS deposito,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN destinos d ON cpd.id_destino=d.id WHERE c.fecha_hora_despacho IS NOT NULL AND c.anulado=0 AND cpd.id_destino IN ($depositos) $filtroDesde $filtroHasta GROUP BY c.id";*/
+
+      $query = "SELECT c.fecha_hora_despacho AS fecha_hora,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,cpd.id_destino,d.nombre AS deposito,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id INNER JOIN destinos d ON cpd.id_destino=d.id WHERE c.fecha_hora_despacho IS NOT NULL AND c.anulado=0 AND cpd.id_destino IN ($depositos) $filtroDesde $filtroHasta GROUP BY c.id";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
@@ -201,7 +203,8 @@ class ctacte{
           'fecha_hora_despacho' =>$row['fecha_hora_despacho'],
           'id_usuario' =>$row['id_usuario'],
           'usuario' =>$row['usuario'],
-          'descripcion' =>$row["detalle_productos"],
+          //'descripcion' =>$row["detalle_productos"],
+          'descripcion' =>"",
         );
       }
 

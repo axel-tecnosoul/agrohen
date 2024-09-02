@@ -276,7 +276,6 @@ if($datosCarga["despachado"]=="Si"){
                 </div>
               </div><?php
               if($mostrarMotivo==1){?>
-                
                 <div class="row" id="motivo_group">
                   <div class="col-lg-12">
                     <div class="form-group row align-items-center">
@@ -828,7 +827,7 @@ if($datosCarga["despachado"]=="Si"){
               $('#id_familia').val(datosInput.id_familia).change();
               $('#id_producto_aux').val(datosInput.id_producto);
               //$('#id_producto').val(datosInput.id_producto).change();
-              console.log(datosInput.kg_x_bulto);
+              //console.log(datosInput.kg_x_bulto);
               $('#kg_x_bulto').val(datosInput.kg_x_bulto);
               $('#kg_x_bulto_aux').val(datosInput.kg_x_bulto);
               console.log($('#kg_x_bulto'));
@@ -856,7 +855,19 @@ if($datosCarga["despachado"]=="Si"){
                 //console.log("fila",fila);
                 let id_deposito=fila.find(".id_deposito").val()
 
-                let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
+                //buscamos a ver si hay datos del destino
+                //let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
+                let data = null;
+                for (let key in destinos) {
+                  if (destinos.hasOwnProperty(key)) {
+                    let destino = destinos[key];
+                    if (destino.id_destino === id_deposito) {
+                      data = destino;
+                      break; // Detiene el bucle una vez que se encuentra el destino
+                    }
+                  }
+                }
+
                 /*console.log(id_deposito);
                 console.log(data);*/
 
@@ -985,40 +996,52 @@ if($datosCarga["despachado"]=="Si"){
               noResultsShown = true;
             }
             if (e.key === 'Enter' && noResultsShown) {
-              let searchTerm = $(this).val();
-              $("#id_producto").select2("close")
-              //$("#modalCRUD").modal("hide")
-              let modalNuevoProducto=$("#modalNuevoProducto")
 
-              console.log(searchTerm);
-              console.log(modalNuevoProducto.find("#nombre"));
-
-              modalNuevoProducto.modal("show")
-              modalNuevoProducto.find("#nombre").val(searchTerm)
-              
               let id_familia=$("#id_familia").val()
+              let searchTerm = $(this).val();
 
-              let id_familia_nuevo_producto=modalNuevoProducto.find("#id_familia_nuevo_producto")
-              id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
-              $('#id_presentacion').val("").change();
-              $('#id_unidad_medida').val("").change();
+              $.ajax({
+                url: "models/administrar_producto.php",
+                type: "POST",
+                datatype: "json",
+                data: {accion: "traerDatosUltimaFamilia", id_familia: id_familia},
+                success: function(response) {
+                  let data = JSON.parse(response);
+                  console.log(data);
 
-              agregarOpcionSelect(
-                'id_presentacion', 
-                'presentaciones', 
-                'addpresentacion', 
-                "No hay resultados. Presione ENTER para agregar"
-              );
+                  $("#id_producto").select2("close")
+                  //$("#modalCRUD").modal("hide")
+                  let modalNuevoProducto=$("#modalNuevoProducto")
 
-              agregarOpcionSelect(
-                'id_unidad_medida', 
-                'unidad_medida', 
-                'addUnidad_medida', 
-                "No hay resultados. Presione ENTER para agregar"
-              );
+                  console.log(searchTerm);
+                  console.log(modalNuevoProducto.find("#nombre"));
 
-              //alert('Buscar: ' + searchTerm);
-              noResultsShown = false; // Reset the flag after showing the alert
+                  modalNuevoProducto.modal("show")
+                  modalNuevoProducto.find("#nombre").val(searchTerm)
+
+                  let id_familia_nuevo_producto=modalNuevoProducto.find("#id_familia_nuevo_producto")
+                  id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
+                  $('#id_presentacion').val(data.id_presentacion).change();
+                  $('#id_unidad_medida').val(data.id_unidad_medida).change();
+
+                  agregarOpcionSelect(
+                    'id_presentacion', 
+                    'presentaciones', 
+                    'addpresentacion', 
+                    "No hay resultados. Presione ENTER para agregar"
+                  );
+
+                  agregarOpcionSelect(
+                    'id_unidad_medida', 
+                    'unidad_medida', 
+                    'addUnidad_medida', 
+                    "No hay resultados. Presione ENTER para agregar"
+                  );
+
+                  //alert('Buscar: ' + searchTerm);
+                  noResultsShown = false; // Reset the flag after showing the alert
+                }
+              });
             }
           });
         });
@@ -1299,25 +1322,8 @@ if($datosCarga["despachado"]=="Si"){
             $('#lbl_fecha_hora_alta').html(datosInput.fecha_hora_alta)
             $('#lbl_fecha_hora_ultima_modificacion').html(datosInput.fecha_hora_ultima_modificacion)
             //$('#lbl_fecha_hora_ultima_modificacion').html(datosInput.fecha_hora_ultima_modificacion)
-            let destinos=datosInput["destinos"];
+            //let destinos=datosInput["destinos"];
             //console.log("Destinos: " + destinos);
-            /*let tableDepositosRows = $("#tableDepositos tbody tr");
-            tableDepositosRows.each(function(){
-              let fila=$(this);
-              //console.log("fila: "+ fila);
-              let id_deposito=fila.find(".id_deposito").val()
-              
-              //console.log("Deposito: " + id_deposito);
-              let data=destinos.find(({ id_destino }) => id_destino === id_deposito);
-              //console.log("Data: " + data);
-              if(data!=undefined){
-                //console.log("data no undefined",data);
-                fila.find(".id_producto_destino").val(data.id_producto_destino)
-                fila.find(".cantidad_bultos").val(formatNumber2Decimal(data.cantidad_bultos))
-                fila.find(".subtotal_kilos").val(formatNumber2Decimal(data.subtotal))
-                fila.find(".subtotal_monto").val(formatCurrency(data.subtotal))
-              }
-            })*/
 
             // Identifico la tabla de destinos
             var tbody = document.querySelector('#tableDepositosVer tbody');
@@ -1325,7 +1331,9 @@ if($datosCarga["despachado"]=="Si"){
             let cantidad_bulto_total = 0
             let total_kilos = 0
             let total_monto = 0
-            datosInput.destinos.forEach((destino) => {
+            //datosInput.destinos.forEach((destino) => {
+            for (let key in datosInput.destinos) {
+              let destino = datosInput.destinos[key];
               //console.log(destino)
               // Plantilla para cada fila
               let tipo_aumento_extra=destino.tipo_aumento_extra
@@ -1336,8 +1344,18 @@ if($datosCarga["despachado"]=="Si"){
               }
               
               cantidad_bulto_total += parseFloat(destino.cantidad_bultos);
-              total_kilos += parseFloat(destino.subtotal_kilos);
-              total_monto += parseFloat(destino.monto)
+              let subtotal_kilos=destino.subtotal_kilos;
+              if(subtotal_kilos==null){
+                subtotal_kilos=0;
+              }
+              console.log(subtotal_kilos);
+              total_kilos += parseFloat(subtotal_kilos);
+              let monto=destino.monto;
+              if(monto==null){
+                monto=0;
+              }
+              console.log(monto);
+              total_monto += parseFloat(monto)
 
               let contenidoFila = `
                 <td class="align-middle">${destino.destino}</td>
@@ -1356,7 +1374,7 @@ if($datosCarga["despachado"]=="Si"){
               newRow.innerHTML = contenidoFila;
               // Agregar la fila al tbody
               tbody.appendChild(newRow);
-            });
+            };
 
             $('#total_bultos_ver').text(formatNumber2Decimal(cantidad_bulto_total));
             $('#total_kilos_ver').text(formatNumber2Decimal(total_kilos));
@@ -1498,13 +1516,13 @@ if($datosCarga["despachado"]=="Si"){
         if(isNaN(id_producto) || !id_producto){
           id_producto=0;
         }
-        console.log("id_producto",id_producto);
+        //console.log("id_producto",id_producto);
         let id_producto_aux = $("#id_producto_aux").val()
         if(isNaN(id_producto_aux) || !id_producto_aux){
           id_producto_aux=0;
         }
-        console.log("id_producto_aux",id_producto_aux);
-        console.log("");
+        //console.log("id_producto_aux",id_producto_aux);
+        //console.log("");
         if(id_producto_aux!=undefined && id_producto_aux!=id_producto && id_producto!="Seleccione una familia"){
           return true;
         }else{
@@ -1514,19 +1532,19 @@ if($datosCarga["despachado"]=="Si"){
 
       function haCambiadoKgPorBulto(){
         let kg_x_bulto = $("#kg_x_bulto").val()
-        console.log("kg_x_bulto",kg_x_bulto);
+        //console.log("kg_x_bulto",kg_x_bulto);
         kg_x_bulto = parseFloat(kg_x_bulto)
-        console.log("kg_x_bulto",kg_x_bulto);
+        //console.log("kg_x_bulto",kg_x_bulto);
         if(isNaN(kg_x_bulto)){
           kg_x_bulto=0;
         }
-        console.log("kg_x_bulto",kg_x_bulto);
+        //console.log("kg_x_bulto",kg_x_bulto);
         let kg_x_bulto_aux = parseFloat($("#kg_x_bulto_aux").val())
         if(isNaN(kg_x_bulto_aux)){
           kg_x_bulto_aux=0;
         }
-        console.log("kg_x_bulto_aux",kg_x_bulto_aux);
-        console.log("");
+        //console.log("kg_x_bulto_aux",kg_x_bulto_aux);
+        //console.log("");
 
         if(kg_x_bulto_aux!=undefined && kg_x_bulto_aux!=kg_x_bulto){
           return true;
@@ -1537,19 +1555,19 @@ if($datosCarga["despachado"]=="Si"){
 
       function haCambiadoPrecioGeneral(){
         let precio_general = $("#precio_general").val()
-        console.log("precio_general",precio_general);
+        //console.log("precio_general",precio_general);
         precio_general = parseFloat(precio_general)
-        console.log("precio_general",precio_general);
+        //console.log("precio_general",precio_general);
         if(isNaN(precio_general)){
           precio_general=0;
         }
-        console.log("precio_general",precio_general);
+        //console.log("precio_general",precio_general);
         let precio_general_aux = parseFloat($("#precio_general_aux").val())
         if(isNaN(precio_general_aux)){
           precio_general_aux=0;
         }
-        console.log("precio_general_aux",precio_general_aux);
-        console.log("");
+        //console.log("precio_general_aux",precio_general_aux);
+        //console.log("");
 
         if(precio_general_aux!=undefined && precio_general_aux!=precio_general){
           return true;
@@ -1597,7 +1615,7 @@ if($datosCarga["despachado"]=="Si"){
       }
 
       function requerirMotivoCambioProducto(siNo){
-        console.log("siNo",siNo);
+        //console.log("siNo",siNo);
         let motivo_cambio_producto=$("#motivo_cambio_producto")
         if(motivo_cambio_producto.length>0){
           let valor_motivo_cambio_producto=motivo_cambio_producto.val()
@@ -1630,9 +1648,9 @@ if($datosCarga["despachado"]=="Si"){
         let varHaCambiadoKgPorBulto=haCambiadoKgPorBulto()
         let varHaCambiadoPrecioGeneral=haCambiadoPrecioGeneral()
 
-        console.log("haCambiadoProducto",varHaCambiadoProducto)
-        console.log("haCambiadoKgPorBulto",varHaCambiadoKgPorBulto)
-        console.log("haCambiadoPrecioGeneral",varHaCambiadoPrecioGeneral);
+        //console.log("haCambiadoProducto",varHaCambiadoProducto)
+        //console.log("haCambiadoKgPorBulto",varHaCambiadoKgPorBulto)
+        //console.log("haCambiadoPrecioGeneral",varHaCambiadoPrecioGeneral);
         if(varHaCambiadoProducto || varHaCambiadoKgPorBulto || varHaCambiadoPrecioGeneral){
           requerirMotivoCambioProducto(true)
           //$("#motivo_cambio_producto").css("border","1px solid red")
@@ -1693,13 +1711,6 @@ if($datosCarga["despachado"]=="Si"){
 
           let elemento=fila.find(".motivo_cambio_deposito")
           requerirMotivoCambioDeposito(elemento,requerirMotivoCambioEnDeposito)
-          /*if(requerirMotivoCambioEnDeposito){
-            //fila.find(".motivo_cambio_deposito").attr("required",true).addClass("is-invalid")
-            
-          }else{
-            //fila.find(".motivo_cambio_deposito").attr("required",false).removeClass("is-invalid")
-            requerirMotivoCambioDeposito(elemento,siNo)
-          }*/
         })
       }
 

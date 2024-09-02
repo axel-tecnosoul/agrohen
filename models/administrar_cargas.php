@@ -320,6 +320,12 @@ class cargas{
   }
 
   public function mostrarInfoProductosDestinos($aProductosDestinos,$aDepositos,$tipo){
+    //var_dump($aProductosDestinos);
+    $mostrar_valor_extra=0;
+    if($tipo!="responsable" or $_SESSION["rowUsers"]["id_perfil"]==2){
+      $mostrar_valor_extra=1;
+    }
+    
     $destinos_unicos=$this->getDestinoUnicosFromCargaProductosDestinos($aProductosDestinos);
 
     //var_dump($aDepositos);
@@ -328,9 +334,9 @@ class cargas{
       <thead style="text-align: center;">
         <tr>
           <th rowspan="2" class="fixed-column fixed-column-header align-middle">Producto</th>
-          <th rowspan="2" class="fixed-column-2 fixed-column-header align-middle">Proveedor</th>
-          <th rowspan="2" class="fixed-column-3 fixed-column-header align-middle">Precio</th>
-          <th rowspan="2" class="fixed-column-4 fixed-column-header align-middle">Kg x bulto</th><?php
+          <!-- <th rowspan="2" class="fixed-column-2 fixed-column-header align-middle">Proveedor</th> -->
+          <th rowspan="2" class="fixed-column-2 fixed-column-header align-middle">Precio</th>
+          <th rowspan="2" class="fixed-column-3 fixed-column-header align-middle">Kg x bulto</th><?php
           foreach ($destinos_unicos as $destino) {
             if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){?>
               <th colspan="3" class="destino-group"><?php
@@ -359,12 +365,21 @@ class cargas{
       </thead>
       <tbody><?php
         $totals = [];
-        foreach ($aProductosDestinos as $product) {?>
+        //var_dump($aDepositos);
+        foreach ($aProductosDestinos as $product) {
+          //var_dump($product);
+          $precio=$product['precio_general'];
+          //if($mostrar_valor_extra==1 and count($product["destinos"])==1){
+          if($mostrar_valor_extra==1){
+            $id_deposito_mostrar=$aDepositos[0];
+            $precio=$product['destinos'][$id_deposito_mostrar]["precio_destino_valor_extra"];
+          }
+          ?>
           <tr>
             <td class="fixed-column"><?=$product['familia']." ".$product['producto']." (".$product['presentacion']." - ".$product['unidad_medida'].")"?></td>
-            <td class="fixed-column-2"><?=$product['proveedor']?></td>
-            <td class="fixed-column-3 text-right">$ <?=number_format($product['precio_destino'],2,",",".")?></td>
-            <td class="fixed-column-4 text-right"><?=$product['kg_x_bulto']?></td><?php
+            <!-- <td class="fixed-column-2"><?=$product['proveedor']?></td> -->
+            <td class="fixed-column-2 text-right">$ <?=number_format($precio,2,",",".")?></td>
+            <td class="fixed-column-3 text-right"><?=$product['kg_x_bulto']?></td><?php
 
             $destinos_actuales = [];
             foreach ($product['destinos'] as $destino) {
@@ -380,7 +395,9 @@ class cargas{
                 if (isset($destinos_actuales[$id_destino])) {
                   $cantidad_bultos=$destinos_actuales[$id_destino]['cantidad_bultos'];
                   $subtotal_kilos=$destinos_actuales[$id_destino]['subtotal_kilos'];
-                  if($tipo!="responsable" or $_SESSION["rowUsers"]["id_perfil"]==2){
+                  
+                  //if($tipo!="responsable" or $_SESSION["rowUsers"]["id_perfil"]==2){
+                  if($mostrar_valor_extra==1){
                     $monto=$destinos_actuales[$id_destino]['monto_valor_extra'];
                   }else{
                     $monto=$destinos_actuales[$id_destino]['monto'];
@@ -409,7 +426,7 @@ class cargas{
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="4" class="text-right fixed-column" style="background: burlywood;">Totales</td><?php
+          <td colspan="3" class="text-right fixed-column" style="background: burlywood;">Totales</td><?php
           foreach ($destinos_unicos as $destino) {
             if($aDepositos=="" or in_array($destino["id_destino"],$aDepositos)){
               $id_destino=$destino["id_destino"]?>
@@ -602,7 +619,7 @@ class cargas{
       if(empty($motivo_cambio_deposito)){
         $motivo_cambio_deposito="";
       }
-      $productoDestinosCarga[] = [
+      $productoDestinosCarga[$row['id_destino']] = [
         'id_producto_destino'=> $row['id_producto_destino'],
         'id_destino'=> $row['id_destino'],
         'destino'=> $row['destino'],
@@ -832,21 +849,7 @@ class cargas{
     $id_proveedor = is_null($producto['id_proveedor']) ? 'NULL' : $producto['id_proveedor'];
 
     // Insertar los datos en auditoria_cargas_productos
-    $queryInsertAuditoriaProducto = "INSERT INTO auditoria_cargas_productos 
-        (id_carga_producto, id_producto, id_proveedor, kg_x_bulto, precio_general, motivo_cambio_producto, total_bultos, total_kilos, total_monto, id_usuario, fecha_hora_alta) 
-        VALUES (
-            {$producto['id']},
-            {$producto['id_producto']},
-            $id_proveedor,
-            {$producto['kg_x_bulto']},
-            {$producto['precio_general']},
-            '{$producto['motivo_cambio_producto']}',
-            {$producto['total_bultos']},
-            {$producto['total_kilos']},
-            {$producto['total_monto']},
-            {$producto['id_usuario']},
-            '{$producto['fecha_hora_alta']}'
-        )";
+    $queryInsertAuditoriaProducto = "INSERT INTO auditoria_cargas_productos (id_carga_producto, id_producto, id_proveedor, kg_x_bulto, precio_general, motivo_cambio_producto, total_bultos, total_kilos, total_monto, id_usuario, fecha_hora_alta) VALUES (".$producto['id'].",".$producto['id_producto'].",".$id_proveedor.",".$producto['."kg_x_bulto'].",".$producto['precio_general'].",'".$producto['motivo_cambio_producto']."',".$producto['total_bultos'].",".$producto['total_kilos'].",".$producto['total_monto'].",".$producto['id_usuario'].",'".$producto['fecha_hora_alta']."')";
     $this->conexion->consultaSimple($queryInsertAuditoriaProducto);
     $mensajeError=$this->conexion->conectar->error;
     //echo $queryInsertAuditoriaProducto."<br>";
@@ -862,22 +865,7 @@ class cargas{
       $c=$c2=0;
       while ($row = $traerDestinos->fetch_assoc()) {
         $c++;
-        $queryInsertAuditoriaDestino = "INSERT INTO auditoria_cargas_productos_destinos 
-            (id_auditoria_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, subtotal_kilos, precio_destino, monto, precio_destino_valor_extra, monto_valor_extra, motivo_cambio_deposito, id_usuario) 
-            VALUES (
-                $id_auditoria_producto,
-                {$row['id_destino']},
-                '{$row['tipo_aumento_extra']}',
-                {$row['valor_extra']},
-                {$row['cantidad_bultos']},
-                {$row['subtotal_kilos']},
-                {$row['precio_destino']},
-                {$row['monto']},
-                {$row['precio_destino_valor_extra']},
-                {$row['monto_valor_extra']},
-                '{$row['motivo_cambio_deposito']}',
-                {$_SESSION['rowUsers']['id_usuario']}
-            )";
+        $queryInsertAuditoriaDestino = "INSERT INTO auditoria_cargas_productos_destinos (id_auditoria_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, subtotal_kilos, precio_destino, monto, precio_destino_valor_extra, monto_valor_extra, motivo_cambio_deposito, id_usuario) VALUES (".$id_auditoria_producto.",".$row['id_destino'].",'".$row['tipo_aumento_extra']."',".$row['valor_extra'].",".$row['cantidad_bultos'].",".$row['subtotal_kilos'].",".$row['precio_destino'].",".$row['monto'].",".$row['precio_destino_valor_extra'].",".$row['monto_valor_extra'].",'".$row['motivo_cambio_deposito']."',".$_SESSION['rowUsers']['id_usuario'].")";
         $this->conexion->consultaSimple($queryInsertAuditoriaDestino);
         //die($queryInsertAuditoriaDestino);
         $mensajeError=$this->conexion->conectar->error;
@@ -968,6 +956,82 @@ class cargas{
     }
     
     echo json_encode($response);
+  }
+  
+  public function clonarCarga($id_carga) {
+    $ok = 0;
+    $id_usuario = $_SESSION['rowUsers']['id_usuario'];
+
+    // Obtener los datos de la carga original
+    $queryCarga = "SELECT * FROM cargas WHERE id = $id_carga";
+    $traerCarga = $this->conexion->consultaRetorno($queryCarga);
+    $carga = $traerCarga->fetch_assoc();
+
+    // Verificar si id_proveedor es NULL y manejarlo adecuadamente
+    $id_proveedor = is_null($carga['id_proveedor_default']) ? 'NULL' : $carga['id_proveedor_default'];
+
+    // Insertar la nueva carga, sin precios ni cantidades
+    $queryInsertCarga = "INSERT INTO cargas (fecha, id_origen, id_chofer, datos_adicionales_chofer, id_proveedor_default, id_usuario, clonado) VALUES (NOW(),".$carga['id_origen'].",".$carga['id_chofer'].",'".$carga['datos_adicionales_chofer']."',".$id_proveedor.",".$id_usuario.",1)";
+    $this->conexion->consultaSimple($queryInsertCarga);
+    $id_nueva_carga = $this->conexion->conectar->insert_id;
+
+    $mensajeError = $this->conexion->conectar->error;
+
+    if ($mensajeError == "") {
+      // Obtener los destinos de la carga original
+      $queryDestinos = "SELECT * FROM cargas_destinos WHERE id_carga = $id_carga";
+      $traerDestinos = $this->conexion->consultaRetorno($queryDestinos);
+
+      // Insertar los destinos en la nueva carga
+      while ($destino = $traerDestinos->fetch_assoc()) {
+        $queryInsertDestino = "INSERT INTO cargas_destinos (id_carga, id_destino) VALUES ($id_nueva_carga,".$destino['id_destino'].")";
+        $this->conexion->consultaSimple($queryInsertDestino);
+        $mensajeError = $this->conexion->conectar->error;
+        if ($mensajeError != "") {
+          echo $mensajeError."<br>".$queryInsertDestino;
+        }
+      }
+  
+      // Obtener los productos de la carga original
+      $queryProductos = "SELECT * FROM cargas_productos WHERE id_carga = $id_carga";
+      $traerProductos = $this->conexion->consultaRetorno($queryProductos);
+
+      // Insertar los productos en la nueva carga
+      while ($producto = $traerProductos->fetch_assoc()) {
+        $id_proveedor = is_null($producto['id_proveedor']) ? 'NULL' : $producto['id_proveedor'];
+
+        $queryInsertProducto = "INSERT INTO cargas_productos (id_carga, id_producto, id_proveedor, id_usuario) VALUES ($id_nueva_carga, ".$producto['id_producto'].", ".$id_proveedor.", $id_usuario)";
+        $this->conexion->consultaSimple($queryInsertProducto);
+        
+        $mensajeError = $this->conexion->conectar->error;
+        if ($mensajeError != "") {
+          echo $mensajeError."<br>".$queryInsertProducto;
+        }
+
+        $id_nuevo_producto = $this->conexion->conectar->insert_id;
+
+        // Obtener los destinos de los productos de la carga original
+        $queryProductosDestinos = "SELECT * FROM cargas_productos_destinos WHERE id_carga_producto = ".$producto['id'];
+        $traerProductosDestinos = $this->conexion->consultaRetorno($queryProductosDestinos);
+
+        // Insertar los destinos de los productos en la nueva carga
+        while ($productoDestino = $traerProductosDestinos->fetch_assoc()) {
+          $queryInsertProductoDestino = "INSERT INTO cargas_productos_destinos (id_carga_producto, id_destino, tipo_aumento_extra, id_usuario) VALUES (".$id_nuevo_producto.",".$productoDestino['id_destino'].",'".$productoDestino['tipo_aumento_extra']."',".$productoDestino['id_usuario'].")";
+          $this->conexion->consultaSimple($queryInsertProductoDestino);
+
+          $mensajeError = $this->conexion->conectar->error;
+          if ($mensajeError != "") {
+            echo $mensajeError."<br>".$queryInsertProductoDestino;
+          }
+        }
+      }
+  
+      $ok = 1;
+    }else{
+      echo $mensajeError."<br>".$queryInsertCarga;
+    }
+  
+    return json_encode(["ok"=>$ok,"id_carga"=>$id_nueva_carga]);
   }
 
   public function registrarCarga($fecha_carga,$id_origen,$id_chofer,$datos_adicionales_chofer,$id_proveedor_default,$datosDepositos){
@@ -1202,9 +1266,9 @@ class cargas{
     $sheet->setCellValue('B4', "Producto");
     $sheet->setCellValue('C4', "Presentación");
     $sheet->setCellValue('D4', "Unidad Medida");
-    $sheet->setCellValue('E4', "Proveedor");
-    $sheet->setCellValue('F4', "Precio");
-    $sheet->setCellValue('G4', "Kg x bulto");
+    //$sheet->setCellValue('E4', "Proveedor");
+    $sheet->setCellValue('E4', "Precio");
+    $sheet->setCellValue('F4', "Kg x bulto");
 
     // Combinar celdas de los encabezados
     $sheet->mergeCells('A4:A5');
@@ -1213,7 +1277,7 @@ class cargas{
     $sheet->mergeCells('D4:D5');
     $sheet->mergeCells('E4:E5');
     $sheet->mergeCells('F4:F5');
-    $sheet->mergeCells('G4:G5');
+    //$sheet->mergeCells('G4:G5');
 
     // Añadir destinos únicos al encabezado (Fila 4)
     $aStyleColorGris = [
@@ -1232,7 +1296,7 @@ class cargas{
       $column = chr(ord($column) + 3);
     }*/
 
-    $column = 'H';
+    $column = 'G';
     foreach ($destinos_unicos as $destino) {
       $startColumnIndex = Coordinate::columnIndexFromString($column); // Convierte la columna a un índice numérico
       $endColumnIndex = $startColumnIndex + 2; // Calcula la columna final
@@ -1246,7 +1310,7 @@ class cargas{
     }
 
     // Subtítulos de los destinos (Fila 5)
-    $column = 'H';
+    $column = 'G';
     foreach ($destinos_unicos as $destino) {
       $sheet->setCellValue($column . '5', "Bultos");
       $column++;
@@ -1278,11 +1342,11 @@ class cargas{
       $sheet->setCellValue('B' . $row, $producto['producto']);
       $sheet->setCellValue('C' . $row, $producto['presentacion']);
       $sheet->setCellValue('D' . $row, $producto['unidad_medida']);
-      $sheet->setCellValue('E' . $row, $producto['proveedor']);
-      $sheet->setCellValue('F' . $row, $producto['precio_destino']);
-      $sheet->setCellValue('G' . $row, $producto['kg_x_bulto']);
+      //$sheet->setCellValue('E' . $row, $producto['proveedor']);
+      $sheet->setCellValue('E' . $row, $producto['precio_general']);
+      $sheet->setCellValue('F' . $row, $producto['kg_x_bulto']);
 
-      $column = 'H';
+      $column = 'G';
       foreach ($destinos_unicos as $destino) {
         $found = false;
         foreach ($producto['destinos'] as $dest) {
@@ -1336,8 +1400,8 @@ class cargas{
     }
 
     // Fila de totales
-    $sheet->setCellValue('G' . $row, "Totales");
-    $column = 'H';
+    $sheet->setCellValue('F' . $row, "Totales");
+    $column = 'G';
     foreach ($destinos_unicos as $destino) {
       $sheet->setCellValue($column . $row, "=SUM($column" . "6:$column" . ($row - 1) . ")");
       $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
@@ -1364,7 +1428,7 @@ class cargas{
     $sheet->getStyle($column . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
 
     // Formatear celdas para precios y montos
-    $sheet->getStyle('F6:F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
+    $sheet->getStyle('E6:E' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD);
 
     // Aplicar bordes a todas las celdas
     $aStyleBordes = [
@@ -1396,7 +1460,7 @@ class cargas{
     $sheet->getStyle('A4:' . $column . '5')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
     $sheet->getStyle('A1:J1')->applyFromArray($aStyleCenter)->applyFromArray($aStyleBold);
     $sheet->getStyle('A1:J2')->applyFromArray($aStyleBordes);
-    $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleBold);
+    $sheet->getStyle('F' . $row . ':' . $column . $row)->applyFromArray($aStyleBold);
 
     $aStyleColorEncabezado = [
       'fill' => [
@@ -1407,9 +1471,9 @@ class cargas{
       ],
     ];
     $sheet->getStyle('A1:J1')->applyFromArray($aStyleColorEncabezado);
-    $sheet->getStyle('A4:G' . $row)->applyFromArray($aStyleColorEncabezado);
-    $sheet->getStyle('H4:' . $column . '5')->applyFromArray($aStyleColorEncabezado);
-    $sheet->getStyle('G' . $row . ':' . $column . $row)->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('A4:F' . $row)->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('G4:' . $column . '5')->applyFromArray($aStyleColorEncabezado);
+    $sheet->getStyle('F' . $row . ':' . $column . $row)->applyFromArray($aStyleColorEncabezado);
     $sheet->getStyle($column_aux . '4:' . $column . $row)->applyFromArray($aStyleColorEncabezado);
 
     // Auto-ajustar columnas
@@ -1491,6 +1555,10 @@ if (isset($_POST['accion'])) {
     case 'confirmarCarga':
       $id_carga = $_POST['id_carga'];
       $cargas->confirmarCarga($id_carga);
+    break;
+    case 'clonarCarga':
+      $id_carga = $_POST['id_carga'];
+      echo $cargas->clonarCarga($id_carga);
     break;
     case 'eliminarCarga':
       $id_carga = $_POST['id_carga'];

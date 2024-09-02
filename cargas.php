@@ -42,6 +42,10 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         box-sizing: border-box; /* Incluye padding y border en el ancho total */
       }
 
+      .btnGroupPadding{
+        padding-left: 12px;
+        padding-right: 12px;
+      }
     </style>
   </head>
   <body>
@@ -447,6 +451,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       $btnEditar=`<button class='btn btn-success btnEditar' title="Editar"><i class='fa fa-edit'></i></button>`
                       $btnEliminar=`<button class='btn btn-danger btnBorrar' title="Borrar"><i class='fa fa-trash-o'></i></button>`
                       $btnGestionarCarga=`<button class='btn btn-warning btnGestionar' title="Gestionar"><i class='fa fa-cogs'></i></button>`
+                      //$btnGestionarCarga=`<a class='btn btn-warning btnGroupPadding' href='cargas_abm.php?id=${full.id_carga}' role='button' title="Gestionar"><i class='fa fa-cogs'></i></a>`
+                      $btnClonarCarga=''
                       
                       //console.log(full);
                       let confirmada=despachado=0;
@@ -454,10 +460,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                         despachado=1;
                         $btnEliminar=''
                         $btnEditar=''
+                        $btnClonarCarga=`<button class='btn btn-secondary btnClonar' title="Clonar"><i class='fa fa-clone'></i></button>`
                       }
 
                       if(full.confirmada=="Si"){
                         confirmada=1;
+                        $btnGestionarCarga=''
                       }
 
                       $btnVer=`<button class='btn btn-primary btnVer' title="Ver" data-idCarga='${full.id_carga}' data-despachado='${despachado}' data-confirmada='${confirmada}'><i class='fa fa-eye'></i></button>`
@@ -466,6 +474,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                         $btnEliminar=''
                         $btnEditar=''
                         $btnGestionarCarga=''
+                        $btnClonarCarga=''
                       }
 
                       if(full.total_bultos=="0.00" && full.total_kilos=="0.00" && full.total_monto=="0.00"){
@@ -474,7 +483,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       
                       $buttonsGroupEnd=`</div></div>`
 
-                      $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnVer+$buttonsGroupEnd
+                      $btnComplete = $buttonsGroup+$btnEliminar+$btnEditar+$btnGestionarCarga+$btnClonarCarga+$btnVer+$buttonsGroupEnd
                       
                       return $btnComplete;
                     };
@@ -1022,6 +1031,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             });
           } else {
             swal("La carga no se confirmó!");
+            $boton.prop('disabled', false).find('.spinner-border').remove();
           }
         })
       });
@@ -1029,7 +1039,69 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       $(document).on("click", ".btnGestionar", function(){
         fila = $(this).closest("tr");
         let id_carga = fila.find('td:eq(0)').text();
-        window.location.href="cargas_abm.php?id="+id_carga
+        let target="_self";
+        abrirGestionarCarga(id_carga,target)
+      });
+
+      $(document).on("mousedown",'.btnGestionar',function(event) {
+        if (event.which === 2) { // 2 es el código para el botón central (rueda del mouse)
+          let target="_blank";
+          fila = $(this).closest("tr");
+          let id_carga = fila.find('td:eq(0)').text();
+          abrirGestionarCarga(id_carga,target)
+          console.log("Se hizo clic con la rueda del mouse");
+        }
+      });
+
+      function abrirGestionarCarga(id_carga,target){
+        //window.location.href="cargas_abm.php?id="+id_carga
+        window.open("cargas_abm.php?id=" + id_carga, target);
+      }
+
+      $(document).on("click", ".btnClonar", function(event){
+        event.preventDefault();
+        fila = $(this).closest("tr");
+        let id_carga = fila.find('td:eq(0)').text();
+        //console.log("id_carga: " + id_carga);
+        // Deshabilitar el botón y mostrar el GIF de carga
+        $(this).prop('disabled', true).append('<span class="spinner-border spinner-border-sm ml-2" role="status" aria-hidden="true"></span>');
+        $boton = $(this);
+
+        swal({
+          title: "Estas seguro que desea clonar esta carga?",
+          text: "No se clonaran precios ni cantidades",
+          icon: "warning",
+          buttons: true,
+          dangerMode: false,
+        })
+        .then((willDelete) => {
+          if (willDelete) {
+            accion = "clonarCarga";
+            $.ajax({
+              url: "models/administrar_cargas.php",
+              type: "POST",
+              datatype:"json",
+              data:  {accion:accion, id_carga:id_carga},
+              success: function(data) {
+                data = JSON.parse(data);
+                //console.log(data);
+                if(data.ok==1){
+                  let target="_self"
+                  abrirGestionarCarga(data.id_carga,target)
+                }else{
+                  swal({
+                    icon: 'error',
+                    title: 'Ha ocurrido un error al clonar la carga'
+                  });
+                  $boton.prop('disabled', false).find('.spinner-border').remove();
+                }
+              }
+            });
+          } else {
+            swal("La carga no se clonó!");
+            $boton.prop('disabled', false).find('.spinner-border').remove();
+          }
+        })
       });
 
       $(document).on('click', '#btnExportar', function() {

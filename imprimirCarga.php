@@ -145,7 +145,7 @@ if ($id_carga > 0) {
           $data[]=$nombre_producto;
 
           if ($con_precio) {
-            $precio = $product['precio'];
+            $precio = $product['precio_general'];
             $total_precio += $precio;
             //$this->Cell(20, 6, '$ ' . number_format($precio, 2, ",", "."), 1, 0, 'R');
             $anchos[]=20;
