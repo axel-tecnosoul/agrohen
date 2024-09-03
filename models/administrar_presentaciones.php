@@ -111,29 +111,50 @@ class presentaciones{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function registrarpresentacion( $nombre ){
+  public function registrarPresentacion($nombre) {
     $this->nombre = $nombre;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertPresentacion = "INSERT INTO presentaciones_productos (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
-    $insertPresentacion = $this->conexion->consultaSimple($queryInsertPresentacion);
-    $mensajeError=$this->conexion->conectar->error;
-    $id_presentacion=$this->conexion->conectar->insert_id;
+
+    // Primero, busca si ya existe la presentación con el mismo nombre pero está inactiva.
+    $queryCheck = "SELECT id FROM presentaciones_productos WHERE nombre = '$this->nombre' AND activo = 0";
     
-    $respuesta=$mensajeError;
-    if($mensajeError!=""){
-      $respuesta.="<br><br>".$queryInsertPresentacion;
-    }else{
-      $respuesta=[
-        "ok"=>1,
-        "id_key" => "id_presentacion",
-        "id_value"=>$id_presentacion,
-      ];
-      $respuesta=json_encode($respuesta);
+    $result = $this->conexion->conectar->query($queryCheck);
+
+    // Verificar si la consulta falló
+    if (!$result) {
+        die("Error en la consulta: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryCheck);
     }
-  
-    return $respuesta;
+
+    $row = $result->fetch_assoc();
+
+    if ($row) {
+        // Si existe y está inactiva, actualiza el campo `activo` a 1.
+        $id_presentacion = $row['id'];
+        $queryUpdate = "UPDATE presentaciones_productos SET activo = 1 WHERE id = '$id_presentacion'";
+        $updateSuccess = $this->conexion->consultaSimpleM($queryUpdate);
+
+        if (!$updateSuccess) {
+            die("Error en la actualización: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryUpdate);
+        }
+    } else {
+        // Si no existe, inserta una nueva presentación.
+        $queryInsertPresentacion = "INSERT INTO presentaciones_productos (id_usuario, nombre, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
+        $insertSuccess = $this->conexion->consultaSimpleM($queryInsertPresentacion);
+
+        if (!$insertSuccess) {
+            die("Error en la inserción: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryInsertPresentacion);
+        }
+
+        $id_presentacion = $this->conexion->conectar->insert_id;
+    }
+
+    $respuesta = [
+        "ok" => 1,
+        "id_key" => "id",
+        "id_value" => $id_presentacion,
+    ];
+    return json_encode($respuesta);
   }
-		
 }	
 
 if (isset($_POST['accion'])) {

@@ -26,7 +26,7 @@ $(document).on('show.bs.modal','.modal', function () {
 });
 
 //Función para agregar una nueva opción a un select y actualizar el select2.
-function agregarOpcionSelect(selectId, administrar, accion, noResultText) {
+function agregarOpcionSelect(selectId, administrar, accion, noResultText, tabla, campo) {
   let ajaxUrl = `models/administrar_${administrar}.php`;
 
   $('#' + selectId).select2({
@@ -34,6 +34,15 @@ function agregarOpcionSelect(selectId, administrar, accion, noResultText) {
           noResults: function() {
               return noResultText;
           }
+      },
+      matcher: function(params, data) {
+          if ($.trim(params.term) === '') {
+              return data;
+          }
+          if (data.text.toLowerCase() === params.term.toLowerCase()) {
+              return data;
+          }
+          return null;
       }
   });
 
@@ -41,7 +50,7 @@ function agregarOpcionSelect(selectId, administrar, accion, noResultText) {
       let searchField = $('.select2-search__field');
       let noResultsShown = false;
 
-      searchField.on('keydown', function(e) {
+      searchField.off('keydown').on('keydown', function(e) {
           if ($('.select2-results__option').text() == noResultText) {
               noResultsShown = true;
           }
@@ -52,16 +61,14 @@ function agregarOpcionSelect(selectId, administrar, accion, noResultText) {
                   url: ajaxUrl,
                   type: "POST",
                   datatype: "json",
-                  data: {accion: accion, nombre: searchTerm},
+                  data: { accion: accion, nombre: searchTerm },
                   success: function(response) {
                       let data = JSON.parse(response);
-                      // Utiliza la clave y valor dinámicos del ID
                       let newOption = new Option(searchTerm, data.id_value, false, true);
                       $('#' + selectId).append(newOption);
-                      
+
                       console.log("SelectId: " + selectId + " , dataID: " + data.id_value);
-                      
-                      // Selecciona la opción utilizando la clave y valor dinámicos
+
                       $('#' + selectId).val(data.id_value).trigger('change').select2('close');
                   }
               });
@@ -69,6 +76,3 @@ function agregarOpcionSelect(selectId, administrar, accion, noResultText) {
       });
   });
 }
-
-
-

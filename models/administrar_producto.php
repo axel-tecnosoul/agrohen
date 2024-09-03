@@ -19,7 +19,7 @@ class producto{
     $datosIniciales = array();
     
     /*Familia*/
-    $queryFamilias = "SELECT id as id_familia, familia FROM familias_productos";
+    $queryFamilias = "SELECT id as id_familia, familia FROM familias_productos WHERE activo = 1";
     $getFamilias = $this->conexion->consultaRetorno($queryFamilias);
     $arrayFamilias[] = [
       'id_familia' => "",
@@ -34,7 +34,7 @@ class producto{
     }
 
     /*presentaciones*/
-    $queryPresentaciones = "SELECT id as id_presentacion, nombre FROM presentaciones_productos";
+    $queryPresentaciones = "SELECT id as id_presentacion, nombre FROM presentaciones_productos WHERE activo = 1";
     $getPresentaciones = $this->conexion->consultaRetorno($queryPresentaciones);
     $arrayPresentaciones[] = [
       'id_presentacion' => "",
@@ -49,7 +49,7 @@ class producto{
     };
 
     /*Unidades de medida*/
-    $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida";
+    $queryUnidadMedida = "SELECT id as id_unidad_medida, unidad_medida FROM unidades_medida WHERE activo = 1";
     $getUnidadMedida = $this->conexion->consultaRetorno($queryUnidadMedida);
     $arrayUnidadMedida[] = [
       'id_unidad_medida' => "",
