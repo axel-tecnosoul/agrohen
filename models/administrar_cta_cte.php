@@ -39,7 +39,7 @@ class ctacte{
     ];
 
     /*Responsables*/
-    $queryResponsable = "SELECT id as id_responsable, nombre FROM responsables_deposito";
+    $queryResponsable = "SELECT id as id_responsable, nombre FROM responsables_deposito WHERE activo = 1";
     $getResponsable = $this->conexion->consultaRetorno($queryResponsable);
     $arrayResponsable[] = [
       'id_responsable' => "",
@@ -62,7 +62,7 @@ class ctacte{
     }
 
     /*Destino*/
-    $queryDestinos = "SELECT id as id_destino, nombre, tipo_aumento_extra, valor_extra, id_responsable FROM destinos";
+    $queryDestinos = "SELECT id as id_destino, nombre, tipo_aumento_extra, valor_extra, id_responsable FROM destinos WHERE activo = 1";
     $getDestinos = $this->conexion->consultaRetorno($queryDestinos);
     $arrayDestinos[] = [
       'id_destino' => "",

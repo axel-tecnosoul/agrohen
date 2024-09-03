@@ -185,7 +185,27 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <!-- Plugin used-->
     <script type="text/javascript">
       var accion
-      //var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
+      // Mensaje que se mostrará cuando no se encuentren resultados
+      var select2NoResultText = "No hay resultados. Presione ENTER para agregar";
+
+      // Configuración para cada select en un objeto
+      var configuraciones = {
+          presentacion: {
+              selectId: 'id_presentacion',
+              administrar: 'presentaciones',
+              accion: 'addpresentacion',
+              tabla: 'productos',
+              campo: 'id_presentacion'
+          },
+          unidadMedida: {
+              selectId: 'id_unidad_medida',
+              administrar: 'unidad_medida',
+              accion: 'addUnidad_medida',
+              tabla: 'unidades_medida',
+              campo: 'id_unidad_medida'
+          }
+      };
+      
       $(document).ready(function(){
         tablaProducto = $('#tablaProducto').DataTable({
           "ajax": {
@@ -341,20 +361,23 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           }
         });
       });*/
-      agregarOpcionSelect(
-        'id_presentacion', 
-        'presentaciones', 
-        'addpresentacion', 
-        "No hay resultados. Presione ENTER para agregar"
-      );
 
-      agregarOpcionSelect(
-        'id_unidad_medida', 
-        'unidad_medida', 
-        'addUnidad_medida', 
-        "No hay resultados. Presione ENTER para agregar"
-      );
+      // Función para inicializar cada select con su configuración
+      function inicializarSelect(config) {
+          agregarOpcionSelect(
+              config.selectId,
+              config.administrar,
+              config.accion,
+              select2NoResultText,
+              config.tabla,
+              config.campo
+          );
+      }
 
+      // Inicializar ambos selects usando sus configuraciones
+      inicializarSelect(configuraciones.presentacion);
+      inicializarSelect(configuraciones.unidadMedida);
+        
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
         datosIniciales.append('accion', 'traerDatosInicialesProducto');
