@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
 include_once('conexion.php');
 class depositos{
   private $id_deposito;
@@ -37,7 +39,7 @@ class depositos{
   }
 
   public function traerDepositos(){
-    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.tipo_aumento_extra, saldo_maximo_permitido ,d.valor_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
+    $sqltraerDepositos = "SELECT d.id AS id_deposito, d.nombre, rd.nombre AS responsable, d.tipo_aumento_extra, saldo_maximo_permitido, saldo_cta_cte, d.valor_extra, d.activo FROM destinos d LEFT JOIN responsables_deposito rd ON d.id_responsable=rd.id WHERE 1";
     $traerDepositos = $this->conexion->consultaRetorno($sqltraerDepositos);
     $depositos = array(); //creamos un array
     
@@ -49,6 +51,7 @@ class depositos{
         'tipo_aumento_extra'=>$row['tipo_aumento_extra'],
         'valor_extra'=>$row['valor_extra'],
         'saldo_max'=>$row['saldo_maximo_permitido'],
+        'saldo_cta_cte'=>$row["saldo_cta_cte"],
         'activo'=>$row['activo'],
       );
     }
@@ -137,6 +140,82 @@ class depositos{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
+  public function getSaldoCtaCte($id_deposito){
+    $query = "SELECT saldo_cta_cte FROM destinos WHERE id = $id_deposito";
+    $getData = $this->conexion->consultaRetorno($query);
+    $row = $getData->fetch_array();
+    return $row["saldo_cta_cte"];
+  }
+
+  public function actualizarSaldoCtaCte($id_deposito){
+    $query = "SELECT SUM(cd.total_monto_valor_extra) AS saldo_carga FROM cargas_destinos cd INNER JOIN cargas c ON cd.id_carga=c.id WHERE c.anulado=0 AND c.fecha_hora_despacho IS NOT NULL AND cd.id_destino=$id_deposito";
+    //echo $query."<br>";
+    $getData = $this->conexion->consultaRetorno($query);
+    $row = $getData->fetch_array();
+    $saldo_carga=$row["saldo_carga"];
+    //var_dump($saldo_carga);
+
+    $query = "SELECT SUM(IF(tipo_movimiento='debe',monto,(monto*-1))) AS saldo_movimientos FROM movimientos_cta_cte WHERE anulado=0 AND id_destino=$id_deposito";
+    //echo $query."<br>";
+    $getData = $this->conexion->consultaRetorno($query);
+    $row = $getData->fetch_array();
+    $saldo_movimientos=$row["saldo_movimientos"];
+    //var_dump($saldo_movimientos);
+
+    $saldo_cta_cte=$saldo_carga+$saldo_movimientos;
+    //var_dump($saldo_cta_cte);
+
+    $queryUpdateEstado = "UPDATE destinos SET saldo_cta_cte = $saldo_cta_cte WHERE id = $id_deposito";
+    //echo $queryUpdateEstado."<hr>";
+    $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError!=""){
+      echo $queryUpdateEstado."<br>".$mensajeError;
+      return 0;
+    }else{
+      return 1;
+    }
+  }
+
+  private function actualizarSaldoCtaCte2($id_deposito, $monto, $operacion){
+    $saldo_viejo=$this->getSaldoCtaCte($id_deposito);
+    //var_dump($saldo_viejo);
+
+    //var_dump($monto);
+    if ($operacion==='+') {
+      $proximo_nuevo_saldo=$saldo_viejo+$monto;
+    } elseif ($operacion==='-') {
+      $proximo_nuevo_saldo=$saldo_viejo-$monto;
+    }
+    //var_dump($proximo_nuevo_saldo);
+
+    $queryUpdateEstado = "UPDATE destinos SET saldo_cta_cte = saldo_cta_cte $operacion $monto WHERE id = $id_deposito";
+    $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
+    $mensajeError=$this->conexion->conectar->error;
+    if($mensajeError!=""){
+      echo $queryUpdateEstado."<br>".$mensajeError;
+    }
+
+    $saldo_nuevo=$this->getSaldoCtaCte($id_deposito);
+    //var_dump($saldo_nuevo);
+
+    if($proximo_nuevo_saldo==$saldo_nuevo){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+
+  public function aumentarSaldoCtaCte($id_deposito, $monto){
+    $operacion="+";
+    return $this->actualizarSaldoCtaCte($id_deposito, $monto, $operacion);
+  }
+
+  public function disminuirSaldoCtaCte($id_deposito, $monto){
+    $operacion="-";
+    return $this->actualizarSaldoCtaCte($id_deposito, $monto, $operacion);
+  }
+
   public function registrardeposito($nombre,$id_responsable,$opcion, $saldo_max, $valor){
     $this->nombre = $nombre;
     $this->opcion = $opcion;
@@ -198,7 +277,7 @@ if (isset($_POST['accion'])) {
       $id_deposito = $_POST['id_deposito'];
       echo $depositos->deletedeposito($id_deposito);
       break;
-    case 'traerDatosIniciales':
+    case 'traerDatosInicialesDepositos':
       $depositos->traerDatosIniciales();
       break;
     case 'verificarCuenta':
@@ -217,7 +296,11 @@ if (isset($_POST['accion'])) {
 }else{
   if (isset($_GET['accion'])) {
     $depositos = new depositos();
-    echo $depositos->traerDepositos();
+    switch ($_GET['accion']) {
+      case 'traerDeposito':
+        echo $depositos->traerDepositos();
+      break;
+    }
   }
 }
 ?>

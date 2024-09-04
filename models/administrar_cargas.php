@@ -4,6 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include_once('conexion.php');
 include_once('administrar_producto.php');
+include_once('administrar_deposito.php');
 // Includes y configuraciones
 require __DIR__.'/../vendor/autoload.php';
 
@@ -769,27 +770,31 @@ class cargas{
   }
 
   private function updateTotalesCargasProductos($id_carga){
-    $queryGetSumas = "SELECT id_producto,SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(subtotal_kilos) AS suma_kilos FROM cargas_productos_destinos cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga GROUP BY id_producto";
+    $queryGetSumas = "SELECT cpd.id_carga_producto,SUM(cantidad_bultos) AS suma_bultos, SUM(monto) AS suma_monto, SUM(subtotal_kilos) AS suma_kilos FROM cargas_productos_destinos cpd INNER JOIN cargas_productos cp ON cpd.id_carga_producto=cp.id WHERE cp.id_carga=$id_carga GROUP BY cpd.id_carga_producto";
     $getSumas = $this->conexion->consultaRetorno($queryGetSumas);
 
-    $ok=1;
+    $ok=0;
     $c=$c2=0;
     while($row = $getSumas->fetch_array()){
       $c++;
     
-      $id_producto=$row["id_producto"];
+      $id_carga_producto=$row["id_carga_producto"];
       $sumaBultos = $row["suma_bultos"] > 0 ? $row["suma_bultos"] : 0;
       $sumaKilos = $row["suma_kilos"] > 0 ? $row["suma_kilos"] : 0;
       $sumaMonto = $row["suma_monto"] > 0 ? $row["suma_monto"] : 0;
 
-      $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id_carga = $id_carga AND id_producto = $id_producto";
+      $queryInsertCarga = "UPDATE cargas_productos SET total_bultos = $sumaBultos, total_kilos = $sumaKilos, total_monto = $sumaMonto WHERE id_carga = $id_carga AND id = $id_carga_producto";
+      //echo $queryInsertCarga;
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
       if($mensajeError==""){
         $c2++;
+      }else{
+        echo $queryInsertCarga."<br>".$mensajeError."<br><br>";
       }
     }
 
+    //echo "$c==$c2";
     if($c==$c2){
       $ok=0;
       $respuesta=$this->updateTotalesCarga($id_carga);
@@ -803,8 +808,11 @@ class cargas{
   public function updateTotalesCargasDestinos($id_carga){
     $queryGetDestinos = "SELECT id,id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
     $getDestinos = $this->conexion->consultaRetorno($queryGetDestinos);
-    $ok=1;
+    $ok=0;
     $c=$c2=0;
+
+    $depositos = new depositos();
+
     while($row = $getDestinos->fetch_array()){
       $c++;
       $id_cargas_destinos=$row["id"];
@@ -823,7 +831,19 @@ class cargas{
       $insertCarga = $this->conexion->consultaSimple($queryInsertCarga);
       $mensajeError=$this->conexion->conectar->error;
       if($mensajeError==""){
-        $c2++;
+
+        $ok=1;
+        if($id_destino>0){
+          $depositos = new depositos();
+
+          $ok=$depositos->actualizarSaldoCtaCte($id_destino);
+        }
+
+        if($ok==1){
+          $c2++;
+        }
+      }else{
+        echo $queryInsertCarga."<br>".$mensajeError."<br><br>";
       }
     }
 
@@ -849,7 +869,7 @@ class cargas{
     $id_proveedor = is_null($producto['id_proveedor']) ? 'NULL' : $producto['id_proveedor'];
 
     // Insertar los datos en auditoria_cargas_productos
-    $queryInsertAuditoriaProducto = "INSERT INTO auditoria_cargas_productos (id_carga_producto, id_producto, id_proveedor, kg_x_bulto, precio_general, motivo_cambio_producto, total_bultos, total_kilos, total_monto, id_usuario, fecha_hora_alta) VALUES (".$producto['id'].",".$producto['id_producto'].",".$id_proveedor.",".$producto['."kg_x_bulto'].",".$producto['precio_general'].",'".$producto['motivo_cambio_producto']."',".$producto['total_bultos'].",".$producto['total_kilos'].",".$producto['total_monto'].",".$producto['id_usuario'].",'".$producto['fecha_hora_alta']."')";
+    $queryInsertAuditoriaProducto = "INSERT INTO auditoria_cargas_productos (id_carga_producto, id_producto, id_proveedor, kg_x_bulto, precio_general, motivo_cambio_producto, total_bultos, total_kilos, total_monto, id_usuario, fecha_hora_alta) VALUES (".$producto['id'].",".$producto['id_producto'].",".$id_proveedor.",".$producto['kg_x_bulto'].",".$producto['precio_general'].",'".$producto['motivo_cambio_producto']."',".$producto['total_bultos'].",".$producto['total_kilos'].",".$producto['total_monto'].",".$producto['id_usuario'].",'".$producto['fecha_hora_alta']."')";
     $this->conexion->consultaSimple($queryInsertAuditoriaProducto);
     $mensajeError=$this->conexion->conectar->error;
     //echo $queryInsertAuditoriaProducto."<br>";
@@ -865,7 +885,23 @@ class cargas{
       $c=$c2=0;
       while ($row = $traerDestinos->fetch_assoc()) {
         $c++;
-        $queryInsertAuditoriaDestino = "INSERT INTO auditoria_cargas_productos_destinos (id_auditoria_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, subtotal_kilos, precio_destino, monto, precio_destino_valor_extra, monto_valor_extra, motivo_cambio_deposito, id_usuario) VALUES (".$id_auditoria_producto.",".$row['id_destino'].",'".$row['tipo_aumento_extra']."',".$row['valor_extra'].",".$row['cantidad_bultos'].",".$row['subtotal_kilos'].",".$row['precio_destino'].",".$row['monto'].",".$row['precio_destino_valor_extra'].",".$row['monto_valor_extra'].",'".$row['motivo_cambio_deposito']."',".$_SESSION['rowUsers']['id_usuario'].")";
+        
+        $valor_extra=$row['valor_extra'];
+        if(is_null($valor_extra)) $valor_extra="'$valor_extra'";
+
+        $cantidad_bultos=$row['cantidad_bultos'];
+        if(is_null($cantidad_bultos)) $cantidad_bultos="'$cantidad_bultos'";
+        
+        $subtotal_kilos=$row['subtotal_kilos'];
+        if(is_null($subtotal_kilos)) $subtotal_kilos="'$subtotal_kilos'";
+
+        $monto=$row['monto'];
+        if(is_null($monto)) $monto="'$monto'";
+
+        $monto_valor_extra=$row['monto_valor_extra'];
+        if(is_null($monto_valor_extra)) $monto_valor_extra="'$monto_valor_extra'";
+
+        $queryInsertAuditoriaDestino = "INSERT INTO auditoria_cargas_productos_destinos (id_auditoria_carga_producto, id_destino, tipo_aumento_extra, valor_extra, cantidad_bultos, subtotal_kilos, precio_destino, monto, precio_destino_valor_extra, monto_valor_extra, motivo_cambio_deposito, id_usuario) VALUES (".$id_auditoria_producto.",".$row['id_destino'].",'".$row['tipo_aumento_extra']."',$valor_extra,$cantidad_bultos,$subtotal_kilos,".$row['precio_destino'].",$monto,".$row['precio_destino_valor_extra'].",$monto_valor_extra,'".$row['motivo_cambio_deposito']."',".$_SESSION['rowUsers']['id_usuario'].")";
         $this->conexion->consultaSimple($queryInsertAuditoriaDestino);
         //die($queryInsertAuditoriaDestino);
         $mensajeError=$this->conexion->conectar->error;
@@ -874,11 +910,15 @@ class cargas{
   
         if($mensajeError==""){
           $c2++;
+        }else{
+          echo $queryInsertAuditoriaDestino."<br>".$mensajeError."<br><br>";
         }
       }
       if($c==$c2 and $c!=0){
         $ok=1;
       }
+    }else{
+      echo $queryInsertAuditoriaProducto."<br>".$mensajeError;
     }
     return $ok;
   }
@@ -937,9 +977,28 @@ class cargas{
     // Verificar si la actualización fue exitosa
     $updateEstado = $this->conexion->consultaSimpleM($queryUpdateEstado);
     if ($updateEstado) {
+
+      $depositos = new depositos();
+
+      $queryGetDestinos = "SELECT id_destino FROM cargas_destinos WHERE id_carga=$id_carga";
+      $getDestinos = $this->conexion->consultaRetorno($queryGetDestinos);
+      //var_dump($queryGetDestinos);
+      
+      $c=$c2=0;
+      while($row = $getDestinos->fetch_array()){
+        $c++;
+        $ok=$depositos->actualizarSaldoCtaCte($row["id_destino"]);
+        if($ok==1){
+          $c2++;
+        }
+      }
+      if($c==$c2){
         $response = array('success' => true, 'message' => 'Carga despachada correctamente');
+      }else{
+        $response = array('success' => true, 'message' => 'Ha ocurrido un error al actualizar los saldos de cta cte');
+      }
     } else {
-        $response = array('success' => false, 'message' => 'Error al despachar la carga');
+      $response = array('success' => false, 'message' => 'Error al despachar la carga');
     }
     
     echo json_encode($response);

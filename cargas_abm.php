@@ -254,7 +254,7 @@ if($datosCarga["despachado"]=="Si"){
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_familia" required></select>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-5">
                   <div class="form-group">
                     <label for="id_producto" class="col-form-label">Producto:</label>
                     <select class="form-control js-example-basic-single" style="width: 100%;" id="id_producto" required>
@@ -262,13 +262,13 @@ if($datosCarga["despachado"]=="Si"){
                     </select>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-2">
                   <div class="form-group">
                     <label for="kg_x_bulto" class="col-form-label">Kg x bulto:</label>
                     <input type="number" class="form-control" id="kg_x_bulto" step="0.1" min="0" required>
                   </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-2">
                   <div class="form-group">
                     <label for="precio_general" class="col-form-label">Precio:</label>
                     <input type="number" class="form-control" id="precio_general" step="1" min="0" required>

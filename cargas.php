@@ -824,6 +824,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               // Buscar el destino en el array de destinos preseleccionados
               let destino = datosInput.destinos_preseleccionados.find(dest => dest.id_destino == id_deposito);
 
+              this.checked = false;
               if (destino) {
                 // Marcar la casilla si el destino está en la lista
                 this.checked = true;

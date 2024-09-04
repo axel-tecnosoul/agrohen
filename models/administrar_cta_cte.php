@@ -4,6 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include_once('conexion.php');
 include_once('administrar_producto.php');
+include_once('administrar_deposito.php');
 // Includes y configuraciones
 require __DIR__.'/../vendor/autoload.php';
 
@@ -147,7 +148,7 @@ class ctacte{
 
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
       //$query = "SELECT SUM(IF(tipo_movimiento='haber',monto,(monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte WHERE anulado=0 AND id_destino IN ($depositos) AND fecha_hora<'$desde'";
-      $query = "SELECT SUM(IF(mcc.tipo_movimiento='haber',mcc.monto,(mcc.monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte mcc WHERE mcc.anulado=0 $filtroCuentaParaMovimientos AND DATE(mcc.fecha_hora)<'$desde'";
+      $query = "SELECT SUM(IF(mcc.tipo_movimiento='debe',mcc.monto,(mcc.monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte mcc WHERE mcc.anulado=0 $filtroCuentaParaMovimientos AND DATE(mcc.fecha_hora)<'$desde'";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
@@ -157,7 +158,8 @@ class ctacte{
         $haber_saldo_anterior=0;
       }
 
-      $saldo_anterior=$debe_saldo_anterior-$haber_saldo_anterior;
+      //$saldo_anterior=$debe_saldo_anterior-$haber_saldo_anterior;
+      $saldo_anterior=$haber_saldo_anterior+$debe_saldo_anterior;
 
       $aSaldoInicial[]= array(
         'fecha_hora' => $desde,
@@ -458,10 +460,24 @@ class ctacte{
     if($mensajeError!=""){
       $respuesta.="<br><br>".$queryInsertCarga;
     }else{
-      $respuesta=[
-        "ok"=>1,
-        "id_movimiento"=>$id_movimiento,
-      ];
+
+      $ok=1;
+
+      if($id_deposito>0){
+        $depositos = new depositos();
+
+        $ok=$depositos->actualizarSaldoCtaCte($id_deposito);
+      }
+
+      if($ok==1){
+        $respuesta=[
+          "ok"=>1,
+          "id_movimiento"=>$id_movimiento,
+        ];
+      }else{
+        $respuesta="Algo falló al actualizar el saldo en la cta cte";
+      }
+
       $respuesta=json_encode($respuesta);
     }
 
@@ -506,10 +522,22 @@ class ctacte{
     if($mensajeError!=""){
       $respuesta.="<br><br>".$queryUpdateMovimiento;
     }else{
-      $respuesta=[
-        "ok"=>1,
-        "id_movimiento"=>$id_movimiento,
-      ];
+
+      $ok=1;
+      if($id_deposito>0){
+        $depositos = new depositos();
+
+        $ok=$depositos->actualizarSaldoCtaCte($id_deposito);
+      }
+
+      if($ok==1){
+        $respuesta=[
+          "ok"=>1,
+          "id_movimiento"=>$id_movimiento,
+        ];
+      }else{
+        $respuesta="Algo falló al actualizar el saldo en la cta cte";
+      }
       $respuesta=json_encode($respuesta);
     }
 

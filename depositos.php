@@ -76,9 +76,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th class="text-center">#ID</th>
                           <th>Nombre</th>
                           <th>Responsable</th>
-                          <th>Tipo de Aumento</th>
-                          <th>Valor</th>
+                          <!-- <th>Tipo de Aumento</th> -->
+                          <th>Aumento extra</th>
                           <th>Saldo Maximo</th>
+                          <th>Saldo Cta. Cte.</th>
                           <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
@@ -205,7 +206,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {data: "id_deposito"},
             {data: "nombre"},
             {data: "responsable"},
-            {data: "tipo_aumento_extra"},
+            //{data: "tipo_aumento_extra"},
             //{data: "valor_extra"},
             {render: function(data, type, full, meta) {
               let mostrar="";
@@ -221,11 +222,18 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             }},
             //{data: "saldo_max"},
             {render: function(data, type, full, meta) {
+              let saldo_max=""
               if(full.saldo_max>0){
-                return formatCurrency(full.saldo_max);
-              }else{
-                return "";
+                saldo_max=formatCurrency(full.saldo_max);
               }
+              return saldo_max
+            }},
+            {render: function(data, type, full, meta) {
+              let saldo_cta_cte=""
+              if(full.saldo_cta_cte>0){
+                saldo_cta_cte=formatCurrency(full.saldo_cta_cte);
+              }
+              return saldo_cta_cte
             }},
             {
               render: function(data, type, full, meta) {
@@ -353,7 +361,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       function cargarDatosComponentes(){
         let datosIniciales = new FormData();
-        datosIniciales.append('accion', 'traerDatosIniciales');
+        datosIniciales.append('accion', 'traerDatosInicialesDepositos');
         $.ajax({
           data: datosIniciales,
           url: "./models/administrar_deposito.php",
