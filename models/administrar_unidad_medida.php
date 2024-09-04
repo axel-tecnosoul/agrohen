@@ -111,29 +111,53 @@ class unidades_medidas{
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
   }
 
-  public function resgistrarUnidad_medida( $nombre ){
+  public function registrarUnidad_medida($nombre) {
     $this->nombre = $nombre;
     $usuario = $_SESSION['rowUsers']['id_usuario'];
-    $queryInsertUnidadM = "INSERT INTO unidades_medida (id_usuario, unidad_medida, activo, fecha_hora_alta) VALUES('$usuario', '$this->nombre', 1, NOW())";
-    $insertUnidadM = $this->conexion->consultaSimple($queryInsertUnidadM);
-    $mensajeError=$this->conexion->conectar->error;
-    $id_unidad_medida=$this->conexion->conectar->insert_id;
     
-    $respuesta=$mensajeError;
-    if($mensajeError!=""){
-      $respuesta.="<br><br>".$queryInsertUnidadM;
-    }else{
-      $respuesta=[
-        "ok"=>1,
-        "id_key" => "id_unidad_medida",
-        "id_value"=>$id_unidad_medida,
-      ];
-      $respuesta=json_encode($respuesta);
+    // Primero, busca si ya existe la unidad de medida con el mismo nombre pero está inactiva.
+    $queryCheck = "SELECT id FROM unidades_medida WHERE unidad_medida = '$this->nombre' AND activo = 0";
+    
+    // Ejecutar la consulta
+    $result = $this->conexion->conectar->query($queryCheck);
+
+    // Verificar si la consulta falló
+    if (!$result) {
+        // Imprimir el error y la consulta para diagnosticar el problema
+        die("Error en la consulta: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryCheck);
     }
-  
-    return $respuesta;
-  }
-		
+
+    // Verificar si la consulta devolvió algún resultado
+    $row = $result->fetch_assoc();
+
+    if ($row) {
+        // Si existe y está inactiva, actualiza el campo `activo` a 1.
+        $id_unidad_medida = $row['id'];
+        $queryUpdate = "UPDATE unidades_medida SET activo = 1 WHERE id = '$id_unidad_medida'";
+        $updateSuccess = $this->conexion->consultaSimpleM($queryUpdate);
+
+        if (!$updateSuccess) {
+          die("Error en la actualización: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryUpdate);
+        }
+
+    } else {
+      // Si no existe, inserta una nueva unidad de medida.
+      $queryInsertUnidadM = "INSERT INTO unidades_medida ( unidad_medida, activo, id_usuario, fecha_hora_alta) VALUES('$this->nombre', 1, '$usuario', NOW())";
+      $insertSuccess= $this->conexion->consultaSimple($queryInsertUnidadM);
+
+      // if (!$insertSuccess) {
+      //   die("Error en la inserción: " . $this->conexion->conectar->error . "<br>Consulta: " . $queryInsertUnidadM);
+      // }
+      $id_unidad_medida = $this->conexion->conectar->insert_id;
+    }
+    
+    $respuesta = [
+      "ok" => 1,
+      "id_key" => "id",
+      "id_value" => $id_unidad_medida,
+    ];
+    return json_encode($respuesta);
+  }	
 }	
 
 if (isset($_POST['accion'])) {
@@ -163,7 +187,7 @@ if (isset($_POST['accion'])) {
       break;
     case 'addUnidad_medida':
       $nombre = $_POST['nombre'];
-      echo $unidades_medidas->resgistrarUnidad_medida( $nombre);
+      echo $unidades_medidas->registrarUnidad_medida( $nombre);
       break;
   }
 }else{

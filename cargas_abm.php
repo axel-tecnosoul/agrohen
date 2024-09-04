@@ -543,7 +543,28 @@ if($datosCarga["despachado"]=="Si"){
       var despachado = $("#despachado").val()
       var confirmada = $("#confirmada").val()
       var bandera_buscar_producto=true;
-      var select2ProductoNoResultText="No hay resultados. Presione ENTER para agregar"
+
+      // Mensaje que se mostrará cuando no se encuentren resultados
+      var select2NoResultText = "No hay resultados. Presione ENTER para agregar";
+
+      // Configuración para cada select en un objeto
+      var configuraciones = {
+          presentacion: {
+              selectId: 'id_presentacion',
+              administrar: 'presentaciones',
+              accion: 'addpresentacion',
+              tabla: 'productos',
+              campo: 'id_presentacion'
+          },
+          unidadMedida: {
+              selectId: 'id_unidad_medida',
+              administrar: 'unidad_medida',
+              accion: 'addUnidad_medida',
+              tabla: 'unidades_medida',
+              campo: 'id_unidad_medida'
+          }
+      };
+
       var aProductos = []
 
       //getDatosCarga();
@@ -986,65 +1007,53 @@ if($datosCarga["despachado"]=="Si"){
           $('#headingOne .fa').removeClass('fa-angle-down').addClass('fa-angle-right');
         });
 
-        //detectamos los tipeos en la busqueda de productos para permitir dar de alta uno nuevo
+        // Detectamos los tipeos en la búsqueda de productos para permitir dar de alta uno nuevo
         $('#id_producto').on('select2:open', function() {
-          let searchField = $('.select2-search__field');
-          let noResultsShown = false;
+            let searchField = $('.select2-search__field');
+            let noResultsShown = false;
 
-          searchField.on('keydown', function(e) {
-            if ($('.select2-results__option').text()==select2ProductoNoResultText){
-              noResultsShown = true;
-            }
-            if (e.key === 'Enter' && noResultsShown) {
-
-              let id_familia=$("#id_familia").val()
-              let searchTerm = $(this).val();
-
-              $.ajax({
-                url: "models/administrar_producto.php",
-                type: "POST",
-                datatype: "json",
-                data: {accion: "traerDatosUltimaFamilia", id_familia: id_familia},
-                success: function(response) {
-                  let data = JSON.parse(response);
-                  console.log(data);
-
-                  $("#id_producto").select2("close")
-                  //$("#modalCRUD").modal("hide")
-                  let modalNuevoProducto=$("#modalNuevoProducto")
-
-                  console.log(searchTerm);
-                  console.log(modalNuevoProducto.find("#nombre"));
-
-                  modalNuevoProducto.modal("show")
-                  modalNuevoProducto.find("#nombre").val(searchTerm)
-
-                  let id_familia_nuevo_producto=modalNuevoProducto.find("#id_familia_nuevo_producto")
-                  id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
-                  $('#id_presentacion').val(data.id_presentacion).change();
-                  $('#id_unidad_medida').val(data.id_unidad_medida).change();
-
-                  agregarOpcionSelect(
-                    'id_presentacion', 
-                    'presentaciones', 
-                    'addpresentacion', 
-                    "No hay resultados. Presione ENTER para agregar"
-                  );
-
-                  agregarOpcionSelect(
-                    'id_unidad_medida', 
-                    'unidad_medida', 
-                    'addUnidad_medida', 
-                    "No hay resultados. Presione ENTER para agregar"
-                  );
-
-                  //alert('Buscar: ' + searchTerm);
-                  noResultsShown = false; // Reset the flag after showing the alert
+            searchField.on('keydown', function(e) {
+                if ($('.select2-results__option').text() == select2NoResultText) {
+                    noResultsShown = true;
                 }
-              });
-            }
-          });
+                if (e.key === 'Enter' && noResultsShown) {
+                    let searchTerm = $(this).val();
+                    $("#id_producto").select2("close");
+                    let modalNuevoProducto = $("#modalNuevoProducto");
+
+                    console.log(searchTerm);
+                    console.log(modalNuevoProducto.find("#nombre"));
+
+                    modalNuevoProducto.modal("show");
+                    modalNuevoProducto.find("#nombre").val(searchTerm);
+
+                    let id_familia = $("#id_familia").val();
+
+                    let id_familia_nuevo_producto = modalNuevoProducto.find("#id_familia_nuevo_producto");
+                    id_familia_nuevo_producto.val(id_familia).change().prop('disabled', true);
+                    $('#id_presentacion').val("").change();
+                    $('#id_unidad_medida').val("").change();
+
+                    function inicializarSelect(config) {
+                        agregarOpcionSelect(
+                            config.selectId,
+                            config.administrar,
+                            config.accion,
+                            select2NoResultText,
+                            config.tabla,
+                            config.campo
+                        );
+                    }
+
+                    // Inicializar los selects dentro del modal utilizando la configuración
+                    inicializarSelect(configuraciones.presentacion);
+                    inicializarSelect(configuraciones.unidadMedida);
+
+                    noResultsShown = false; // Resetear el flag después de mostrar el modal
+                }
+            });
         });
+
 
         var originalZIndex;
         var originalModalOverflow;
@@ -1427,7 +1436,7 @@ if($datosCarga["despachado"]=="Si"){
           $('#id_producto').select2({
             language: {
               noResults: function() {
-                return select2ProductoNoResultText;
+                return select2NoResultText;
               }
             },
             placeholder: "Seleccione..."
@@ -1493,7 +1502,7 @@ if($datosCarga["despachado"]=="Si"){
               $($selectProducto).select2({
                 language: {
                   noResults: function() {
-                    return select2ProductoNoResultText;
+                    return select2NoResultText;
                   }
                 }
               })
@@ -1955,15 +1964,15 @@ if($datosCarga["despachado"]=="Si"){
             $($selectPresentacion).select2({
               language: {
                 noResults: function() {
-                  return select2ProductoNoResultText;
+                  return select2NoResultText;
                 }
               },
               dropdownParent: $('#modalNuevoProducto')
             })
 
-            /*Identifico el select de perfiles*/
+            /*Identifico el select de unidades de medidas*/
             $selectUnidadMedida = document.getElementById("id_unidad_medida");
-            /*Genero los options del select usuarios*/
+            /*Genero los options del select unidades_medidas*/
             respuestaJson.unidades_medidas.forEach((unidad_medida)=>{
               $option = document.createElement("option");
               let optionText = document.createTextNode(unidad_medida.unidad_medida);
