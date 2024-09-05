@@ -63,6 +63,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Nombre y apellido</th>
                           <th>Telefono</th>
                           <th>Email</th>
+                          <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -171,29 +172,29 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {"data": "nombre"},
             {"data": "telefono"},
             {"data": "email"},
-            // {
-            //   render: function(data, type, full, meta) {
-            //     const estados = {
-            //         0: "Inactivo",
-            //         1: "Activo",
-            //       }
-            //     return ()=>{
-            //       $options="";
-            //       for(key in estados){
-            //         if(full.activo == key){
-            //           $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
-            //         }else{
-            //           $options+=`<option value="${key}">${estados[key]}</option>`;
-            //         }
-            //       }
-            //       $selectInit = `<select class="estado">`;
-            //       $selectEnd = "</select>";
-            //       $selectComplete = $selectInit + $options+$selectEnd
+            {
+              render: function(data, type, full, meta) {
+                const estados = {
+                    0: "Inactivo",
+                    1: "Activo",
+                  }
+                return ()=>{
+                  $options="";
+                  for(key in estados){
+                    if(full.activo == key){
+                      $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
+                    }else{
+                      $options+=`<option value="${key}">${estados[key]}</option>`;
+                      }
+                  }
+                  $selectInit = `<select class="estado">`;
+                  $selectEnd = "</select>";
+                  $selectComplete = $selectInit + $options+$selectEnd
 
-            //       return $selectComplete;
-            //     };
-            //   }
-            // },
+                  return $selectComplete;
+                };
+              }
+            },
             {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
           "language":  idiomaEsp

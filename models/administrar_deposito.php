@@ -17,7 +17,7 @@ class depositos{
   public function traerDatosIniciales(){
 
     /*Usuarios*/
-    $queryResponsable = "SELECT id as id_responsable, nombre FROM responsables_deposito";
+    $queryResponsable = "SELECT id as id_responsable, nombre FROM responsables_deposito WHERE activo = 1";
     $getResponsable = $this->conexion->consultaRetorno($queryResponsable);
 
     $datosIniciales = array();

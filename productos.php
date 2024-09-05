@@ -80,7 +80,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th>Unidad de Medida</th>
                           <th>Ultimo Precio</th>
                           <th>Ultimo KG x Bulto</th>
-                          <!-- <th>Estado</th> -->
+                          <th>Estado</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -220,6 +220,29 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {"data": "unidad_medida"},
             {"data": "ultimo_precio"},
             {"data": "ultimo_kg_x_bulto"},
+            {
+              render: function(data, type, full, meta) {
+                const estados = {
+                    0: "Inactivo",
+                    1: "Activo",
+                  }
+                return ()=>{
+                  $options="";
+                  for(key in estados){
+                    if(full.activo == key){
+                      $options+=`<option selected value="${full.estado}">${estados[key]}</option>`
+                    }else{
+                      $options+=`<option value="${key}">${estados[key]}</option>`;
+                      }
+                  }
+                  $selectInit = `<select class="estado">`;
+                  $selectEnd = "</select>";
+                  $selectComplete = $selectInit + $options+$selectEnd
+
+                  return $selectComplete;
+                };
+              }
+            },
             {"defaultContent" : "<div class='text-center'><div class='btn-group'><button class='btn btn-success btnEditar'><i class='fa fa-edit'></i></button><button class='btn btn-danger btnBorrar'><i class='fa fa-trash-o'></i></button></div></div>"},
           ],
           "language":  idiomaEsp
@@ -589,26 +612,26 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
         })
       });
 
-      // $(document).on("change", ".estado", function(){
-      //   fila = $(this);
-      //   nuevoEstado = $(this).val();
-      //   id_producto = parseInt($(this).closest('tr').find('td:eq(0)').text());
-      //   accion = "cambiarEstado";
-      //   $.ajax({
-      //     url: "models/administrar_producto.php",
-      //     type: "POST",
-      //     datatype:"json",
-      //     data:  {accion: accion, id_producto: id_producto, estado: nuevoEstado},    
-      //     success: function(data) {
-      //       $('#modalCRUD').modal('hide');
-      //       tablaproducto.ajax.reload(null, false);
-      //       swal({
-      //         icon: 'success',
-      //         title: 'Estado cambiado exitosamente'
-      //       });
-      //     }
-      //   })
-      // })
+      $(document).on("change", ".estado", function(){
+        fila = $(this);
+        nuevoEstado = $(this).val();
+        id_producto = parseInt($(this).closest('tr').find('td:eq(0)').text());
+        accion = "cambiarEstado";
+        $.ajax({
+          url: "models/administrar_producto.php",
+          type: "POST",
+          datatype:"json",
+          data:  {accion: accion, id_producto: id_producto, estado: nuevoEstado},    
+          success: function(data) {
+            $('#modalCRUD').modal('hide');
+            tablaProducto.ajax.reload(null, false);
+            swal({
+              icon: 'success',
+              title: 'Estado cambiado exitosamente'
+            });
+          }
+        })
+      })
     </script>
   </body>
 </html>

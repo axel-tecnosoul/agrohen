@@ -19,7 +19,7 @@ class Usuarios{
     $datosIniciales = array();
     
     /*PERFILES*/
-    $queryPerfiles = "SELECT id as id_perfil, perfil FROM perfiles";
+    $queryPerfiles = "SELECT id as id_perfil, perfil FROM perfiles WHERE activo = 1";
     $getPerfiles = $this->conexion->consultaRetorno($queryPerfiles);
 
     $arrayPerfiles = array();

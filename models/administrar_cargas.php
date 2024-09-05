@@ -32,7 +32,7 @@ class cargas{
     $datosIniciales = array();
 
     /*Choferes*/
-    $queryChoferes = "SELECT id as id_chofer, nombre FROM choferes";
+    $queryChoferes = "SELECT id as id_chofer, nombre FROM choferes WHERE activo = 1";
     $getChoferes = $this->conexion->consultaRetorno($queryChoferes);
     $arrayChoferes[] = [
       'id_chofer' => "",
@@ -47,7 +47,7 @@ class cargas{
     }
 
     /*Origenes*/
-    $queryOrigenes = "SELECT id as id_origen, nombre FROM origenes";
+    $queryOrigenes = "SELECT id as id_origen, nombre FROM origenes WHERE activo = 1";
     $getOrigenes = $this->conexion->consultaRetorno($queryOrigenes);
     $arrayOrigenes[] = [
       'id_origen' => "",
@@ -62,7 +62,7 @@ class cargas{
     }
 
     /*Proveedores*/
-    $queryProveedres = "SELECT id as id_proveedor, nombre FROM proveedores";
+    $queryProveedres = "SELECT id as id_proveedor, nombre FROM proveedores WHERE activo = 1";
     $getProveedres = $this->conexion->consultaRetorno($queryProveedres);
     $arrayProveedres[] = [
       'id_proveedor' => "",
@@ -106,7 +106,7 @@ class cargas{
       ];
     }*/
 
-    $queryProductos = "SELECT p.id as id_producto, p.nombre, p.id_familia, p.ultimo_precio, p.ultimo_kg_x_bulto, pp.nombre AS presentacion,um.unidad_medida FROM productos p INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id";
+    $queryProductos = "SELECT p.id as id_producto, p.nombre, p.id_familia, p.ultimo_precio, p.ultimo_kg_x_bulto, pp.nombre AS presentacion,um.unidad_medida FROM productos p INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE p.activo = 1";
     $getProductos = $this->conexion->consultaRetorno($queryProductos);
 
     $arrayProductos[] = [
@@ -127,7 +127,7 @@ class cargas{
     }
 
     /*Destino*/
-    $queryDestinos = "SELECT id as id_destino, nombre, tipo_aumento_extra, valor_extra FROM destinos";
+    $queryDestinos = "SELECT id as id_destino, nombre, tipo_aumento_extra, valor_extra FROM destinos WHERE activo = 1";
     $getDestinos = $this->conexion->consultaRetorno($queryDestinos);
     /*CARGO ARRAY Destinos*/
     while ($row = $getDestinos->fetch_array()) {
@@ -165,7 +165,7 @@ class cargas{
 
     if($id_familia>0){
       /*Productos*/
-      $queryProductos = "SELECT p.id as id_producto, p.nombre, p.ultimo_precio, p.ultimo_kg_x_bulto, pp.nombre AS presentacion,um.unidad_medida FROM productos p INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE id_familia = $id_familia";
+      $queryProductos = "SELECT p.id as id_producto, p.nombre, p.ultimo_precio, p.ultimo_kg_x_bulto, pp.nombre AS presentacion,um.unidad_medida FROM productos p INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE p.id_familia = $id_familia";
       $getProductos = $this->conexion->consultaRetorno($queryProductos);
 
       if ($getProductos->num_rows > 0) {

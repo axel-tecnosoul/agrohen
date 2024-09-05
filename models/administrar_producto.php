@@ -71,7 +71,7 @@ class producto{
   }
 
   public function traerProducto(){
-    $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, p.ultimo_precio,p.ultimo_kg_x_bulto FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
+    $sqlTraerProducto = "SELECT p.id AS id_producto, p.nombre, pe.nombre as presentacion, um.unidad_medida, fp.familia, p.ultimo_precio,p.ultimo_kg_x_bulto, p.activo FROM productos p LEFT JOIN presentaciones_productos pe ON p.id_presentacion = pe.id LEFT JOIN familias_productos fp ON p.id_familia=fp.id LEFT JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE 1";
     $traerProducto = $this->conexion->consultaRetorno($sqlTraerProducto);
     $producto = array(); //creamos un array
     while ($row = $traerProducto->fetch_array()) {
@@ -83,6 +83,7 @@ class producto{
         'unidad_medida'=>$row['unidad_medida'],
         'ultimo_precio'=>$row['ultimo_precio'],
         'ultimo_kg_x_bulto'=>$row['ultimo_kg_x_bulto'],
+        'activo'=>$row['activo']
       );
     }
     // var_dump($producto);
@@ -216,6 +217,14 @@ class producto{
 
     return json_encode($datosFamilia);
   }
+
+  public function cambiarEstado($id_producto, $estado){
+
+    $this->id_producto = $id_producto;
+
+    $queryUpdateEstado = "UPDATE productos SET activo = $estado WHERE id = $this->id_producto";
+    $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
+  }
 }	
 
 if (isset($_POST['accion'])) {
@@ -254,6 +263,11 @@ if (isset($_POST['accion'])) {
     case 'traerDatosUltimaFamilia':
       $id_familia = $_POST['id_familia'];
       echo $producto->traerDatosUltimaFamilia($id_familia);
+    break;
+    case 'cambiarEstado':
+      $id_producto = $_POST['id_producto'];
+      $estado = $_POST['estado'];
+      $producto->cambiarEstado($id_producto, $estado);
     break;
   }
 }elseif(isset($_GET['accion'])){
