@@ -129,14 +129,20 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                       <td width="10%" class="text-right p-1">Desde: </td>
                       <td width="10%" class="p-1 inputDate" style="">
                         <input type="date" id="desde" value="<?=date("Y-m-d",strtotime(date("Y-m-d")." -1 month"))?>" class="form-control form-control-sm w-auto filtraTabla">
+                      </td>
+                      <td width="20%" class="p-1" style="vertical-align: middle;">
+                        <label class="d-block mb-0" for="radio-fecha-ususario">
+                          <input class="radio_animated filtraTabla" value="ususario" checked required id="radio-fecha-ususario" type="radio" name="tipo_fecha[]">
+                          <label class="mb-0" for="radio-fecha-ususario">Fecha del usuario</label>
+                        </label>
                       </td><?php
                       if($id_perfil==1){?>
                         <td width="10%" rowspan="2" style="vertical-align: middle;" class="text-right p-1">Cuenta:</td>
-                        <td width="30%" rowspan="2" style="vertical-align: middle;" class="p-1">
+                        <td width="20%" rowspan="2" style="vertical-align: middle;" class="p-1">
                           <select id="cuenta" class="form-control form-control-sm filtraTabla selectpicker" data-style="multiselect"></select>
                         </td>
                         <td width="10%" rowspan="2" style="vertical-align: middle;" class="depositoCells invisible text-right p-1">Deposito:</td>
-                        <td width="30%" rowspan="2" style="vertical-align: middle;" class="depositoCells invisible p-1">
+                        <td width="20%" rowspan="2" style="vertical-align: middle;" class="depositoCells invisible p-1">
                           <select id="id_deposito" class="form-control form-control-sm filtraTabla selectpicker" data-style="multiselect" data-selected-text-format="count > 1" multiple></select>
                         </td><?php
                       }?>
@@ -144,6 +150,12 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                     <tr id="row2">
                       <td class="text-right p-1">Hasta: </td>
                       <td class="p-1 inputDate"><input type="date" id="hasta" value="<?=date("Y-m-d")?>" class="form-control form-control-sm w-auto filtraTabla"></td>
+                      <td class="p-1" style="vertical-align: middle;">
+                        <label class="d-block mb-0" for="radio-fecha-sistema">
+                          <input class="radio_animated filtraTabla" value="sistema" required id="radio-fecha-sistema" type="radio" name="tipo_fecha[]">
+                          <label class="mb-0" for="radio-fecha-sistema">Fecha del sistema</label>
+                        </label>
+                      </td>
                     </tr>
                   </table>
 
@@ -395,10 +407,8 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
       var id_perfil=$("#id_perfil").html()
       var allOptionsSelectDestino
       var tablaCtaCte=$('#tablaCtaCte')
-      var desde_aux=""
-      var hasta_aux=""
+      var desde_aux=hasta_aux=id_deposito_aux=tipo_fecha_aux=""
       var id_aux=0
-      var id_deposito_aux=""
       $(document).ready(function(){
         
         cargarDatosComponentes();
@@ -649,6 +659,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
         if(desde>hasta){
           alert("La fecha desde no puede ser mayor a la fecha hasta")
         }else{
+          var tipo_fecha=$("input[name='tipo_fecha[]']:checked").val();
           var $selectCuenta = $('#cuenta');
           var selectedIndex = $selectCuenta.prop('selectedIndex');
           var selectedOption = $selectCuenta.find('option').eq(selectedIndex);
@@ -674,7 +685,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
           }
           
           let hayCambioEnLosDatos=0;
-          if(desde_aux!==desde || hasta_aux!==hasta || id_cuenta_aux!==id_cuenta || JSON.stringify(id_deposito_aux) !== JSON.stringify(id_deposito)){
+          if(desde_aux!==desde || hasta_aux!==hasta || id_cuenta_aux!==id_cuenta || tipo_fecha_aux!==tipo_fecha || JSON.stringify(id_deposito_aux) !== JSON.stringify(id_deposito)){
             hayCambioEnLosDatos=1;
           }
 
@@ -682,7 +693,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             tablaCtaCte.DataTable().destroy();
             tablaCtaCte.DataTable({
               "ajax": {
-                "url" : "./models/administrar_cta_cte.php?accion=getCtacte&desde="+desde+"&hasta="+hasta+"&id_cuenta="+id_cuenta+"&id_deposito="+id_deposito+"&tipo="+tipo+"&tipo_aumento_extra="+tipo_aumento_extra+"&valor_extra="+valor_extra,
+                "url" : "./models/administrar_cta_cte.php?accion=getCtacte&desde="+desde+"&hasta="+hasta+"&id_cuenta="+id_cuenta+"&id_deposito="+id_deposito+"&tipo="+tipo+"&tipo_aumento_extra="+tipo_aumento_extra+"&valor_extra="+valor_extra+"&tipo_fecha="+tipo_fecha,
                 "dataSrc": "",
               },
               "dom": "rtip",
@@ -690,7 +701,28 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
               "paginate": false,
               "responsive": true,
               "columns":[
-                {"data": "fecha_hora_formatted",className: "dt-body-right"},
+                //{"data": "fecha_hora_formatted",className: "dt-body-right"},
+                {render: function(data, type, full, meta) {
+                  if(full.id_carga!=undefined){
+                    return "<u>Despacho:</u> "+full.fecha_hora_formatted;
+                  }else if(full.id_movimiento!=undefined){
+                    let classNegrita="font-weight-bold";
+
+                    negrita_usuario=classNegrita
+                    negrita_sistema=''
+                    if(tipo_fecha=="sistema"){
+                      negrita_usuario=''
+                      negrita_sistema=classNegrita
+                    }
+
+                    fecha_usuario=`<p class='mb-0 ${negrita_usuario}'><u>Usuario:</u> `+full.fecha_hora_formatted+`</p>`
+                    fecha_sistema=`<p class='mb-0 ${negrita_sistema}'><u>Sistema:</u> `+full.fecha_hora_alta_formatted+`</p>`
+
+                    return fecha_usuario+fecha_sistema
+                  }else{
+                    return full.fecha_hora_formatted
+                  }
+                }},
                 //{"data": "id_carga"},
                 {render: function(data, type, full, meta) {
                   if(full.id_carga!=undefined){
@@ -796,6 +828,7 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
             hasta_aux=hasta;
             id_cuenta_aux=id_cuenta;
             id_deposito_aux=id_deposito;
+            tipo_fecha_aux=tipo_fecha;
           }
         }
       }

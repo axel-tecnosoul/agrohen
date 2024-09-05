@@ -95,12 +95,17 @@ class ctacte{
     echo json_encode($datosIniciales);
   }
 
-  public function getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra){
+  public function getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra,$tipo_fecha){
     //var_dump($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra);
 
     $ctacte=[];
     //if(!in_array($id,["","null","undefined"])){
     if($id_cuenta>0 or $id_deposito>0){
+
+      $campoFechaMovimientos="mcc.fecha_hora";
+      if($tipo_fecha=="sistema"){
+        $campoFechaMovimientos="mcc.fecha_hora_alta";
+      }
 
       $filtroDesde="";
       if(!empty($desde)){
@@ -148,7 +153,7 @@ class ctacte{
 
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
       //$query = "SELECT SUM(IF(tipo_movimiento='haber',monto,(monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte WHERE anulado=0 AND id_destino IN ($depositos) AND fecha_hora<'$desde'";
-      $query = "SELECT SUM(IF(mcc.tipo_movimiento='debe',mcc.monto,(mcc.monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte mcc WHERE mcc.anulado=0 $filtroCuentaParaMovimientos AND DATE(mcc.fecha_hora)<'$desde'";
+      $query = "SELECT SUM(IF(mcc.tipo_movimiento='debe',mcc.monto,(mcc.monto*-1))) AS haber_saldo_anterior FROM movimientos_cta_cte mcc WHERE mcc.anulado=0 $filtroCuentaParaMovimientos AND DATE($campoFechaMovimientos)<'$desde'";
       $get = $this->conexion->consultaRetorno($query);
       //echo $query;
       //$get->num_rows;
@@ -163,6 +168,7 @@ class ctacte{
 
       $aSaldoInicial[]= array(
         'fecha_hora' => $desde,
+        'fecha_ordenar' =>$desde,
         'fecha_hora_formatted' => formatFechaHora($desde),
         'deposito' => '',
         'origen' => '',
@@ -172,8 +178,6 @@ class ctacte{
 
 
       /*CARGO MOVIMIENTOS EN LA CTA CTE EN BASE A LAS CARGAS */
-
-      //$query = "SELECT c.fecha,c.id AS id_carga,SUM(cpd.monto) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT('+ $',FORMAT(cpd.monto, 2, 'de_DE'),' | ',fp.familia,' ',p.nombre,' (',pp.nombre,' - ',um.unidad_medida,')' SEPARATOR '<br>') AS detalle_productos,IF(c.fecha_hora_despacho IS NULL,'No','Si') AS despachado_lbl,c.fecha_hora_despacho,c.id_usuario,u.usuario,c.anulado FROM cargas c INNER JOIN cargas_productos cp ON cp.id_carga=c.id INNER JOIN cargas_productos_destinos cpd ON cpd.id_carga_producto=cp.id INNER JOIN choferes ch ON c.id_chofer=ch.id INNER JOIN origenes o ON c.id_origen=o.id INNER JOIN usuarios u ON c.id_usuario=u.id INNER JOIN productos p ON cp.id_producto=p.id INNER JOIN familias_productos fp ON p.id_familia=fp.id INNER JOIN presentaciones_productos pp ON p.id_presentacion=pp.id INNER JOIN unidades_medida um ON p.id_unidad_medida=um.id WHERE id_destino IN ($depositos) GROUP BY c.id";
 
       /*$query = "SELECT c.fecha_hora_despacho AS fecha_hora,c.id AS id_carga,SUM($columna_utilizar) AS monto,c.id_origen,o.nombre AS origen,c.id_chofer,ch.nombre AS chofer,c.datos_adicionales_chofer,GROUP_CONCAT(
         '<div class=\"detalle-producto\">',
@@ -190,6 +194,7 @@ class ctacte{
       while ($row = $get->fetch_array()) {
         $ctacte[]= array(
           'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
+          'fecha_ordenar' =>$fecha_hora,
           'fecha_hora_formatted' =>formatFechaHora($fecha_hora),
           'id_carga' =>$row['id_carga'],
           'monto' =>$row['monto'],
@@ -212,8 +217,8 @@ class ctacte{
 
 
       /*CARGO MOVIMIENTOS REGISTRADOS A MANO */
-      $filtroDesde=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroDesde);
-      $filtroHasta=str_replace("c.fecha_hora_despacho","mcc.fecha_hora",$filtroHasta);
+      $filtroDesde=str_replace("c.fecha_hora_despacho",$campoFechaMovimientos,$filtroDesde);
+      $filtroHasta=str_replace("c.fecha_hora_despacho",$campoFechaMovimientos,$filtroHasta);
 
       //$query = "SELECT mcc.id AS id_movimiento,mcc.fecha_hora,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,mcc.fecha_hora_alta,uc.usuario,mcc.id_usuario_ultima_modificacion,um.usuario AS usuario_ultima_modificacion,mcc.fecha_hora_ultima_modificacion FROM movimientos_cta_cte mcc INNER JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios uc ON mcc.id_usuario=uc.id LEFT JOIN usuarios um ON mcc.id_usuario_ultima_modificacion=um.id WHERE mcc.anulado=0 AND mcc.id_destino IN ($depositos) $filtroDesde $filtroHasta";
       $query = "SELECT mcc.id AS id_movimiento,mcc.fecha_hora,mcc.tipo_movimiento,mcc.id_destino,d.nombre AS deposito,mcc.monto,mcc.descripcion,mcc.id_usuario,mcc.fecha_hora_alta,uc.usuario,mcc.id_usuario_ultima_modificacion,um.usuario AS usuario_ultima_modificacion,mcc.fecha_hora_ultima_modificacion FROM movimientos_cta_cte mcc LEFT JOIN destinos d ON mcc.id_destino=d.id INNER JOIN usuarios uc ON mcc.id_usuario=uc.id LEFT JOIN usuarios um ON mcc.id_usuario_ultima_modificacion=um.id WHERE mcc.anulado=0 $filtroCuentaParaMovimientos $filtroDesde $filtroHasta";
@@ -221,10 +226,20 @@ class ctacte{
       //echo $query;
       //$get->num_rows;
       while ($row = $get->fetch_array()) {
+
+        $fecha_hora=$row['fecha_hora'];
+        $fecha_hora_alta=$row['fecha_hora_alta'];
+
+        $fecha_ordenar=$fecha_hora;
+        if($tipo_fecha=="sistema"){
+          $fecha_ordenar=$fecha_hora_alta;
+        }
+
         $ctacte[]= array(
-          'fecha_hora' =>$fecha_hora=$row['fecha_hora'],
+          'fecha_hora' =>$fecha_hora,
+          'fecha_ordenar' =>$fecha_ordenar,
           'fecha_hora_formatted' =>(!is_null($fecha_hora)) ? formatFechaHora($fecha_hora) : "",
-          'fecha_hora_alta' =>$fecha_hora_alta=$row['fecha_hora_alta'],
+          'fecha_hora_alta' =>$fecha_hora_alta,
           'fecha_hora_alta_formatted' =>formatFechaHora($fecha_hora_alta),
           'id_movimiento' =>$row['id_movimiento'],
           'monto' =>$row['monto'],
@@ -242,12 +257,26 @@ class ctacte{
       }
 
       function date_compare($a, $b){
-        $t1 = strtotime($a['fecha_hora']);
-        $t2 = strtotime($b['fecha_hora']);
+        /*$t1 = strtotime($a['fecha_hora']);
+        $t2 = strtotime($b['fecha_hora']);*/
+        $t1 = strtotime($a['fecha_ordenar']);
+        $t2 = strtotime($b['fecha_ordenar']);
         return $t1 - $t2;
       }
 
       usort($ctacte, 'date_compare');
+
+      /*function date_compare($campo_ordenar) {
+        return function($a, $b) use ($campo_ordenar) {
+          $t1 = strtotime($a[$campo_ordenar]);
+          $t2 = strtotime($b[$campo_ordenar]);
+          return $t1 - $t2;
+        };
+      }
+
+      $campoOrdenar=str_replace("mcc.","",$campoFechaMovimientos);
+      usort($ctacte, date_compare($campoOrdenar));*/
+      
 
       //var_dump($ctacte);
 
@@ -666,8 +695,9 @@ if (isset($_POST['accion'])) {
       $tipo=$_GET["tipo"];
       $tipo_aumento_extra=$_GET["tipo_aumento_extra"];
       $valor_extra=$_GET["valor_extra"];
+      $tipo_fecha=$_GET["tipo_fecha"];
 
-      echo $ctacte->getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra);
+      echo $ctacte->getCtacte($desde,$hasta,$id_cuenta,$id_deposito,$tipo,$tipo_aumento_extra,$valor_extra,$tipo_fecha);
     break;
     case 'exportar_excel':
       var_dump($_GET);

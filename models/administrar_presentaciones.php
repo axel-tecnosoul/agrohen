@@ -10,9 +10,9 @@ class presentaciones{
       date_default_timezone_set("America/Buenos_Aires");
   }
 
-   public function traerDatosIniciales(){
+  public function traerDatosIniciales(){
 
-   /*Usuarios*/
+    /*Usuarios*/
     $queryUsuarios = "SELECT id as id_usuario, usuario FROM usuarios";
     $getUsuarios = $this->conexion->consultaRetorno($queryUsuarios);
 
