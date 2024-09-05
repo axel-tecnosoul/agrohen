@@ -33,7 +33,7 @@ class choferes{
   }
 
   public function traerChoferes(){
-    $sqlTraerChoferes = "SELECT id AS id_chofer, nombre, telefono, email FROM choferes WHERE 1";
+    $sqlTraerChoferes = "SELECT id AS id_chofer, nombre, telefono, email, activo FROM choferes WHERE 1";
     $traerChoferes = $this->conexion->consultaRetorno($sqlTraerChoferes);
     $choferes = array(); //creamos un array
     
@@ -43,6 +43,7 @@ class choferes{
         'nombre'=>$row['nombre'],
         'telefono'=>$row['telefono'],
         'email'=>$row['email'],
+        'activo'=>$row['activo'],
       );
     }
     return json_encode($choferes);
@@ -107,11 +108,11 @@ class choferes{
 
     $this->id_chofer = $id_chofer;
     
-    /*if ($estado == 'Activo') {
-          $estado = 1;
-        }else{
-          $estado = 0;
-        }*/
+    // if ($estado == 'Activo') {
+    //   $estado = 1;
+    // }else{
+    //   $estado = 0;
+    // }
 
     $queryUpdateEstado = "UPDATE choferes SET activo = $estado WHERE id = $this->id_chofer";
     $updateEstado = $this->conexion->consultaSimple($queryUpdateEstado);
@@ -157,7 +158,8 @@ if (isset($_POST['accion'])) {
       break;
     case 'cambiarEstado':
         $id_chofer = $_POST['id_chofer'];
-        $choferes->cambiarEstado($id_chofer);
+        $estado = $_POST['estado'];
+        $choferes->cambiarEstado($id_chofer, $estado);
       break;
     case 'eliminarChofer':
         $id_chofer = $_POST['id_chofer'];
