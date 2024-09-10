@@ -799,9 +799,19 @@ $id_perfil=$_SESSION["rowUsers"]["id_perfil"]?>
                   let suma_debe=0;
                   let suma_haber=0;
                   settings.json.forEach(row => {
-                    suma_debe+=parseFloat(row.debe)
-                    suma_haber+=parseFloat(row.haber)
+                    console.log(row.debe);
+                    let debe=row.debe;
+                    if(isNaN(debe) || debe==null){
+                      debe=0
+                    }
+                    suma_debe+=parseFloat(debe)
+                    let haber=row.haber;
+                    if(isNaN(haber) || haber==null){
+                      haber=0
+                    }
+                    suma_haber+=parseFloat(haber)
                   });
+                  console.log(suma_debe);
                   // Update footer
                   var api = this.api();
                   $(api.column(2).footer()).html(formatCurrency(suma_debe));
