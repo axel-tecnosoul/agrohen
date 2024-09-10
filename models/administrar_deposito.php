@@ -254,9 +254,10 @@ class depositos{
     if ($result && $row = $result->fetch_array()) {
         $saldo_maximo_permitido = $row['saldo_maximo_permitido'];
         $saldo_cta_cte = $row['saldo_cta_cte'];
-        
-        // Verificar si el saldo de la cuenta corriente excede el máximo permitido
-        $excede_maximo = $saldo_cta_cte > $saldo_maximo_permitido;
+
+        $excede_maximo = ($saldo_maximo_permitido !== null && $saldo_maximo_permitido > 0) 
+            ? $saldo_cta_cte > $saldo_maximo_permitido 
+            : false;
         
         return array(
             'excede_maximo' => $excede_maximo,
@@ -270,7 +271,7 @@ class depositos{
         'saldo_maximo_permitido' => null,
         'saldo_cta_cte' => null
     );
-  }	
+  }
 }	
 
 if (isset($_POST['accion'])) {
