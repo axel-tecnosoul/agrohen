@@ -13,7 +13,26 @@
     <div class="nav-right col p-0">
       <ul class="nav-menus">
         <li style="text-align: left;width:100%"><?php
-          /*$vencimientoCRT="2024-09-26 10:55:18";
+          $currentFile = basename($_SERVER['PHP_SELF']);
+          if ($_SESSION['rowUsers']['id_perfil'] == 2 && $currentFile !== 'home_users.php') {
+            include_once 'models/administrar_deposito.php';
+            include_once 'models/funciones.php';
+            $depositos = new depositos();
+            $id_deposito = $_SESSION['rowUsers']['id_deposito'];
+              
+            // Verificar saldo
+            $verificacionSaldo = $depositos->verificarSaldo($id_deposito);
+            if ($verificacionSaldo['excede_maximo']) {?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 0;padding: 7px;">
+                    <strong>Atención!</strong> El saldo de la cuenta corriente (<?= formatCurrency($verificacionSaldo['saldo_cta_cte']) ?>) excede el máximo permitido (<?= formatCurrency($verificacionSaldo['saldo_maximo_permitido']) ?>).
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div><?php
+            }
+          }
+          
+        /*$vencimientoCRT="2024-09-26 10:55:18";
           //$vencimientoCRT="2023-04-26 10:55:18";//pruebas
           $fechaActual=date("Y-m-d");
           $fechaVencimiento=date("Y-m-d",strtotime($vencimientoCRT."- 1 month"));
@@ -33,8 +52,7 @@
             </div><?php
           }else{
             //echo "$fechaActual NO es mayor a $fechaVencimiento";
-          }*/
-          ?>
+          }*/?>
         </li>
         <li class="onhover-dropdown">
             <h6><b><?php echo $_SESSION['rowUsers']['usuario']?></b></h6>

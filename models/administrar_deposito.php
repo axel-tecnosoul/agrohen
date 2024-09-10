@@ -246,7 +246,31 @@ class depositos{
     
     return $respuesta;
   }
-		
+
+  public function verificarSaldo($id_deposito) {
+    $query = "SELECT saldo_maximo_permitido, saldo_cta_cte FROM destinos WHERE id = $id_deposito";
+    $result = $this->conexion->consultaRetorno($query);
+    
+    if ($result && $row = $result->fetch_array()) {
+        $saldo_maximo_permitido = $row['saldo_maximo_permitido'];
+        $saldo_cta_cte = $row['saldo_cta_cte'];
+        
+        // Verificar si el saldo de la cuenta corriente excede el máximo permitido
+        $excede_maximo = $saldo_cta_cte > $saldo_maximo_permitido;
+        
+        return array(
+            'excede_maximo' => $excede_maximo,
+            'saldo_maximo_permitido' => $saldo_maximo_permitido,
+            'saldo_cta_cte' => $saldo_cta_cte
+        );
+    }
+    
+    return array(
+        'excede_maximo' => false,
+        'saldo_maximo_permitido' => null,
+        'saldo_cta_cte' => null
+    );
+  }	
 }	
 
 if (isset($_POST['accion'])) {

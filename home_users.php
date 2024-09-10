@@ -42,7 +42,40 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             </div>
           </div>
         </div>
-        <!-- Container-fluid starts-->
+        <!-- Container-fluid starts--><?php
+        $currentFile = basename($_SERVER['PHP_SELF']);
+
+        if ($_SESSION['rowUsers']['id_perfil'] == 2 && $currentFile === 'home_users.php') {
+          include_once 'models/administrar_deposito.php';
+          include_once 'models/funciones.php';
+          $depositos = new depositos();
+          $id_deposito = $_SESSION['rowUsers']['id_deposito'];
+          
+          // Verificar saldo
+          $verificacionSaldo = $depositos->verificarSaldo($id_deposito);?>
+
+          <div class="container-fluid">
+              <!-- Mostrar las cards solo si el saldo excede el máximo permitido -->
+              <?php if ($_SESSION['rowUsers']['id_perfil'] == 2 && $verificacionSaldo['excede_maximo']): ?>
+                <div class="row">
+                  <div class="col-md-6">
+                    <!-- Card de alerta de saldo excedido -->
+                    <div class="card text-white bg-danger mb-3" style="max-width: 18rem;">
+                      <div class="card-header  bg-danger" style="font-weight: bold; font-size: 1rem; padding: 5px; padding-left: 2rem">¡Saldo Excedido!</div>
+                      <div class="card-body">
+                        <p class="card-text">
+                          El saldo de la cuenta corriente (<?= formatCurrency($verificacionSaldo['saldo_cta_cte']) ?>) 
+                          excede el máximo permitido (<?= formatCurrency($verificacionSaldo['saldo_maximo_permitido']) ?>).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            <?php endif; ?>
+          </div>
+          <?php
+        }
+        ?>
         <!--<div class="container-fluid">
           <div class="col-xl-12">
               <div class="row">
