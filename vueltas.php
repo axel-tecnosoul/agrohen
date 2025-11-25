@@ -187,7 +187,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     </div>
 
     <!-- latest jquery-->
-    <script src="assets/js/jquery-3.5.1.min.js"></script>
+    <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!-- Funciones -->
+    <script src="assets/js/funciones.js"></script>
     <!-- Bootstrap js-->
     <script src="assets/js/bootstrap/popper.min.js"></script>
     <script src="assets/js/bootstrap/bootstrap.js"></script>
@@ -196,9 +198,10 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script src="assets/js/icons/feather-icon/feather-icon.js"></script>
     <!-- Sidebar jquery-->
     <script src="assets/js/sidebar-menu.js"></script>
-    <!-- Datatable js-->
+    <script src="assets/js/config.js"></script>
+    <!-- Plugins JS start-->
+    <!--<script src="assets/js/datatable/datatables/datatable.custom.js"></script>-->
     <script src="assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
-    <script src="assets/js/datatable/datatables/datatable.custom.js"></script>
     <script src="assets/js/datatable/datatable-extension/dataTables.buttons.min.js"></script>
     <script src="assets/js/datatable/datatable-extension/jszip.min.js"></script>
     <script src="assets/js/datatable/datatable-extension/buttons.colVis.min.js"></script>
@@ -218,24 +221,15 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
     <script src="assets/js/datatable/datatable-extension/dataTables.rowReorder.min.js"></script>
     <script src="assets/js/datatable/datatable-extension/dataTables.scroller.min.js"></script>
     <script src="assets/js/datatable/datatable-extension/custom.js"></script>
-    <!-- Plugins JS start-->
-    <script src="assets/js/notify/bootstrap-notify.min.js"></script>
-    <script src="assets/js/notify/index.js"></script>
-    <script src="assets/js/rating/jquery.barrating.js"></script>
-    <script src="assets/js/rating/rating-script.js"></script>
-    <script src="assets/js/ecommerce.js"></script>
-    <script src="assets/js/product-list-custom.js"></script>
-    <script src="assets/js/typeahead/handlebars.js"></script>
-    <script src="assets/js/typeahead/typeahead.bundle.js"></script>
-    <script src="assets/js/typeahead/typeahead.custom.js"></script>
-    <script src="assets/js/typeahead-search/handlebars.js"></script>
-    <script src="assets/js/typeahead-search/typeahead-custom.js"></script>
-    <script src="assets/js/height-equal.js"></script>
     <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
     <script src="assets/js/chat-menu.js"></script>
     <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/select2/select2.full.min.js"></script>
+    <script src="assets/js/select2/select2-custom.js"></script>
+    <!-- Plugins JS Ends-->
     <!-- Theme js-->
     <script src="assets/js/script.js"></script>
+    <!--<script src="assets/js/theme-customizer/customizer.js"></script>-->
     <script type="text/javascript">
       var tablaVueltas
       var accionVuelta

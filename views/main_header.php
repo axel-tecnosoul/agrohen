@@ -12,7 +12,11 @@
     </div>
     <div class="nav-right col p-0">
       <ul class="nav-menus">
-        <li style="text-align: left;width:100%"><?php
+        <li style="text-align: left;width:100%">
+          
+          <div class="page-header py-3"><h3 class="mb-0"><?=$mainHeaderTitle?></h3></div>
+          
+          <?php
           $currentFile = basename($_SERVER['PHP_SELF']);
           if ($_SESSION['rowUsers']['id_perfil'] == 2 && $currentFile !== 'home_users.php') {
             include_once 'models/administrar_deposito.php';
