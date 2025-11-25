@@ -153,23 +153,13 @@ foreach ($viajes as $viaje) {
   </head>
   <body>
     <div class="loader-wrapper"><div class="loader bg-white"><div class="whirly-loader"></div></div></div>
-    <?php include('./views/main_header.php');?>
+    <?php
+    $mainHeaderTitle = 'Viajes de la vuelta N° '.$id_vuelta;
+    include('./views/main_header.php');?>
     <div class="page-body-wrapper">
       <div class="page-sidebar"><?php include('./views/slideBar.php');?></div>
       <div class="page-body">
-        <div class="container-fluid">
-          <div class="page-header py-3">
-            <div class="row">
-              <div class="col">
-                <div class="page-header-left">
-                  <h3>Viajes de la vuelta</h3>
-                  <p class="mb-0">Chofer: <?=htmlspecialchars($vuelta['chofer_nombre'])?> | Camión: <?=htmlspecialchars($vuelta['patente'])?> | Salida: <?=$vuelta['fecha_salida']?> / KM: <?=$vuelta['km_salida']?> | Estado: <?=$vuelta['estado']?></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="container-fluid">
+        <div class="container-fluid pt-3">
           <div class="card mb-3">
             <div class="card-header"><h5 class="mb-0">Vuelta y anticipos</h5></div>
             <div class="card-body">
