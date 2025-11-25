@@ -118,7 +118,31 @@ function obtenerAnticipos(PDO $db, int $id_vuelta): array {
 }
 
 function obtenerViajes(PDO $db, int $id_vuelta): array {
-  $stmt = $db->prepare("SELECT id, fecha, origen, destino, flete_total, estado, observaciones FROM viajes WHERE id_vuelta = ? AND anulado = 0 ORDER BY fecha");
+  $sql = "SELECT 
+      v.id,
+      v.fecha,
+      v.origen,
+      v.destino,
+      v.flete_total,
+      v.estado,
+      v.observaciones,
+      COALESCE((
+        SELECT SUM(vc.importe)
+        FROM viajes_cobros vc
+        WHERE vc.id_viaje = v.id
+          AND vc.anulado = 0
+      ), 0) AS total_cobros,
+      COALESCE((
+        SELECT SUM(vg.importe)
+        FROM viajes_gastos vg
+        WHERE vg.id_viaje = v.id
+          AND vg.anulado = 0
+      ), 0) AS total_gastos
+    FROM viajes v
+    WHERE v.id_vuelta = ?
+      AND v.anulado = 0
+    ORDER BY v.fecha";
+  $stmt = $db->prepare($sql);
   $stmt->execute([$id_vuelta]);
   return $stmt->fetchAll();
 }
@@ -239,6 +263,9 @@ foreach ($viajes as $viaje) {
                       <th>Origen</th>
                       <th>Destino</th>
                       <th>Flete total</th>
+                      <th class="text-right">Cobros</th>
+                      <th class="text-right">Gastos</th>
+                      <th class="text-right">Neto viaje</th>
                       <th>Estado</th>
                       <th class="text-center">Acciones</th>
                     </tr>
@@ -250,6 +277,14 @@ foreach ($viajes as $viaje) {
                         <td><?=htmlspecialchars($v['origen'])?></td>
                         <td><?=htmlspecialchars($v['destino'])?></td>
                         <td>$<?=number_format($v['flete_total'], 2, ',', '.')?></td>
+                        <td class="text-right">$<?=number_format($v['total_cobros'], 2, ',', '.')?></td>
+                        <td class="text-right">$<?=number_format($v['total_gastos'], 2, ',', '.')?></td>
+                        <td class="text-right">
+                          <?php
+                            $neto_viaje = $v['total_cobros'] - $v['total_gastos'];
+                            echo '$'.number_format($neto_viaje, 2, ',', '.');
+                          ?>
+                        </td>
                         <td><?=$v['estado']?></td>
                         <td class="text-center">
                           <div class="btn-group btn-group-sm" role="group">
