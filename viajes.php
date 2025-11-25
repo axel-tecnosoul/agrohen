@@ -170,95 +170,114 @@ foreach ($viajes as $viaje) {
           </div>
         </div>
         <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-8 col-md-8">
-              <div class="card mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0">Viajes de esta vuelta</h5>
-                  <button type="button" class="btn btn-warning" id="btnAgregarViaje">Agregar viaje</button>
+          <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0">Vuelta y anticipos</h5></div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-8">
+                  <h6 class="mb-3">Datos de la vuelta</h6>
+                  <table class="table table-sm table-borderless mb-0">
+                    <tbody>
+                      <tr>
+                        <th class="pl-0" scope="row">Camión</th>
+                        <td><?=htmlspecialchars($vuelta['patente'].' '.$vuelta['camion_descripcion'])?></td>
+                      </tr>
+                      <tr>
+                        <th class="pl-0" scope="row">Chofer</th>
+                        <td><?=htmlspecialchars($vuelta['chofer_nombre'])?></td>
+                      </tr>
+                      <tr>
+                        <th class="pl-0" scope="row">Fecha salida</th>
+                        <td><?=$vuelta['fecha_salida']?></td>
+                      </tr>
+                      <tr>
+                        <th class="pl-0" scope="row">KM salida</th>
+                        <td><?=$vuelta['km_salida']?></td>
+                      </tr>
+                      <tr>
+                        <th class="pl-0" scope="row">Estado</th>
+                        <td><?=$vuelta['estado']?></td>
+                      </tr>
+                      <tr>
+                        <th class="pl-0" scope="row">Observaciones</th>
+                        <td><?=htmlspecialchars($vuelta['observaciones'])?></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <small class="text-muted">Los anticipos se editan desde la pantalla de Vueltas.</small>
                 </div>
-                <div class="card-body">
+                <div class="col-md-4">
+                  <h6 class="mb-3">Anticipos de la vuelta</h6>
                   <div class="table-responsive">
-                    <table class="table table-striped" id="tablaViajes">
-                      <thead class="text-center">
+                    <table class="table table-sm table-striped mb-0">
+                      <thead>
                         <tr>
                           <th>Fecha</th>
-                          <th>Origen</th>
-                          <th>Destino</th>
-                          <th>Flete total</th>
-                          <th>Estado</th>
-                          <th class="text-center">Acciones</th>
+                          <th>Forma</th>
+                          <th class="text-right">Importe</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <?php foreach($viajes as $v):?>
+                        <?php foreach($anticipos as $a):?>
                           <tr>
-                            <td><?=$v['fecha']?></td>
-                            <td><?=htmlspecialchars($v['origen'])?></td>
-                            <td><?=htmlspecialchars($v['destino'])?></td>
-                            <td>$<?=number_format($v['flete_total'], 2, ',', '.')?></td>
-                            <td><?=$v['estado']?></td>
-                            <td class="text-center">
-                              <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn btn-info btnCobros" data-id="<?=$v['id']?>">Cobros</button>
-                                <button type="button" class="btn btn-secondary btnGastos" data-id="<?=$v['id']?>">Gastos</button>
-                                <button type="button" class="btn btn-primary btnEditarViaje" data-id="<?=$v['id']?>" data-fecha="<?=$v['fecha']?>" data-origen="<?=htmlspecialchars($v['origen'])?>" data-destino="<?=htmlspecialchars($v['destino'])?>" data-flete="<?=$v['flete_total']?>" data-estado="<?=$v['estado']?>" data-observaciones="<?=htmlspecialchars($v['observaciones'])?>">Editar</button>
-                                <form method="post" class="d-inline" onsubmit="return confirm('¿Seguro que desea anular este viaje?');">
-                                  <input type="hidden" name="accion" value="anular_viaje">
-                                  <input type="hidden" name="id_viaje" value="<?=$v['id']?>">
-                                  <input type="hidden" name="id_vuelta" value="<?=$id_vuelta?>">
-                                  <button type="submit" class="btn btn-danger">Anular</button>
-                                </form>
-                              </div>
-                            </td>
+                            <td><?=$a['fecha']?></td>
+                            <td><?=$a['forma_pago']?> <?=$a['anulado'] ? '<span class="text-danger">(Anulado)</span>' : ''?></td>
+                            <td class="text-right">$<?=number_format($a['importe'], 2, ',', '.')?></td>
                           </tr>
                         <?php endforeach;?>
+                        <?php if (!$anticipos):?>
+                          <tr><td colspan="3" class="text-center">Sin anticipos cargados</td></tr>
+                        <?php endif;?>
                       </tbody>
                     </table>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-lg-4 col-md-4">
-              <div class="card mb-3">
-                <div class="card-header"><h5 class="mb-0">Datos de la vuelta</h5></div>
-                <div class="card-body">
-                  <ul class="list-unstyled mb-0">
-                    <li><strong>Camión:</strong> <?=htmlspecialchars($vuelta['patente'].' '.$vuelta['camion_descripcion'])?></li>
-                    <li><strong>Chofer:</strong> <?=htmlspecialchars($vuelta['chofer_nombre'])?></li>
-                    <li><strong>Fecha salida:</strong> <?=$vuelta['fecha_salida']?></li>
-                    <li><strong>KM salida:</strong> <?=$vuelta['km_salida']?></li>
-                    <li><strong>Estado:</strong> <?=$vuelta['estado']?></li>
-                    <li><strong>Observaciones:</strong> <?=htmlspecialchars($vuelta['observaciones'])?></li>
-                  </ul>
-                  <small class="text-muted">Los anticipos se editan desde la pantalla de Vueltas.</small>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-header"><h5 class="mb-0">Anticipos de la vuelta</h5></div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-sm table-striped mb-0">
-                      <thead class="text-center">
-                        <tr><th>Fecha</th><th>Forma de pago</th><th>Importe</th><th>Observaciones</th><th>Anulado</th></tr>
-                      </thead>
-                      <tbody>
-                        <?php foreach($anticipos as $a):?>
-                          <tr>
-                            <td><?=$a['fecha']?></td>
-                            <td><?=$a['forma_pago']?></td>
-                            <td>$<?=number_format($a['importe'], 2, ',', '.')?></td>
-                            <td><?=htmlspecialchars($a['observaciones'])?></td>
-                            <td><?=$a['anulado'] ? 'Sí' : 'No'?></td>
-                          </tr>
-                        <?php endforeach;?>
-                        <?php if (!$anticipos):?>
-                          <tr><td colspan="5" class="text-center">Sin anticipos cargados</td></tr>
-                        <?php endif;?>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+          </div>
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Viajes de esta vuelta</h5>
+              <button type="button" class="btn btn-warning" id="btnAgregarViaje">Agregar viaje</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped" id="tablaViajes">
+                  <thead class="text-center">
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Origen</th>
+                      <th>Destino</th>
+                      <th>Flete total</th>
+                      <th>Estado</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach($viajes as $v):?>
+                      <tr>
+                        <td><?=$v['fecha']?></td>
+                        <td><?=htmlspecialchars($v['origen'])?></td>
+                        <td><?=htmlspecialchars($v['destino'])?></td>
+                        <td>$<?=number_format($v['flete_total'], 2, ',', '.')?></td>
+                        <td><?=$v['estado']?></td>
+                        <td class="text-center">
+                          <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-info btnCobros" data-id="<?=$v['id']?>">Cobros</button>
+                            <button type="button" class="btn btn-secondary btnGastos" data-id="<?=$v['id']?>">Gastos</button>
+                            <button type="button" class="btn btn-primary btnEditarViaje" data-id="<?=$v['id']?>" data-fecha="<?=$v['fecha']?>" data-origen="<?=htmlspecialchars($v['origen'])?>" data-destino="<?=htmlspecialchars($v['destino'])?>" data-flete="<?=$v['flete_total']?>" data-estado="<?=$v['estado']?>" data-observaciones="<?=htmlspecialchars($v['observaciones'])?>">Editar</button>
+                            <form method="post" class="d-inline" onsubmit="return confirm('¿Seguro que desea anular este viaje?');">
+                              <input type="hidden" name="accion" value="anular_viaje">
+                              <input type="hidden" name="id_viaje" value="<?=$v['id']?>">
+                              <input type="hidden" name="id_vuelta" value="<?=$id_vuelta?>">
+                              <button type="submit" class="btn btn-danger">Anular</button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    <?php endforeach;?>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
