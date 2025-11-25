@@ -1,0 +1,22 @@
+[
+  {
+    "id_vuelta": 1,
+    "fecha_salida": "2025-11-25",
+    "km_salida": 1500,
+    "fecha_cierre": "2025-11-27",
+    "km_cierre": 2100,
+    "chofer": "Juan Pérez",
+    "camion": "ABC123",
+    "estado": "abierta"
+  },
+  {
+    "id_vuelta": 2,
+    "fecha_salida": "2025-11-20",
+    "km_salida": 800,
+    "fecha_cierre": "2025-11-21",
+    "km_cierre": 1200,
+    "chofer": "Carlos Gómez",
+    "camion": "DEF456",
+    "estado": "cerrada"
+  }
+]
