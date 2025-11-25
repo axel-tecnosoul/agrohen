@@ -16,6 +16,14 @@
     <li><a class="sidebar-header" href="cargas.php"><i data-feather="truck"></i><span>Cargas</span><i class="fa fa-angle-right pull-right"></i></a></li>
     <li><a class="sidebar-header" href="cuenta_corriente.php"><i data-feather="dollar-sign"></i><span>Cta Cte</span><i class="fa fa-angle-right pull-right"></i></a></li>
     
+    <li><a class="sidebar-header" href="#"><i data-feather="truck"></i><span>Transporte</span><i class="fa fa-angle-right pull-right"></i></a>
+      <ul class="sidebar-submenu">
+        <li><a href="camiones.php"><i class="fa fa-circle"></i> Camiones</a></li>
+        <li><a href="vueltas.php"><i class="fa fa-circle"></i> Vueltas</a></li>
+        <li><a href="liquidaciones.php"><i class="fa fa-circle"></i> Liquidaciones</a></li>
+      </ul>
+    </li>
+
     <?php
     $script_name=explode("/",$_SERVER["SCRIPT_NAME"]);
     $script_name=$script_name[count($script_name)-1];
