@@ -13,8 +13,8 @@
     <div class="nav-right col p-0">
       <ul class="nav-menus">
         <li style="text-align: left;width:100%">
-          
-          <div class="page-header py-3"><h3 class="mb-0"><?=$mainHeaderTitle?></h3></div>
+          <!-- validar si existe la variable para mostrar el título  -->
+          <div class="page-header py-3"><h3 class="mb-0"><?=($mainHeaderTitle ?? '')?></h3></div>
           
           <?php
           $currentFile = basename($_SERVER['PHP_SELF']);

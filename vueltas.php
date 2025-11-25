@@ -252,11 +252,11 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           alert('Editar vuelta: ' + data.id_vuelta)
         })
 
-        $('#tablaVueltas tbody').on('click', '.btnDetalleVuelta', function(){
+        /*$('#tablaVueltas tbody').on('click', '.btnDetalleVuelta', function(){
           var data = tablaVueltas.row($(this).parents('tr')).data()
           console.log('Detalle vuelta', data.id_vuelta)
           alert('Detalle vuelta: ' + data.id_vuelta)
-        })
+        })*/
 
         $('#formVuelta').on('submit', function(e){
           e.preventDefault()
@@ -325,7 +325,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
               render: function(data, type, full, meta) {
                 return "<div class='text-center'><div class='btn-group'>" +
                   "<button class='btn btn-success btn-sm btnEditarVuelta' title='Editar'><i class='fa fa-edit'></i> Editar</button>" +
-                  "<button class='btn btn-info btn-sm btnDetalleVuelta ml-1' title='Detalle'><i class='fa fa-info-circle'></i> Detalle</button>" +
+                  "<a href='viajes.php?id_vuelta="+full.id_vuelta+"' class='btn btn-info btn-sm btnDetalleVuelta ml-1' title='Ver vuelta'><i class='fa fa-info-circle'></i> Ver</a>" +
                   "</div></div>"
               }
             }
