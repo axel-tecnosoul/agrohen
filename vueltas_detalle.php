@@ -43,7 +43,7 @@ $anticipos = $db->prepare("SELECT SUM(importe) AS total FROM vueltas_anticipos W
 $anticipos->execute([$id]);
 $total_anticipos = $anticipos->fetch()['total'] ?? 0;
 
-$viajesStmt = $db->prepare("SELECT v.*, d.destino AS destino_nombre, IFNULL((SELECT SUM(importe) FROM viajes_cobros vc WHERE vc.id_viaje = v.id AND vc.anulado = 0),0) AS cobros_totales, IFNULL((SELECT SUM(importe) FROM viajes_gastos vg WHERE vg.id_viaje = v.id AND vg.anulado = 0),0) AS gastos_totales FROM viajes v JOIN destinos d ON d.id = v.id_destino WHERE v.id_vuelta = ? AND v.anulado = 0 ORDER BY v.fecha");
+$viajesStmt = $db->prepare("SELECT v.*, d.nombre AS destino_nombre, IFNULL((SELECT SUM(importe) FROM viajes_cobros vc WHERE vc.id_viaje = v.id AND vc.anulado = 0),0) AS cobros_totales, IFNULL((SELECT SUM(importe) FROM viajes_gastos vg WHERE vg.id_viaje = v.id AND vg.anulado = 0),0) AS gastos_totales FROM viajes v JOIN destinos d ON d.id = v.id_destino WHERE v.id_vuelta = ? AND v.anulado = 0 ORDER BY v.fecha");
 $viajesStmt->execute([$id]);
 $viajes = $viajesStmt->fetchAll();
 
@@ -87,7 +87,7 @@ $total_gastos = array_sum(array_column($viajes, 'gastos_totales'));
                   <button class="btn btn-primary" data-toggle="modal" data-target="#modalCerrar">Cerrar vuelta</button>
                 <?php endif;?>
                 <?php if ($vuelta['estado']==='cerrada'):?>
-                  <a class="btn btn-info" href="liquidaciones_detalle.php?id_vuelta=<?=$id}">Ir a Liquidación</a>
+                  <a class="btn btn-info" href="liquidaciones_detalle.php?id_vuelta=<?=$id?>">Ir a Liquidación</a>
                 <?php endif;?>
                 <?php if ($vuelta['estado']!=='liquidada'):?>
                   <form method="post" class="d-inline" onsubmit="return confirm('Marcar como anulada?');">
@@ -147,5 +147,50 @@ $total_gastos = array_sum(array_column($viajes, 'gastos_totales'));
         </div>
       </div>
     </div>
+
+    <!-- latest jquery-->
+    <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <!-- Funciones -->
+    <script src="assets/js/funciones.js"></script>
+    <!-- Bootstrap js-->
+    <script src="assets/js/bootstrap/popper.min.js"></script>
+    <script src="assets/js/bootstrap/bootstrap.js"></script>
+    <!-- feather icon js-->
+    <script src="assets/js/icons/feather-icon/feather.min.js"></script>
+    <script src="assets/js/icons/feather-icon/feather-icon.js"></script>
+    <!-- Sidebar jquery-->
+    <script src="assets/js/sidebar-menu.js"></script>
+    <script src="assets/js/config.js"></script>
+    <!-- Plugins JS start-->
+    <!--<script src="assets/js/datatable/datatables/datatable.custom.js"></script>-->
+    <script src="assets/js/datatable/datatables/jquery.dataTables.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.buttons.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/jszip.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.colVis.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/pdfmake.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/vfs_fonts.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.autoFill.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.select.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.html5.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/buttons.print.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.responsive.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/responsive.bootstrap4.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.keyTable.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.colReorder.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.fixedHeader.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.rowReorder.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/dataTables.scroller.min.js"></script>
+    <script src="assets/js/datatable/datatable-extension/custom.js"></script>
+    <script src="assets/js/sweet-alert/sweetalert.min.js"></script>
+    <script src="assets/js/chat-menu.js"></script>
+    <script src="assets/js/tooltip-init.js"></script>
+    <script src="assets/js/select2/select2.full.min.js"></script>
+    <script src="assets/js/select2/select2-custom.js"></script>
+    <!-- Plugins JS Ends-->
+    <!-- Theme js-->
+    <script src="assets/js/script.js"></script>
+    
   </body>
 </html>

@@ -1,0 +1,8 @@
+.DS_Store
+.vscode/
+node_modules/
+.env
+
+/sql
+cambios_bbdd.txt
+save_log.txt
