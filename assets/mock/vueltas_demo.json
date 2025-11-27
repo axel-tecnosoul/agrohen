@@ -17,6 +17,7 @@
     "km_cierre": 1200,
     "chofer": "Carlos Gómez",
     "camion": "DEF456",
-    "estado": "cerrada"
+    "estado": "liquidada",
+    "id_liquidacion": 10
   }
 ]

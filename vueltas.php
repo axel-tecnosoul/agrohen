@@ -323,10 +323,23 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
             {"data": "estado"},
             {
               render: function(data, type, full, meta) {
-                return "<div class='text-center'><div class='btn-group'>" +
-                  "<button class='btn btn-success btn-sm btnEditarVuelta' title='Editar'><i class='fa fa-edit'></i> Editar</button>" +
-                  "<a href='viajes.php?id_vuelta="+full.id_vuelta+"' class='btn btn-info btn-sm btnDetalleVuelta ml-1' title='Ver vuelta'><i class='fa fa-info-circle'></i> Ver</a>" +
-                  "</div></div>"
+                var botones = []
+                botones.push("<a href='viajes.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-warning btn-sm' title='Viajes'><i class='fa fa-road'></i> Viajes</a>")
+
+                if (full.estado === 'abierta') {
+                  botones.push("<a href='viajes.php?id_vuelta=" + full.id_vuelta + "&accion=cerrar' class='btn btn-info btn-sm' title='Cerrar vuelta'>Cerrar</a>")
+                }
+
+                var tieneLiquidacion = !!(full.id_liquidacion)
+                if (full.estado === 'cerrada' && !tieneLiquidacion) {
+                  botones.push("<a href='liquidaciones_detalle.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-success btn-sm' title='Liquidar vuelta'>Liquidar</a>")
+                }
+
+                if (full.estado === 'liquidada' || tieneLiquidacion) {
+                  botones.push("<a href='liquidaciones_detalle.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-outline-success btn-sm' title='Ver liquidación'>Ver liquidación</a>")
+                }
+
+                return "<div class='text-center'><div class='btn-group'>" + botones.join('') + "</div></div>"
               }
             }
           ],
