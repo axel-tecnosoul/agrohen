@@ -13,6 +13,22 @@ if (!$id_vuelta) {
   exit;
 }
 
+$action = $_POST['action'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'cerrar_vuelta') {
+  $id_vuelta_post = (int)($_POST['id_vuelta'] ?? 0);
+  $fecha_cierre = $_POST['fecha_cierre'] ?? '';
+  $km_cierre = $_POST['km_cierre'] ?? '';
+  $stmt = $db->prepare("SELECT km_salida FROM vueltas WHERE id = ? AND anulado = 0");
+  $stmt->execute([$id_vuelta_post]);
+  $vueltaCerrar = $stmt->fetch();
+  if ($vueltaCerrar && $fecha_cierre && is_numeric($km_cierre) && $km_cierre >= $vueltaCerrar['km_salida']) {
+    $stmt = $db->prepare("UPDATE vueltas SET fecha_cierre = ?, km_cierre = ?, estado = 'cerrada', id_usuario = ? WHERE id = ? AND anulado = 0");
+    $stmt->execute([$fecha_cierre, $km_cierre, $_SESSION['rowUsers']['id_usuario'], $id_vuelta_post]);
+  }
+  header('Location: viajes.php?id_vuelta='.$id_vuelta_post);
+  exit;
+}
+
 $estadoViaje = getEnumValues($db, 'viajes', 'estado');
 $formasPagoCobro = getEnumValues($db, 'viajes_cobros', 'forma_pago');
 $tiposGasto = getEnumValues($db, 'viajes_gastos', 'tipo');
@@ -161,6 +177,9 @@ function obtenerGastos(PDO $db, int $id_viaje): array {
 
 $vuelta = obtenerVuelta($db, $id_vuelta);
 if (!$vuelta) { header('Location: vueltas.php'); exit; }
+$stmt = $db->prepare("SELECT id FROM liquidaciones_choferes WHERE id_vuelta = ? AND anulado = 0");
+$stmt->execute([$id_vuelta]);
+$liquidacion = $stmt->fetch();
 $anticipos = obtenerAnticipos($db, $id_vuelta);
 $viajes = obtenerViajes($db, $id_vuelta);
 $cobrosPorViaje = [];
@@ -185,7 +204,22 @@ foreach ($viajes as $viaje) {
       <div class="page-body">
         <div class="container-fluid pt-3">
           <div class="card mb-3">
-            <div class="card-header"><h5 class="mb-0">Vuelta y anticipos</h5></div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Vuelta y anticipos</h5>
+              <div>
+                <?php if ($vuelta['estado'] === 'abierta'):?>
+                  <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalCerrarVuelta">Cerrar vuelta</button>
+                <?php elseif ($vuelta['estado'] === 'cerrada'):?>
+                  <?php if ($liquidacion):?>
+                    <a href="liquidaciones_detalle.php?id_vuelta=<?=$id_vuelta?>" class="btn btn-outline-success btn-sm">Ver liquidación</a>
+                  <?php else:?>
+                    <a href="liquidaciones_detalle.php?id_vuelta=<?=$id_vuelta?>" class="btn btn-success btn-sm">Liquidar vuelta</a>
+                  <?php endif;?>
+                <?php elseif ($vuelta['estado'] === 'liquidada'):?>
+                  <a href="liquidaciones_detalle.php?id_vuelta=<?=$id_vuelta?>" class="btn btn-outline-success btn-sm">Ver liquidación</a>
+                <?php endif;?>
+              </div>
+            </div>
             <div class="card-body">
               <div class="row">
                 <div class="col-md-8">
@@ -315,6 +349,35 @@ foreach ($viajes as $viaje) {
             </div>
           </div>
         </footer>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalCerrarVuelta" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cerrar vuelta</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <form method="post">
+            <input type="hidden" name="action" value="cerrar_vuelta">
+            <input type="hidden" name="id_vuelta" value="<?=$id_vuelta?>">
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Fecha de cierre</label>
+                <input type="date" name="fecha_cierre" class="form-control" value="<?=date('Y-m-d')?>" required>
+              </div>
+              <div class="form-group">
+                <label>KM cierre</label>
+                <input type="number" name="km_cierre" class="form-control" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
