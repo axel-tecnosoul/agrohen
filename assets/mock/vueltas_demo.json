@@ -18,5 +18,15 @@
     "chofer": "Carlos Gómez",
     "camion": "DEF456",
     "estado": "cerrada"
+  },
+  {
+    "id_vuelta": 3,
+    "fecha_salida": "2025-11-22",
+    "km_salida": 85000,
+    "fecha_cierre": "2025-11-25",
+    "km_cierre": 87000,
+    "chofer": "Luis Martínez",
+    "camion": "GHI789",
+    "estado": "liquidada"
   }
 ]
