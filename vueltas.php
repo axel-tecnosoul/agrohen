@@ -74,6 +74,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <table class="table table-hover display" id="tablaVueltas">
                       <thead class="text-center">
                         <tr>
+                          <th>ID</th>
                           <th>Fecha salida</th>
                           <th>KM salida</th>
                           <th>Fecha cierre</th>
@@ -299,6 +300,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
           },
           "responsive": true,
           "columns":[
+            {"data": "id_vuelta"},
             {"data": "fecha_salida"},
             {"data": "km_salida"},
             {"data": "fecha_cierre"},
