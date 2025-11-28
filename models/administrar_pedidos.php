@@ -10,8 +10,11 @@ require_once('administrar_cargos.php');
 extract($_REQUEST);
 class Pedidos{
 
+  private $conexion;
   private $id_pedido;
   private $id_empresa;
+  private $ruta_adjuntos;
+  private $id_adj;
 
   public function __construct(){
     $this->conexion = new Conexion();

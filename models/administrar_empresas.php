@@ -2,8 +2,10 @@
 	session_start();
 	require_once('./conexion.php');
 	class Empresas{
+		private $conexion;
 		private $id_empresa;
 		private $id_adjunto;
+		private $id_item;
 
 		public function __construct(){
 			$this->conexion = new Conexion();

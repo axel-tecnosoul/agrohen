@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class Cajas{
+		private $conexion;
 		private $id_empresa;
 		private $id_tipo_caja;
 		private $id_usuario;

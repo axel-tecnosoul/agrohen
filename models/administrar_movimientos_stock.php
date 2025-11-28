@@ -5,7 +5,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 }
 require_once('./conexion.php');
 class Movimientos{
-
+  private $conexion;
   private $id_proveedor;
   private $id_orden;
   private $id_almacen;

@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class origenes{
+  private $conexion;
   private $id_origen;
   private $nombre;
   

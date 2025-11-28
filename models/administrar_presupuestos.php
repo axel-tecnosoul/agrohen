@@ -12,8 +12,10 @@ require_once('administrar_ordenes.php');
 extract($_REQUEST);
 class Presupuestos{
 
+  private $conexion;
   private $id_presupuesto;
   private $id_empresa;
+  private $id_adj;
 
   public function __construct(){
     $this->conexion = new Conexion();

@@ -5,6 +5,7 @@
   }
 	require_once('./conexion.php');
 	class Rubros{
+		private $conexion;
 		private $id_rubro;
 		
 		public function __construct(){

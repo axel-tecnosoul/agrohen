@@ -8,7 +8,7 @@ require_once('./conexion.php');
 extract($_REQUEST);
 
 class Listas{
-
+  private $conexion;
   private $id_proveedor;
   private $id_item;
 

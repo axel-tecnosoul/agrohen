@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class Items{
+		private $conexion;
 		private $id_item;
 		private $id_stock;
 		private $id_empresa;

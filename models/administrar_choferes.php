@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class choferes{
+  private $conexion;
   private $id_chofer;
   private $nombre;
   private $telefono;

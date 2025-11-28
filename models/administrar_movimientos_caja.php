@@ -2,7 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class MovimientosCaja{
-
+		private $conexion;
 		private $id_empresa;
 
 		public function __construct(){

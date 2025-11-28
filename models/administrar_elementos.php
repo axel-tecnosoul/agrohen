@@ -10,7 +10,8 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 //var_dump($_SESSION);
 extract($_REQUEST);
 class Elemento{
-
+		private $conexion;
+		private $id_empresa;
 		private $id_elemento;
 
 		public function __construct(){

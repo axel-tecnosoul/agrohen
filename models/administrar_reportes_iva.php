@@ -3,6 +3,7 @@
 	require_once('./conexion.php');
 	class ReportesIva{
 
+		private $conexion;
 		private $id_proveedor;
 		private $id_orden;
 		private $id_empresa;

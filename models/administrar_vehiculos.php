@@ -8,9 +8,11 @@
   extract($_REQUEST);
 	class Vehiculo{
 
-		private $id_vehiculo;
-
-		public function __construct(){
+	private $conexion;
+	private $id_vehiculo;
+	private $id_empresa;
+	private $id_documento;
+	private $id_tarea_mantenimiento;		public function __construct(){
 			$this->conexion = new Conexion();
       $this->id_empresa = $_SESSION["rowUsers"]["id_empresa"];
 			date_default_timezone_set("America/Buenos_Aires");

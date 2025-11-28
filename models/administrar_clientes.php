@@ -9,6 +9,7 @@
   }
   extract($_REQUEST);
 	class Clientes{
+		private $conexion;
 		private $id_cliente;
 		private $id_contacto;
 		private $id_domicilio;

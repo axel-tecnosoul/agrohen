@@ -11,7 +11,7 @@ require_once('administrar_almacenes.php');
 
 extract($_REQUEST);
 class MantenimientoPreventivo{
-
+  private $conexion;
   private $id_mantenimiento_preventivo;
   private $id_empresa;
 

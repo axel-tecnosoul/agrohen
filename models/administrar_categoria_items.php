@@ -5,6 +5,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 }
 require_once('./conexion.php');
 class Categoria{
+  private $conexion;
   private $id_categoria;
   
   public function __construct(){

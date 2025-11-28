@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class LejagosTecnicos{
+		private $conexion;
 		private $id_empresa;
 		private $id_tecnico;
 

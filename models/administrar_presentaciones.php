@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class presentaciones{
+  private $conexion;
   private $id_presentacion;
   private $nombre;
   

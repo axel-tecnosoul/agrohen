@@ -16,28 +16,13 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
       <div class="loader bg-white">
         <div class="whirly-loader"></div>
       </div>
-    </div>
-    <?php include('./views/main_header.php');?>
+    </div><?php
+    $mainHeaderTitle = 'Vueltas';
+    include('./views/main_header.php');?>
     <div class="page-body-wrapper">
       <div class="page-sidebar"><?php include('./views/slideBar.php');?></div>
       <div class="page-body">
-        <div class="container-fluid">
-          <div class="page-header py-3">
-            <div class="row">
-              <div class="col">
-                <div class="page-header-left">
-                  <h3>Vueltas</h3>
-                  <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="home_users.php"><i data-feather="home"></i></a></li>
-                    <li class="breadcrumb-item">Transporte</li>
-                    <li class="breadcrumb-item active">Vueltas</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="container-fluid">
+        <div class="container-fluid pt-3">
           <div class="row">
             <div class="col-sm-12">
               <div class="card">

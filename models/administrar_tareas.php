@@ -14,8 +14,10 @@ require_once('administrar_unidades.php');
 extract($_REQUEST);
 class Tarea{
 
+  private $conexion;
   private $id_tarea;
   private $id_empresa;
+  private $ruta_adjuntos;
 
   public function __construct(){
     $this->conexion = new Conexion();

@@ -6,6 +6,7 @@
     session_start();
   }
 	class Almacenes{
+		private $conexion;
 		private $id_almacen;
 		
 		public function __construct(){

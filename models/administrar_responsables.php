@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class responsables_depositos{
+  private $conexion;
   private $id_responsable;
   private $nombre;
   

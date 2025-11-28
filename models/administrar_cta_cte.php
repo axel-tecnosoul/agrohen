@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class ctacte{
+  private $conexion;
   private $id_deposito;
   private $nombre;
   private $id_responsable;

@@ -6,6 +6,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 require_once('./conexion.php');
 extract($_REQUEST);
 class Cargos{
+  private $conexion;
   private $id_cargo;
   
   public function __construct(){

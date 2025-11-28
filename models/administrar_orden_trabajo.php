@@ -17,6 +17,7 @@ require_once('administrar_stock.php');
 extract($_REQUEST);
 class OrdenTrabajo{
 
+  private $conexion;
   private $id_orden_trabajo;
   private $id_empresa;
 

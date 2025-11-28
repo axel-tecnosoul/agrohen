@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class AccesosWeb{
+		private $conexion;
 		private $id_usuario;
 		private $id_proveedor;
 		private $id_cliente;

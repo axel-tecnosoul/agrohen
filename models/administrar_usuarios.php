@@ -2,12 +2,14 @@
 session_start();
 require_once('./conexion.php');
 class Usuarios{
+  private $conexion;
   private $id_usuario;
   private $mail;
   private $pass;
   private $id_perfil;
   private $id_deposito;
   private $usuario;
+  private $email;
   
   public function __construct(){
       $this->conexion = new Conexion();

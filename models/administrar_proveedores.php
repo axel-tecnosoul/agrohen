@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class proveedores{
+  private $conexion;
   private $id_proveedor;
   private $nombre;
   private $cuit;

@@ -2,6 +2,7 @@
 session_start();
 include_once('conexion.php');
 class unidades_medidas{
+  private $conexion;
   private $id_unidad_medida;
   private $nombre;
   

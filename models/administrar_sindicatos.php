@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class Sindicatos{
+		private $conexion;
 		private $id_sindicato;
 		
 		public function __construct(){

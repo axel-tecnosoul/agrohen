@@ -4,10 +4,14 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include_once('conexion.php');
 class depositos{
+  private $conexion;
   private $id_deposito;
   private $nombre;
   private $id_responsable;
   private $porcentaje_extra;
+  private $saldo_max;
+  private $opcion;
+  private $valor;
   
   public function __construct(){
       $this->conexion = new Conexion();

@@ -7,6 +7,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 require_once('./conexion.php');
 require_once('administrar_rubros.php');
 class Subrubros{
+		private $conexion;
 		private $id_subrubro;
 		
 		public function __construct(){

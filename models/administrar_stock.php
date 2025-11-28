@@ -8,6 +8,7 @@ require_once('administrar_movimientos_stock.php');
 extract($_REQUEST);
 class Stock{
 
+  private $conexion;
   private $id_proveedor;
   private $id_orden;
   private $id_almacen;

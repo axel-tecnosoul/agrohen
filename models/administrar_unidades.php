@@ -5,6 +5,7 @@ if(session_id() == '' || !isset($_SESSION) || session_status() === PHP_SESSION_N
 }
 require_once('./conexion.php');
 class Unidades{
+  private $conexion;
   private $id_uMedida;
   
   public function __construct(){

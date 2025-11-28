@@ -7,6 +7,7 @@
   require_once('administrar_stock.php');
 	class Ordenes{
 
+		private $conexion;
 		private $id_proveedor;
 		private $id_orden;
 		private $id_almacen;

@@ -1,10 +1,10 @@
 <?php
 function formatFecha($fecha){
-  return strftime("%d %b %Y",strtotime($fecha));
+  return date("d M Y",strtotime($fecha));
 }
 
 function formatFechaHora($fechaHora){
-  return strftime("%d %b %Y, %H:%M",strtotime($fechaHora));
+  return date("d M Y, H:i",strtotime($fechaHora));
 }
 
 function formatCurrency($number) {

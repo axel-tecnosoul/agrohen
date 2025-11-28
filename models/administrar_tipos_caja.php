@@ -2,6 +2,7 @@
 	session_start();
 	require_once('./conexion.php');
 	class TiposCaja{
+		private $conexion;
 		private $id_rubro;
 		private $id_empresa;
 		private $id_tipo_caja;

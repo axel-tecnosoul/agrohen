@@ -6,8 +6,12 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include_once('conexion.php');
 class producto{
+  private $conexion;
   private $id_producto;
   private $nombre;
+  private $id_presentacion;
+  private $id_unidad_medida;
+  private $id_familia;
   
   public function __construct(){
       $this->conexion = new Conexion();
