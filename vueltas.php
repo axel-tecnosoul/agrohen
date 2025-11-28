@@ -1,10 +1,76 @@
 <?php
 session_start();
 include_once('models/conexion.php');
+include_once('models/pdo_transport.php');
 if (!isset($_SESSION['rowUsers']['id_usuario'])) {
   header("location:./models/redireccionar.php");
   exit;
 }
+$db = getPdoConnection();
+
+$estadoValues = getEnumValues($db, 'vueltas', 'estado');
+$choferes = $db->query("SELECT id, nombre FROM choferes WHERE activo = 1 ORDER BY nombre")->fetchAll();
+$camiones = $db->query("SELECT id, patente FROM camiones WHERE activo = 1 ORDER BY patente")->fetchAll();
+
+$sqlVueltas = "SELECT
+    v.id,
+    v.fecha_salida,
+    v.km_salida,
+    v.fecha_cierre,
+    v.km_cierre,
+    v.estado,
+    c.patente AS camion,
+    ch.nombre AS chofer,
+    COALESCE((
+      SELECT SUM(vi.flete_total)
+      FROM viajes vi
+      WHERE vi.id_vuelta = v.id
+        AND vi.anulado = 0
+    ), 0) AS total_flete,
+    COALESCE((
+      SELECT SUM(va.importe)
+      FROM vueltas_anticipos va
+      WHERE va.id_vuelta = v.id
+        AND va.anulado = 0
+    ), 0) AS total_anticipos,
+    COALESCE((
+      SELECT SUM(vc.importe)
+      FROM viajes vi
+      JOIN viajes_cobros vc ON vc.id_viaje = vi.id
+      WHERE vi.id_vuelta = v.id
+        AND vi.anulado = 0
+        AND vc.anulado = 0
+    ), 0) AS total_cobros,
+    COALESCE((
+      SELECT SUM(vg.importe)
+      FROM viajes vi
+      JOIN viajes_gastos vg ON vg.id_viaje = vi.id
+      WHERE vi.id_vuelta = v.id
+        AND vi.anulado = 0
+        AND vg.anulado = 0
+    ), 0) AS total_gastos,
+    (
+      SELECT id
+      FROM liquidaciones_choferes lc
+      WHERE lc.id_vuelta = v.id
+        AND lc.anulado = 0
+      LIMIT 1
+    ) AS id_liquidacion
+  FROM vueltas v
+  JOIN camiones c ON c.id = v.id_camion
+  JOIN choferes ch ON ch.id = v.id_chofer
+  WHERE v.anulado = 0
+  ORDER BY v.id DESC";
+$vueltas = $db->query($sqlVueltas)->fetchAll();
+foreach ($vueltas as &$vuelta) {
+  if (!empty($vuelta['fecha_salida'])) {
+    $vuelta['fecha_salida_formatted'] = date('d/m/Y', strtotime($vuelta['fecha_salida']));
+  }
+  if (!empty($vuelta['fecha_cierre'])) {
+    $vuelta['fecha_cierre_formatted'] = date('d/m/Y', strtotime($vuelta['fecha_cierre']));
+  }
+}
+unset($vuelta);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -37,25 +103,27 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                       <td width="20%" class="p-1">
                         <select id="filtro_chofer" class="form-control" style="width: 100%;">
                           <option value="">Todos</option>
-                          <option value="1">Juan Pérez</option>
-                          <option value="2">Carlos Gómez</option>
+                          <?php foreach ($choferes as $chofer): ?>
+                            <option value="<?=$chofer['id']?>"><?=htmlspecialchars($chofer['nombre'])?></option>
+                          <?php endforeach; ?>
                         </select>
                       </td>
                       <td width="10%" class="text-right p-1">Camión:</td>
                       <td width="20%" class="p-1">
                         <select id="filtro_camion" class="form-control" style="width: 100%;">
                           <option value="">Todos</option>
-                          <option value="ABC123">ABC123</option>
-                          <option value="DEF456">DEF456</option>
+                          <?php foreach ($camiones as $camion): ?>
+                            <option value="<?=$camion['id']?>"><?=htmlspecialchars($camion['patente'])?></option>
+                          <?php endforeach; ?>
                         </select>
                       </td>
                       <td width="10%" class="text-right p-1">Estado:</td>
                       <td width="20%" class="p-1">
                         <select id="filtro_estado" class="form-control" style="width: 100%;">
                           <option value="">Todos</option>
-                          <option value="abierta">Abierta</option>
-                          <option value="cerrada">Cerrada</option>
-                          <option value="liquidada">Liquidada</option>
+                          <?php foreach ($estadoValues as $estado): ?>
+                            <option value="<?=$estado?>"><?=ucfirst($estado)?></option>
+                          <?php endforeach; ?>
                         </select>
                       </td>
                     </tr>
@@ -84,7 +152,34 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                           <th class="text-center">Acciones</th>
                         </tr>
                       </thead>
-                      <tbody></tbody>
+                      <tbody>
+                        <?php foreach ($vueltas as $v): ?>
+                          <tr>
+                            <td><?=htmlspecialchars($v['fecha_salida_formatted'] ?? $v['fecha_salida'])?></td>
+                            <td class="text-right"><?=htmlspecialchars($v['km_salida'])?></td>
+                            <td><?=htmlspecialchars($v['fecha_cierre_formatted'] ?? $v['fecha_cierre'])?></td>
+                            <td class="text-right"><?=htmlspecialchars($v['km_cierre'])?></td>
+                            <td><?=htmlspecialchars($v['chofer'])?></td>
+                            <td><?=htmlspecialchars($v['camion'])?></td>
+                            <td class="text-center"><?=htmlspecialchars($v['estado'])?></td>
+                            <td class="text-center">
+                              <div class="btn-group">
+                                <a href="viajes.php?id_vuelta=<?=$v['id']?>" class="btn btn-warning btn-sm" title="Viajes"><i class="fa fa-road"></i> Viajes</a>
+                                <?php if ($v['estado'] === 'abierta'): ?>
+                                  <a href="viajes.php?id_vuelta=<?=$v['id']?>&accion=cerrar" class="btn btn-info btn-sm" title="Cerrar vuelta">Cerrar</a>
+                                <?php endif; ?>
+                                <?php $tieneLiquidacion = !empty($v['id_liquidacion']); ?>
+                                <?php if ($v['estado'] === 'cerrada' && !$tieneLiquidacion): ?>
+                                  <a href="liquidaciones_detalle.php?id_vuelta=<?=$v['id']?>" class="btn btn-success btn-sm" title="Liquidar vuelta">Liquidar</a>
+                                <?php endif; ?>
+                                <?php if ($v['estado'] === 'liquidada' || $tieneLiquidacion): ?>
+                                  <a href="liquidaciones_detalle.php?id_vuelta=<?=$v['id']?>" class="btn btn-outline-success btn-sm" title="Ver liquidación">Ver liquidación</a>
+                                <?php endif; ?>
+                              </div>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -123,8 +218,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <label for="id_camion" class="col-form-label">Camión:</label>
                     <select id="id_camion" class="form-control" required>
                       <option value="">Seleccione</option>
-                      <option value="1">ABC123</option>
-                      <option value="2">DEF456</option>
+                      <?php foreach ($camiones as $camion): ?>
+                        <option value="<?=$camion['id']?>"><?=htmlspecialchars($camion['patente'])?></option>
+                      <?php endforeach; ?>
                     </select>
                   </div>
                 </div>
@@ -133,8 +229,9 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
                     <label for="id_chofer" class="col-form-label">Chofer:</label>
                     <select id="id_chofer" class="form-control" required>
                       <option value="">Seleccione</option>
-                      <option value="1">Juan Pérez</option>
-                      <option value="2">Carlos Gómez</option>
+                      <?php foreach ($choferes as $chofer): ?>
+                        <option value="<?=$chofer['id']?>"><?=htmlspecialchars($chofer['nombre'])?></option>
+                      <?php endforeach; ?>
                     </select>
                   </div>
                 </div>
@@ -293,41 +390,7 @@ if (!isset($_SESSION['rowUsers']['id_usuario'])) {
 
       function inicializarTablaVueltas(){
         tablaVueltas = $('#tablaVueltas').DataTable({
-          "ajax": {
-            "url" : "assets/mock/vueltas_demo.json",
-            "dataSrc": ""
-          },
           "responsive": true,
-          "columns":[
-            {"data": "fecha_salida"},
-            {"data": "km_salida"},
-            {"data": "fecha_cierre"},
-            {"data": "km_cierre"},
-            {"data": "chofer"},
-            {"data": "camion"},
-            {"data": "estado"},
-            {
-              render: function(data, type, full, meta) {
-                var botones = []
-                botones.push("<a href='viajes.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-warning btn-sm' title='Viajes'><i class='fa fa-road'></i> Viajes</a>")
-
-                if (full.estado === 'abierta') {
-                  botones.push("<a href='viajes.php?id_vuelta=" + full.id_vuelta + "&accion=cerrar' class='btn btn-info btn-sm' title='Cerrar vuelta'>Cerrar</a>")
-                }
-
-                var tieneLiquidacion = !!(full.id_liquidacion)
-                if (full.estado === 'cerrada' && !tieneLiquidacion) {
-                  botones.push("<a href='liquidaciones_detalle.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-success btn-sm' title='Liquidar vuelta'>Liquidar</a>")
-                }
-
-                if (full.estado === 'liquidada' || tieneLiquidacion) {
-                  botones.push("<a href='liquidaciones_detalle.php?id_vuelta=" + full.id_vuelta + "' class='btn btn-outline-success btn-sm' title='Ver liquidación'>Ver liquidación</a>")
-                }
-
-                return "<div class='text-center'><div class='btn-group'>" + botones.join('') + "</div></div>"
-              }
-            }
-          ],
           "language": idiomaEsp
         })
       }
