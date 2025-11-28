@@ -188,6 +188,11 @@ foreach ($viajes as $viaje) {
   $cobrosPorViaje[$viaje['id']] = obtenerCobros($db, (int)$viaje['id']);
   $gastosPorViaje[$viaje['id']] = obtenerGastos($db, (int)$viaje['id']);
 }
+
+$accion = "";
+if(isset($_GET['accion']) && $_GET['accion'] === 'cerrar'){ 
+  $accion = $_GET['accion'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -566,6 +571,11 @@ foreach ($viajes as $viaje) {
     <script src="assets/js/script.js"></script>
     <!--<script src="assets/js/theme-customizer/customizer.js"></script>-->
     <script>
+      $(document).ready(function() {
+        if("<?=$accion?>"=="cerrar"){
+          $('#modalCerrarVuelta').modal('show');
+        }
+      });
       $(function() {
         $('#tablaViajes').DataTable({
           language: { url: 'assets/js/datatable/spanish.json' },
