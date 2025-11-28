@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'cerrar_vuelta') {
   $stmt->execute([$id_vuelta_post]);
   $vueltaCerrar = $stmt->fetch();
   if ($vueltaCerrar && $fecha_cierre && is_numeric($km_cierre) && $km_cierre >= $vueltaCerrar['km_salida']) {
-    $stmt = $db->prepare("UPDATE vueltas SET fecha_cierre = ?, km_cierre = ?, estado = 'cerrada', id_usuario = ? WHERE id = ? AND anulado = 0");
+    $stmt = $db->prepare("UPDATE vueltas SET fecha_cierre = ?, km_cierre = ?, estado = 'cerrada', id_usuario = ? WHERE id = ? AND anulado = 0 AND estado = 'abierta'");
     $stmt->execute([$fecha_cierre, $km_cierre, $_SESSION['rowUsers']['id_usuario'], $id_vuelta_post]);
   }
   header('Location: viajes.php?id_vuelta='.$id_vuelta_post);
@@ -46,8 +46,8 @@ if ($accion) {
     $observaciones = trim($_POST['observaciones'] ?? '');
     if ($flete_total >= 0 && in_array($estado, $estadoViaje, true)) {
       if ($id_viaje) {
-        $stmt = $db->prepare("UPDATE viajes SET fecha = ?, origen = ?, destino = ?, flete_total = ?, estado = ?, observaciones = ?, id_usuario = ? WHERE id = ?");
-        $stmt->execute([$fecha, $origen ?: null, $destino ?: null, $flete_total, $estado, $observaciones ?: null, $_SESSION['rowUsers']['id_usuario'], $id_viaje]);
+        $stmt = $db->prepare("UPDATE viajes SET fecha = ?, origen = ?, destino = ?, flete_total = ?, estado = ?, observaciones = ?, id_usuario = ? WHERE id = ? AND id_vuelta = ?");
+        $stmt->execute([$fecha, $origen ?: null, $destino ?: null, $flete_total, $estado, $observaciones ?: null, $_SESSION['rowUsers']['id_usuario'], $id_viaje, $post_id_vuelta]);
       } else {
         $stmt = $db->prepare("INSERT INTO viajes (id_vuelta, fecha, origen, destino, flete_total, estado, observaciones, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$post_id_vuelta, $fecha, $origen ?: null, $destino ?: null, $flete_total, $estado, $observaciones ?: null, $_SESSION['rowUsers']['id_usuario']]);
@@ -59,8 +59,8 @@ if ($accion) {
     $id_viaje = (int)($_POST['id_viaje'] ?? 0);
     $id_vuelta = $post_id_vuelta;
     if ($id_viaje && $id_vuelta) {
-      $stmt = $db->prepare("UPDATE viajes SET anulado = 1 WHERE id = ?");
-      $stmt->execute([$id_viaje]);
+      $stmt = $db->prepare("UPDATE viajes SET anulado = 1 WHERE id = ? AND id_vuelta = ?");
+      $stmt->execute([$id_viaje, $id_vuelta]);
     }
     header("Location: viajes.php?id_vuelta=".$id_vuelta);
     exit;
